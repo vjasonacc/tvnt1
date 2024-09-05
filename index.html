@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Next Train Arrival Times</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .train-schedule {
+      max-width: 600px;
+      margin: auto;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+      background-color: #fff;
+    }
+    .train {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+    .train:last-child {
+      border-bottom: none;
+    }
+    .train-info {
+      display: flex;
+      justify-content: space-between;
+    }
+    .time {
+      font-weight: bold;
+      color: #28a745;
+    }
+    .destination {
+      color: #007bff;
+    }
+    .station-name {
+      text-align: center;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Next Train Arrival Times</h1>
+<div class="train-schedule" id="train-schedule">
+  <div class="station-name" id="station-name">Station Name: CF</div>
+  <!-- Train information will be populated here -->
+</div>
+
+<script>
+  async function fetchTrainSchedule() {
+    const response = await fetch('https://rt.data.gov.hk/v1/transport/mtr/lrt/getSchedule?station_id=468');
+    const data = await response.json();
+    const scheduleDiv = document.getElementById('train-schedule');
+    scheduleDiv.innerHTML = '<div class="station-name" id="station-name">Station Name: CF</div>'; // Reset station name
+
+    if (data.status === 1) {
+      const currentTime = new Date();
+      data.platform_list.forEach(platform => {
+        platform.route_list.forEach(route => {
+          const trainDiv = document.createElement('div');
+          trainDiv.className = 'train';
+
+          // Calculate arrival time
+          const arrivalTime = new Date(currentTime.getTime() + parseInt(route.time_en) * 60 * 1000);
+          const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+          const formattedArrivalTime = arrivalTime.toLocaleString('en-US', options);
+
+          trainDiv.innerHTML = `
+                        <div class="train-info">
+                            <div class="destination">${route.route_no} ${route.dest_ch}</div>
+                            <div class="time">${route.time_ch} ${formattedArrivalTime}</div>
+                        </div>
+                    `;
+          scheduleDiv.appendChild(trainDiv);
+        });
+      });
+    } else {
+      scheduleDiv.innerHTML = '<p>Unable to fetch train schedule.</p>';
+    }
+  }
+
+  // Fetch the train schedule immediately and then every 2 seconds
+  fetchTrainSchedule();
+  setInterval(fetchTrainSchedule, 1000); // 2000 ms = 2 seconds
+</script>
+
+</body>
+</html>
