@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="station-title"> LRT</title>
+    <title id="station-title">LRT</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -51,9 +51,8 @@
         }
     </style>
 </head>
-<table></table><body>
+<body>
 
-<!-- <h1 id="station-title">Next Train Arrival Times</h1> -->
 <div class="train-schedule" id="train-schedule">
     <!-- The station name will be populated here dynamically -->
 </div>
@@ -195,9 +194,10 @@
         }
     }
 
-    // Get station ID and platform ID from URL hash
-    const hash = window.location.hash.substring(1); // Remove the '#' from hash
-    const [stationId, platformId] = hash.split('#'); // Split by '#' to get station and platform IDs
+    // Get station ID and platform ID from URL path
+    const path = window.location.pathname.split('/').pop(); // Get last part of the URL
+    const stationId = path.slice(0, -1); // First three digits
+    const platformId = path.slice(-1); // Last digit
 
     // Ensure the station ID and platform ID are valid numbers
     if (!isNaN(stationId) && stationId !== '' && !isNaN(platformId) && platformId !== '') {
