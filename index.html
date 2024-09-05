@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="station-title">LRT</title>
+    <title id="station-title">LRT v2</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -194,10 +194,10 @@
         }
     }
 
-    // Get station ID and platform ID from URL path
-    const path = window.location.pathname.split('/').pop(); // Get last part of the URL
-    const stationId = path.slice(0, -1); // First three digits
-    const platformId = path.slice(-1); // Last digit
+    // Get station ID and platform ID from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const stationId = urlParams.get('id');
+    const platformId = urlParams.get('plat');
 
     // Ensure the station ID and platform ID are valid numbers
     if (!isNaN(stationId) && stationId !== '' && !isNaN(platformId) && platformId !== '') {
