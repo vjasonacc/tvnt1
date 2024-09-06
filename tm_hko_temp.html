@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>屯門天氣數據</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div id="temperature">載入中...</div>
+
+    <script>
+        async function fetchWeatherData() {
+            try {
+                const response = await fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=tc');
+                const data = await response.json();
+                
+                // 查找屯門的溫度
+                const tuenMunData = data.temperature.data.find(place => place.place === "屯門");
+                if (tuenMunData) {
+                    document.getElementById('temperature').innerText = `屯門溫度: ${tuenMunData.value} °C`;
+                } else {
+                    document.getElementById('temperature').innerText = '未找到屯門的溫度數據';
+                }
+            } catch (error) {
+                console.error('獲取數據時出錯:', error);
+                document.getElementById('temperature').innerText = '獲取數據時出錯';
+            }
+        }
+
+        // 每10秒更新一次數據
+        fetchWeatherData(); // 初始載入
+        setInterval(fetchWeatherData, 10000);
+    </script>
+</body>
+</html>
