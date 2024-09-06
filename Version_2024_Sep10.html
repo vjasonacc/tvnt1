@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="station-title">LRT v2 & Weather Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0; /* Light background for TV display */
+      margin: 0;
+      padding: 0; /* Remove padding for full screen usage */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start; /* Align items to the top */
+      height: 100vh; /* Full height for TV display */
+      overflow: hidden; /* Hide overflow */
+    }
+    .non-train-info {
+      display: flex; /* Use flexbox for horizontal layout */
+      justify-content: space-between; /* Space between items */
+      align-items: center; /* Center items vertically */
+      max-width: 90%; /* Max width for the line */
+      margin: 20px auto; /* Center the line */
+      background-color: white; /* Background for contrast */
+      border-radius: 5px;
+      padding: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .weather-section, .warning-section {
+      flex: 1; /* Allow sections to grow equally */
+      text-align: center; /* Center text */
+    }
+    .train-schedule {
+      max-width: 90%; /* Use most of the screen width */
+      margin: 20px auto; /* Center the train schedule */
+      border-radius: 5px;
+      padding: 20px;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      font-size: 5em; /* Large title for visibility */
+      margin: 20px 0; /* Margin for spacing */
+      display: none; /* Hide titles */
+    }
+    .train, .warning {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+      font-size: 2.5em; /* Increase train and warning text size */
+    }
+    .train:last-child, .warning:last-child {
+      border-bottom: none;
+    }
+    .train-info, .warnings {
+      display: flex;
+      font-size: 26px; /* Very large temperature display */
+      justify-content: space-between;
+    }
+    .time {
+      font-weight: bold;
+      font-size: 26px;
+      color: #467200;
+    }
+    .destination {
+      color: #030303;
+      font-weight: bolder;
+    }
+    .station-name {
+      text-align: center;
+      font-size: 3em; /* Large station name */
+      margin-bottom: 10px;
+      color: #333;
+    }
+    #time {
+      font-size: 3em; /* Large time display */
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    #temperature {
+      font-size: 2em; /* Very large temperature display */
+      margin: 0; /* Remove margin */
+    }
+    .loading {
+      font-size: 2.5em; /* Loading text size */
+      text-align: center;
+    }
+    .warning {
+      padding: 15px;
+      margin: 5px;
+      background-color: #f9e79f;
+      border-radius: 5px;
+      border: 1px solid #f39c12;
+      font-size: 2.5em; /* Large warning text */
+    }
+  </style>
+</head>
+<body>
+
+<!-- Non-Train Information Section -->
+<div class="non-train-info">
+  <div class="weather-section">
+    <div id="time">載入中...</div>
+    <div id="temperature">載入中...</div>
+  </div>
+  <div class="warning-section">
+    <div id="warnings" class="loading">正在加載警告信息...</div>
+  </div>
+</div>
+
+<!-- Train Schedule Section -->
+<div class="train-schedule" id="train-schedule"></div>
+
+<script>
+  // Mapping of station IDs to names
+  const stationNames = {
+    1: "Tuen Mun Ferry Pier",
+    10: "Melody Garden",
+    15: "Butterfly",
+    20: "Light Rail Depot",
+    30: "Lung Mun",
+    40: "Tsing Shan Tsuen",
+    50: "Tsing Wun",
+    60: "Kin On",
+    70: "Ho Tin",
+    75: "Choy Yee Bridge",
+    80: "Affluence",
+    90: "Tuen Mun Hospital",
+    100: "Siu Hong",
+    110: "Kei Lun",
+    120: "Ching Chung",
+    130: "Kin Sang",
+    140: "Tin King",
+    150: "Leung King",
+    160: "San Wai",
+    170: "Shek Pai",
+    180: "Shan King (North)",
+    190: "Shan King (South)",
+    200: "Ming Kum",
+    212: "Tai Hing (North)",
+    220: "Tai Hing (South)",
+    230: "Ngan Wai",
+    240: "Siu Hei",
+    260: "Goodview Garden",
+    265: "Siu Lun",
+    270: "On Ting",
+    275: "Yau Oi",
+    280: "Town Centre",
+    295: "Tuen Mun",
+    300: "Pui To",
+    310: "Hoh Fuk Tong",
+    320: "San Hui",
+    330: "Prime View",
+    340: "Fung Tei",
+    350: "Lam Tei",
+    360: "Nai Wai",
+    370: "Chung Uk Tsuen",
+    380: "Hung Shui Kiu",
+    390: "Tong Fong Tsuen",
+    400: "Ping Shan",
+    425: "Hang Mei Tsuen",
+    430: "Tin Shui Wai",
+    435: "Tin Tsz",
+    445: "Tin Yiu",
+    448: "Locwood",
+    450: "Tin Wu",
+    455: "Ginza",
+    460: "Tin Shui",
+    468: "Chung Fu",
+    480: "Tin Fu",
+    490: "Chestwood",
+    500: "Tin Wing",
+    510: "Tin Yuet",
+    520: "Tin Sau",
+    530: "Tuen Mun Swimming Pool",
+  };
+
+  async function fetchTrainSchedule(stationId, platformId) {
+    const scheduleDiv = document.getElementById('train-schedule');
+
+    try {
+      const response = await fetch(`https://rt.data.gov.hk/v1/transport/mtr/lrt/getSchedule?station_id=${stationId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const stationName = stationNames[stationId] || `Unknown Station ID: ${stationId}`;
+      document.getElementById('station-title').textContent = `${stationName} - Next Train Arrival Times`;
+
+      const stationNameDiv = document.createElement('div');
+      stationNameDiv.className = 'station-name';
+      stationNameDiv.textContent = stationName;
+
+      if (!scheduleDiv.querySelector('.station-name')) {
+        scheduleDiv.appendChild(stationNameDiv);
+      }
+
+      if (data.status === 1) {
+        const currentTime = new Date();
+        const platformData = data.platform_list.find(platform => platform.platform_id == platformId);
+        scheduleDiv.innerHTML = '';
+        scheduleDiv.appendChild(stationNameDiv);
+
+        if (platformData) {
+          platformData.route_list.forEach(route => {
+            const trainDiv = document.createElement('div');
+            trainDiv.className = 'train';
+            let arrivalMessage = '';
+            let formattedArrivalTime = '';
+            if (route.time_ch === '即將抵達') {
+              arrivalMessage = '即將抵達';
+            } else if (route.time_ch === '-') {
+              arrivalMessage = '- - - 已經到達';
+            } else if (route.time_ch === '正在離開') {
+              arrivalMessage = '- 正在離開';
+            } else {
+              const arrivalTime = new Date(currentTime.getTime() + parseInt(route.time_en) * 60 * 1000);
+              const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+              formattedArrivalTime = arrivalTime.toLocaleString('en-US', options);
+            }
+
+            trainDiv.innerHTML = `
+                            <div class="train-info">
+                                <div class="destination">${route.route_no} ${route.dest_ch}</div>
+                                <div class="time">${route.time_ch === '即將抵達' || route.time_ch === '-' ? arrivalMessage : route.time_ch + ' ' + formattedArrivalTime}</div>
+                            </div>
+                        `;
+            scheduleDiv.appendChild(trainDiv);
+          });
+        } else {
+          scheduleDiv.innerHTML = '<div class="station-name">No trains available for the selected platform.</div>';
+        }
+      } else {
+        scheduleDiv.innerHTML = '<div class="station-name">Unable to fetch train schedule.</div>';
+      }
+    } catch (error) {
+      console.error('Error fetching train schedule:', error);
+      scheduleDiv.innerHTML = '<div class="station-name">Error fetching train schedule.</div>';
+    }
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const stationId = urlParams.get('id');
+  const platformId = urlParams.get('plat');
+
+  if (!isNaN(stationId) && stationId !== '' && !isNaN(platformId) && platformId !== '') {
+    fetchTrainSchedule(stationId, platformId);
+    setInterval(() => fetchTrainSchedule(stationId, platformId), 2000);
+  } else {
+    document.getElementById('train-schedule').innerHTML = '<div class="station-name">Invalid station or platform ID.</div>';
+  }
+
+  // Weather Data Fetching
+  async function fetchWeatherData() {
+    try {
+      const response = await fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=tc');
+      const data = await response.json();
+
+      const tuenMunData = data.temperature.data.find(place => place.place === "屯門");
+      if (tuenMunData) {
+        document.getElementById('temperature').innerText = `屯門溫度: ${tuenMunData.value} °C`;
+      } else {
+        document.getElementById('temperature').innerText = '未找到屯門的溫度數據';
+      }
+    } catch (error) {
+      console.error('獲取數據時出錯:', error);
+      document.getElementById('temperature').innerText = '獲取數據時出錯';
+    }
+  }
+
+  function updateTime() {
+    const now = new Date();
+    const options = { weekday: 'short', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true };
+    const timeString = now.toLocaleString('zh-HK', options);
+    document.getElementById('time').innerText = timeString;
+  }
+
+  setInterval(updateTime, 1000);
+  fetchWeatherData(); // Initial load
+  setInterval(fetchWeatherData, 10000);
+  updateTime();
+
+  // Fetch Weather Warnings
+  async function fetchWeatherWarnings() {
+    try {
+      const response = await fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warnsum&lang=tc');
+      if (!response.ok) {
+        throw new Error('網絡回應不正常');
+      }
+      const data = await response.json();
+      displayWarnings(data);
+    } catch (error) {
+      document.getElementById('warnings').innerText = '無法加載警告信息: ' + error.message;
+    }
+  }
+
+  function displayWarnings(data) {
+    const warningsDiv = document.getElementById('warnings');
+    warningsDiv.innerHTML = ''; // Clear loading message
+
+    const warningDetails = Object.values(data)
+      .filter(warning => warning.name !== "雷暴警告") // Hide thunderstorm warnings
+      .map(warning => `${warning.type} ${warning.name}`)
+      .join('    ');
+
+    warningsDiv.innerHTML = `<div class="warnings">${warningDetails}</div>`;
+  }
+
+  // Initialize and reload warnings every 5 seconds
+  fetchWeatherWarnings();
+  setInterval(fetchWeatherWarnings, 5000);
+</script>
+
+</body>
+</html>
