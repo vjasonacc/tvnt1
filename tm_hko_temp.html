@@ -8,11 +8,20 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin-top: 50px;
+            margin: 0; /* 去除預設邊距 */
+            padding: 20px; /* 添加內邊距 */
+        }
+        #time {
+            font-size: 18px;
+            margin-bottom: 10px; /* 時間和溫度之間的間距 */
+        }
+        #temperature {
+            font-size: 24px; /* 增大溫度字體 */
         }
     </style>
 </head>
 <body>
+    <div id="time">載入中...</div>
     <div id="temperature">載入中...</div>
 
     <script>
@@ -34,9 +43,21 @@
             }
         }
 
+        function updateTime() {
+            const now = new Date();
+            const options = { weekday: 'short', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true };
+            const timeString = now.toLocaleString('zh-HK', options);
+            document.getElementById('time').innerText = timeString;
+        }
+
+        // 每秒更新時間
+        setInterval(updateTime, 1000);
         // 每10秒更新一次數據
         fetchWeatherData(); // 初始載入
         setInterval(fetchWeatherData, 10000);
+
+        // 初始載入時間
+        updateTime();
     </script>
 </body>
 </html>
