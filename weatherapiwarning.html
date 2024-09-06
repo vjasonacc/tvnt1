@@ -75,7 +75,7 @@
             const warningDetails = Object.values(data)
                 .filter(warning => warning.name !== "雷暴警告") // 隱藏雷暴警告
                 .map(warning => `${warning.type} ${warning.name}`)
-                .join(' | ');
+                .join('    ');
 
             warningsDiv.innerHTML = `<div class="warnings">${warningDetails}</div>`;
         }
