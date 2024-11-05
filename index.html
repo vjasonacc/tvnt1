@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="icon.png">
     
     <!-- Optional: Set app name -->
-    <meta name="apple-mobile-web-app-title" content="My App">
+    <meta name="apple-mobile-web-app-title" content="id="station-title"">
     
       <title id="station-title">LRT v2</title>
     <style>
@@ -143,7 +143,7 @@
 
             // Use station name from the mapping
             const stationName = stationNames[stationId] || `Unknown Station ID: ${stationId}`;
-            document.getElementById('station-title').textContent = `${stationName} - Next Train Arrival Times`;
+            document.getElementById('station-title').textContent = `${stationName}`;
 
             // Update station name
             const stationNameDiv = document.createElement('div');
