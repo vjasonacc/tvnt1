@@ -171,9 +171,9 @@
                             if (route.time_ch === '即將抵達') {
                                 arrivalMessage = '即將抵達';
                             } else if (route.time_ch === '-') {
-                                arrivalMessage = '已經到達';
+                                arrivalMessage = '⚠️已經到達';
                             } else if (route.time_ch === '正在離開') {
-                                arrivalMessage = '正在離開';
+                                arrivalMessage = '⚠️正在離開';
                             } else {
                                 arrivalMessage = route.time_ch
                                 const arrivalTime = new Date(currentTime.getTime() + parseInt(route.time_en) * 60 * 1000);
