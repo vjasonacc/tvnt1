@@ -2,15 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="station-title">LRT v2</title>
-    <!-- Prevent scaling -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Optional: Add an app icon -->
-    <link rel="apple-touch-icon" href="icon.png">
-    <!-- Optional: Set app name -->
-    <meta name="apple-mobile-web-app-title" content="My App">
     <title id="station-title">LRT v2</title>
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="apple-mobile-web-app-title" content="My App">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -175,22 +170,29 @@
                             } else if (route.time_ch === '正在離開') {
                                 arrivalMessage = '⚠️正在離開';
                             } else {
-                                arrivalMessage = route.time_ch
+                                // Replace "分鐘" with "分"
+                                arrivalMessage = route.time_ch.replace(/分鐘/g, '分');
                                 const arrivalTime = new Date(currentTime.getTime() + parseInt(route.time_en) * 60 * 1000);
                                 const options = { hour: 'numeric', minute: 'numeric', hour12: true };
-                                formattedArrivalTime = arrivalTime.toLocaleString('en-US', options);
+                                // Format the time without AM/PM
+                                formattedArrivalTime = arrivalTime.toLocaleString('en-US', options).replace(/ (AM|PM)/, '');
                             }
 
-                            // Add train length indicator
-                            const trainLengthIndicator = route.train_length === 1 ? '單卡' : route.train_length === 2 ? '拖卡' : '';
-//                            const displayTime = trainLengthIndicator ? ` ${route.time_ch}` : route.time_ch;
-                              const displayTime = trainLengthIndicator ? ` ${arrivalMessage}` : arrivalMessage;
+                            // Filter destination names
+                            let displayDestination = route.dest_ch;
+                            if (displayDestination.includes('碼頭')) {
+                                displayDestination = '碼頭';
+                            } else if (displayDestination.includes('天水圍循環綫')) {
+                                displayDestination = '循環';
+                            }
 
-                            const ShowtrainLengthIndicator = trainLengthIndicator
+                            const trainLengthIndicator = route.train_length === 1 ? '單' : route.train_length === 2 ? '拖' : '';
+                            const displayTime = trainLengthIndicator ? ` ${arrivalMessage}` : arrivalMessage;
+
                             trainDiv.innerHTML = `
                                 <div class="train-info">
-                                    <div class="destination">${route.route_no} ${route.dest_ch}</div>
-                                    <div class="time">${displayTime} ${formattedArrivalTime} ${ShowtrainLengthIndicator}</div>
+                                    <div class="destination">${route.route_no} ${displayDestination}</div>
+                                    <div class="time">${displayTime} ${formattedArrivalTime} ${trainLengthIndicator}</div>
                                 </div>
                             `;
                             scheduleDiv.appendChild(trainDiv);
@@ -220,6 +222,9 @@
         } else {
             document.getElementById('train-schedule').innerHTML = '<div class="station-name">Invalid station or platform ID.</div>';
         }
+
+
+        
     </script>
 </body>
 </html>
