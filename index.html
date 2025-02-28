@@ -59,68 +59,139 @@
     </div>
 
     <script>
-        // Mapping of station IDs to names
+        // // Mapping of station IDs to names
+        // const stationNames = {
+        //     1: "Tuen Mun Ferry Pier",
+        //     10: "Melody Garden",
+        //     15: "Butterfly",
+        //     20: "Light Rail Depot",
+        //     30: "Lung Mun",
+        //     40: "Tsing Shan Tsuen",
+        //     50: "Tsing Wun",
+        //     60: "Kin On",
+        //     70: "Ho Tin",
+        //     75: "Choy Yee Bridge",
+        //     80: "Affluence",
+        //     90: "Tuen Mun Hospital",
+        //     100: "Siu Hong",
+        //     110: "Kei Lun",
+        //     120: "Ching Chung",
+        //     130: "Kin Sang",
+        //     140: "Tin King",
+        //     150: "Leung King",
+        //     160: "San Wai",
+        //     170: "Shek Pai",
+        //     180: "Shan King (North)",
+        //     190: "Shan King (South)",
+        //     200: "Ming Kum",
+        //     212: "Tai Hing (North)",
+        //     220: "Tai Hing (South)",
+        //     230: "Ngan Wai",
+        //     240: "Siu Hei",
+        //     260: "Goodview Garden",
+        //     265: "Siu Lun",
+        //     270: "On Ting",
+        //     275: "Yau Oi",
+        //     280: "Town Centre",
+        //     295: "Tuen Mun",
+        //     300: "Pui To",
+        //     310: "Hoh Fuk Tong",
+        //     320: "San Hui",
+        //     330: "Prime View",
+        //     340: "Fung Tei",
+        //     350: "Lam Tei",
+        //     360: "Nai Wai",
+        //     370: "Chung Uk Tsuen",
+        //     380: "Hung Shui Kiu",
+        //     390: "Tong Fong Tsuen",
+        //     400: "Ping Shan",
+        //     425: "Hang Mei Tsuen",
+        //     430: "Tin Shui Wai",
+        //     435: "Tin Tsz",
+        //     445: "Tin Yiu",
+        //     448: "Locwood",
+        //     450: "Tin Wu",
+        //     455: "Ginza",
+        //     460: "Tin Shui",
+        //     468: "Chung Fu",
+        //     480: "Tin Fu",
+        //     490: "Chestwood",
+        //     500: "Tin Wing",
+        //     510: "Tin Yuet",
+        //     520: "Tin Sau",
+        //     530: "Tuen Mun Swimming Pool",
+        // };
+
         const stationNames = {
-            1: "Tuen Mun Ferry Pier",
-            10: "Melody Garden",
-            15: "Butterfly",
-            20: "Light Rail Depot",
-            30: "Lung Mun",
-            40: "Tsing Shan Tsuen",
-            50: "Tsing Wun",
-            60: "Kin On",
-            70: "Ho Tin",
-            75: "Choy Yee Bridge",
-            80: "Affluence",
-            90: "Tuen Mun Hospital",
-            100: "Siu Hong",
-            110: "Kei Lun",
-            120: "Ching Chung",
-            130: "Kin Sang",
-            140: "Tin King",
-            150: "Leung King",
-            160: "San Wai",
-            170: "Shek Pai",
-            180: "Shan King (North)",
-            190: "Shan King (South)",
-            200: "Ming Kum",
-            212: "Tai Hing (North)",
-            220: "Tai Hing (South)",
-            230: "Ngan Wai",
-            240: "Siu Hei",
-            260: "Goodview Garden",
-            265: "Siu Lun",
-            270: "On Ting",
-            275: "Yau Oi",
-            280: "Town Centre",
-            295: "Tuen Mun",
-            300: "Pui To",
-            310: "Hoh Fuk Tong",
-            320: "San Hui",
-            330: "Prime View",
-            340: "Fung Tei",
-            350: "Lam Tei",
-            360: "Nai Wai",
-            370: "Chung Uk Tsuen",
-            380: "Hung Shui Kiu",
-            390: "Tong Fong Tsuen",
-            400: "Ping Shan",
-            425: "Hang Mei Tsuen",
-            430: "Tin Shui Wai",
-            435: "Tin Tsz",
-            445: "Tin Yiu",
-            448: "Locwood",
-            450: "Tin Wu",
-            455: "Ginza",
-            460: "Tin Shui",
-            468: "Chung Fu",
-            480: "Tin Fu",
-            490: "Chestwood",
-            500: "Tin Wing",
-            510: "Tin Yuet",
-            520: "Tin Sau",
-            530: "Tuen Mun Swimming Pool",
-        };
+1: "屯門碼頭總站",
+10: "美樂站",
+15: "蝴蝶站",
+20: "輕鐵車廠站",
+30: "龍門站",
+40: "青山村站",
+50: "青雲站",
+60: "建安站",
+70: "河田站",
+75: "蔡意橋站",
+80: "澤豐站",
+90: "屯門醫院站",
+100: "兆康站",
+110: "麒麟站",
+120: "青松站",
+130: "建生站",
+140: "田景站",
+150: "良景站",
+160: "新圍站",
+170: "石排站",
+180: "山景 (北)站",
+190: "山景 (南)站",
+200: "鳴琴站",
+212: "大興 (北)站",
+220: "大興 (南)站",
+230: "銀圍站",
+240: "兆禧站",
+250: "屯門泳池站",
+260: "豐景園站",
+265: "兆麟站",
+270: "安定站",
+275: "友愛總站",
+280: "市中心站",
+295: "屯門站",
+300: "杯渡站",
+310: "何福堂站",
+320: "新墟站",
+330: "景峰站",
+340: "鳳地站",
+350: "藍地站",
+360: "泥圍站",
+370: "鍾屋村站",
+380: "洪水橋站",
+390: "塘坊村站",
+400: "屏山站",
+425: "坑尾村站",
+430: "天水圍西鐵站",
+435: "天慈站",
+445: "天耀站",
+448: "樂湖站",
+450: "天湖站",
+455: "銀座站",
+460: "天瑞站",
+468: "頌富站",
+480: "天富站",
+490: "翠湖站",
+500: "天榮站",
+510: "天悅站",
+520: "天秀站",
+530: "濕地公園站",
+540: "天恒站",
+550: "天逸總站",
+560: "水邊圍站",
+570: "豐年路站",
+580: "康樂路站",
+590: "大棠路站",
+600: "元朗總站",
+920: "三聖總站"
+};
 
         async function fetchTrainSchedule(stationId, platformId) {
             const scheduleDiv = document.getElementById('train-schedule');
@@ -134,7 +205,7 @@
                 const data = await response.json();
 
                 // Use station name from the mapping
-                const stationName = stationNames[stationId] || `Unknown Station ID: ${stationId}`;
+                const stationName = stationNames[stationId] || `StationID: ${stationId}`;
                 document.getElementById('station-title').textContent = `${stationName} - Next Train Arrival Times`;
 
                 // Update station name
@@ -186,12 +257,21 @@
                                 displayDestination = '循環';
                             }
 
+                            //new replace 761P to 761， and replce 751P to 751
+                            let shortrouteno = route.route_no;
+                            if (shortrouteno.includes('761P')){
+                                shortrouteno = '761';
+                             } else if  (shortrouteno.includes('751P')) {
+                                shortrouteno = '751';
+                    
+                            }
+
                             const trainLengthIndicator = route.train_length === 1 ? '單' : route.train_length === 2 ? '拖' : '';
                             const displayTime = trainLengthIndicator ? ` ${arrivalMessage}` : arrivalMessage;
 
                             trainDiv.innerHTML = `
                                 <div class="train-info">
-                                    <div class="destination">${route.route_no} ${displayDestination}</div>
+                                    <div class="destination">${shortrouteno} ${displayDestination}</div>
                                     <div class="time">${displayTime} ${formattedArrivalTime} ${trainLengthIndicator}</div>
                                 </div>
                             `;
@@ -201,11 +281,11 @@
                         scheduleDiv.innerHTML = '<div class="station-name">No trains available for the selected platform.</div>';
                     }
                 } else {
-                    scheduleDiv.innerHTML = '<div class="station-name">Unable to fetch train schedule.</div>';
+                    scheduleDiv.innerHTML = '<div class="station-name">please refresh the page, ! Unable to fetch train schedule.</div>';
                 }
             } catch (error) {
                 console.error('Error fetching train schedule:', error);
-                scheduleDiv.innerHTML = '<div class="station-name">Error fetching train schedule.</div>';
+                scheduleDiv.innerHTML = '<div class="station-name">Loading Please wait... if you waited more than 10 seconds please refresh page</div>';
             }
         }
 
