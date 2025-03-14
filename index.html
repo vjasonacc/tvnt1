@@ -135,7 +135,9 @@
 
             try {
 // gov api            // const response = await fetch(`https://rt.data.gov.hk/v1/transport/mtr/lrt/getSchedule?station_id=${stationId}`);
-                const response = await fetch(`api.txt`); //my local server api
+                const response = await fetch(`https://rt.data.gov.hk/v1/transport/mtr/lrt/getSchedule?station_id=${stationId}`);
+
+                // const response = await fetch(`api.txt`); //my local server api
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
