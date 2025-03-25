@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleep Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        input[type="time"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Sleep Calculator</h1>
+    <label for="sleepTime">Time to Sleep:</label>
+    <input type="time" id="sleepTime" value="23:00">
+    
+    <label for="wakeTime">Time to Wake Up:</label>
+    <input type="time" id="wakeTime" value="08:00">
+    
+    <button onclick="calculateSleep()">Calculate Sleep</button>
+    
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    function calculateSleep() {
+        const sleepTime = document.getElementById('sleepTime').value;
+        const wakeTime = document.getElementById('wakeTime').value;
+
+        if (!sleepTime || !wakeTime) {
+            document.getElementById('result').innerText = 'Please enter both times.';
+            return;
+        }
+
+        const sleepDate = new Date(`1970-01-01T${sleepTime}:00`);
+        const wakeDate = new Date(`1970-01-01T${wakeTime}:00`);
+
+        if (wakeDate <= sleepDate) {
+            wakeDate.setDate(wakeDate.getDate() + 1); // Add a day if wake time is the next day
+        }
+
+        const sleepDuration = new Date(wakeDate - sleepDate);
+        const hours = sleepDuration.getUTCHours();
+        const minutes = sleepDuration.getUTCMinutes();
+
+        document.getElementById('result').innerText = `You can sleep for ${hours} hours and ${minutes} minutes.`;
+    }
+</script>
+
+</body>
+</html>
