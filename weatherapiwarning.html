@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>天氣警告信息</title>
+    <title>天氣警告信息1</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #eaeaea;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
         }
         .container {
-            max-width: 600px;
+            max-width: 400px;
             margin: auto;
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(216, 216, 216, 0.984);
         }
         .warnings {
             display: flex;
@@ -30,13 +30,16 @@
         .warning {
             padding: 10px;
             margin: 5px;
-            background-color: #f9e79f;
+            background-color: #ffeb9a;
             border-radius: 5px;
             border: 1px solid #f39c12;
         }
         .loading {
             text-align: center;
-            font-size: 1.2em;
+            font-size: 14px;
+            color: #fd0000;
+            font-weight: bolder;
+            font-family: Arial, Helvetica, sans-serif;
         }
         @media (max-width: 600px) {
             body {
@@ -59,12 +62,12 @@
             try {
                 const response = await fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warnsum&lang=tc');
                 if (!response.ok) {
-                    throw new Error('網絡回應不正常');
+                    throw new Error('網絡回應不正常'); 
                 }
                 const data = await response.json();
                 displayWarnings(data);
             } catch (error) {
-                document.getElementById('warnings').innerText = '無法加載警告信息: ' + error.message;
+                document.getElementById('warnings').innerText = '無法加載天文台警告信息: error id: ' + error.message;
             }
         }
 
@@ -74,7 +77,9 @@
 
             const warningDetails = Object.values(data)
                 .filter(warning => warning.name !== "雷暴警告") // 隱藏雷暴警告
-                .map(warning => `${warning.type} ${warning.name}`)
+                .map(warning => `天文台 ${warning.actionCode} ${warning.name}<br>最後更新時間:<br>${warning.updateTime}`)
+                // .map(warning => `${warning.name}`)
+
                 .join('    ');
 
             warningsDiv.innerHTML = `<div class="warnings">${warningDetails}</div>`;
