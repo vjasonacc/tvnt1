@@ -77,7 +77,7 @@
 
             const warningDetails = Object.values(data)
                 .filter(warning => warning.name !== "雷暴警告") // 隱藏雷暴警告
-                .map(warning => `天文台 ${warning.actionCode} ${warning.name}<br>最後更新時間:<br>${warning.updateTime}`)
+                .map(warning => `天文台 ${warning.actionCode} ${warning.name} ${warning.type}<br>最後更新時間:<br>${warning.updateTime}`)
                 // .map(warning => `${warning.name}`)
 
                 .join('    ');
