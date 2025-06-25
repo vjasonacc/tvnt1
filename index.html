@@ -57,7 +57,7 @@
     <div class="train-schedule" id="train-schedule">
         <!-- The station name and train schedule will be populated here dynamically -->
     </div>
-
+<div id="time" style="text-align: center; margin-top: 20%;">Loading...</div>
     <script>
         const stationNames = {
             1: "屯門碼頭總站",
@@ -248,5 +248,32 @@
             document.getElementById('train-schedule').innerHTML = '<div class="station-name">Invalid station or platform ID.</div>';
         }
     </script>
+    
+    
+
+
+
+
+<script>
+    function updateTime() {
+        const now = new Date();
+        let hours = now.getHours();
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        
+        const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
+        document.getElementById('time').textContent = timeString;
+    }
+
+    setInterval(updateTime, 1000);
+    updateTime(); // Initial call to display time immediately
+</script>
+
+</body>
+</html>
 </body>
 </html>
