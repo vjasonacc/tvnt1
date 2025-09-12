@@ -1,1 +1,425 @@
-test
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KMB 即時到站查詢工具</title>
+<style>
+  body {
+    font-family: Arial, "PingFang HK", "Microsoft JhengHei", sans-serif;
+    background: #f5f6fa;
+    margin: 0; padding: 0;
+    color: #205d1e;
+  }
+  .container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px #ccc;
+    padding: 20px 16px 40px;
+  }
+  h1 {
+    font-weight: bold;
+    font-size: 1.8rem;
+    text-align: center;
+    margin: 0 0 25px 0;
+    letter-spacing: 1px;
+  }
+  label {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-top: 20px;
+    display: block;
+    margin-bottom: 6px;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 1rem;
+    border-radius: 7px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+  .list {
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f0faf0;
+    margin-top: 12px;
+  }
+  .list-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #cce7cc;
+    cursor: pointer;
+    font-size: 1.05rem;
+  }
+  .list-item:hover {
+    background: #d7f0d7;
+  }
+  .route-item {
+    background: #e6f7ff;
+    margin: 10px 0;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .route-button {
+    background: #388e3c;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .route-button:hover {
+    background: #2e7030;
+  }
+  .url-block {
+    background: #fcfcf1;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 1rem;
+    word-break: break-word;
+    user-select: all;
+    margin-top: 20px;
+  }
+  .preview-section {
+    margin-top: 30px;
+    border-top: 2px solid #d4ecd4;
+    padding-top: 20px;
+  }
+  .station-name {
+    font-weight: 800;
+    font-size: 1.3rem;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .eta-list {
+    margin-top: 12px;
+  }
+  .eta-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #d7f0d7;
+    padding: 10px 16px;
+  }
+  .eta-item:last-child {
+    border-bottom: none;
+  }
+  .destination {
+    font-weight: 700;
+    max-width: 70%;
+  }
+  .time {
+    font-weight: 700;
+  }
+  .time.green {
+    color: #388e3c;
+  }
+  .time.yellow {
+    color: #fbc02d;
+  }
+  .time.red {
+    color: #c62828;
+  }
+  .remark {
+    font-size: 0.85rem;
+    color: #555;
+    margin-left: 10px;
+    white-space: nowrap;
+  }
+  .error {
+    margin-top: 20px;
+    text-align: center;
+    font-weight: 700;
+    color: #c62828;
+  }
+  .footer-clock {
+    margin-top: 28px;
+    font-size: 0.95rem;
+    color: #666;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>KMB 即時到站查詢工具</h1>
+
+    <label for="stopSearchInput">搜尋巴士站（中/英）</label>
+    <input type="text" id="stopSearchInput" placeholder="輸入巴士站名稱，例如：天耀 / Tin Yiu" autocomplete="off" />
+    <div id="stopList" class="list"></div>
+
+    <div id="selectedStopSection" style="display:none;">
+      <label>已選擇巴士站：</label>
+      <div id="selectedStopName" style="font-weight:700; font-size:1.2rem; margin-bottom:10px;"></div>
+
+      <label>此站服務路線：</label>
+      <div id="routeList"></div>
+    </div>
+
+    <div id="urlSection" style="display:none;">
+      <label>查詢連結（可複製）</label>
+      <div id="shareUrl" class="url-block"></div>
+    </div>
+
+    <div id="etaSection" class="preview-section" style="display:none;">
+      <div id="etaStopDisplay" class="station-name"></div>
+      <div id="etaList" class="eta-list"></div>
+    </div>
+
+    <div class="footer-clock" id="footerClock"></div>
+  </div>
+
+<script>
+(async function(){
+  const stopSearchInput = document.getElementById('stopSearchInput');
+  const stopListDiv = document.getElementById('stopList');
+  const selectedStopSection = document.getElementById('selectedStopSection');
+  const selectedStopNameDiv = document.getElementById('selectedStopName');
+  const routeListDiv = document.getElementById('routeList');
+  const urlSection = document.getElementById('urlSection');
+  const shareUrlDiv = document.getElementById('shareUrl');
+  const etaSection = document.getElementById('etaSection');
+  const etaStopDisplay = document.getElementById('etaStopDisplay');
+  const etaListDiv = document.getElementById('etaList');
+  const footerClock = document.getElementById('footerClock');
+
+  let allStops = [];
+  let allRouteStops = [];
+  let etaInterval = null;
+  let currentStop = null;
+  let currentRoute = null;
+
+  // Load all stops
+  async function loadStops(){
+    try {
+      const res = await fetch('https://data.etabus.gov.hk/v1/transport/kmb/stop');
+      const json = await res.json();
+      allStops = json.data || [];
+    } catch(e) {
+      allStops = [];
+      stopListDiv.innerHTML = '<div class="error">載入巴士站資料失敗，請稍後重試</div>';
+    }
+  }
+
+  // Load all route-stop mapping
+  async function loadRouteStops(){
+    try {
+      const res = await fetch('https://data.etabus.gov.hk/v1/transport/kmb/route-stop');
+      const json = await res.json();
+      allRouteStops = json.data || [];
+    } catch(e){
+      allRouteStops = [];
+    }
+  }
+
+  // Debounce helper
+  function debounce(func, delay) {
+    let timer;
+    return function(...args) {
+      clearTimeout(timer);
+      timer = setTimeout(() => func.apply(this, args), delay);
+    }
+  }
+
+  // Search stops by keyword
+  function searchStops(keyword){
+    keyword = keyword.trim().toLowerCase();
+    if(!keyword) return [];
+    let results = allStops.filter(stop =>
+      stop.name_tc.toLowerCase().includes(keyword) ||
+      stop.name_en.toLowerCase().includes(keyword) ||
+      stop.name_sc.toLowerCase().includes(keyword)
+    );
+    return results.slice(0, 30);
+  }
+
+  function renderStopResults(stops){
+    if(stops.length === 0){
+      stopListDiv.innerHTML = '<div style="padding:10px;">沒有找到符合的巴士站</div>';
+      return;
+    }
+    stopListDiv.innerHTML = stops.map(s => `
+      <div class="list-item" data-stop="${s.stop}">
+        <strong>${s.name_tc}</strong> (${s.name_en})<br><small>站ID: ${s.stop}</small>
+      </div>
+    `).join('');
+    stopListDiv.querySelectorAll('.list-item').forEach(el => {
+      el.onclick = () => {
+        const stopId = el.getAttribute('data-stop');
+        let stop = allStops.find(s => s.stop.trim() === stopId.trim());
+        if(stop) onSelectStop(stop);
+      }
+    });
+  }
+
+  // On select stop: show routes serving the stop
+  function onSelectStop(stop){
+    currentStop = stop;
+    stopSearchInput.value = '';
+    stopListDiv.innerHTML = '';
+    selectedStopSection.style.display = 'block';
+    selectedStopNameDiv.textContent = `${stop.name_tc} (ID: ${stop.stop.trim()})`;
+    routeListDiv.innerHTML = '載入中...';
+
+    urlSection.style.display = 'none';
+    etaSection.style.display = 'none';
+    shareUrlDiv.textContent = '';
+    currentRoute = null;
+    if(etaInterval) clearInterval(etaInterval);
+
+    // Filter routes serving this stop by trimmed stop ID
+    let servingRoutes = allRouteStops.filter(rs => rs.stop.trim() === stop.stop.trim());
+    if(servingRoutes.length === 0){
+      routeListDiv.innerHTML = '<div class="error">該站沒有可用巴士路線資料。</div>';
+      return;
+    }
+
+    // Get unique route|bound|service_type combos to avoid duplicates
+    let uniqueKeys = new Set();
+    let uniqueRoutes = [];
+    for(let r of servingRoutes){
+      let key = `${r.route}|${r.bound}|${r.service_type}`;
+      if(!uniqueKeys.has(key)){
+        uniqueKeys.add(key);
+        uniqueRoutes.push(r);
+      }
+    }
+
+    // Fetch route info per unique route to show dest info
+    Promise.all(uniqueRoutes.map(r => {
+      let direction = r.bound === 'O' ? 'outbound' : 'inbound';
+      return fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route/${r.route}/${direction}/${r.service_type}`)
+        .then(res => res.json())
+        .then(json => json.data ? json.data : null)
+        .catch(() => null);
+    })).then(routeInfos => {
+      routeListDiv.innerHTML = '';
+      routeInfos.forEach((info,i) => {
+        if(!info) return;
+        let route = uniqueRoutes[i];
+        let div = document.createElement('div');
+        div.className = 'route-item';
+        div.innerHTML = `
+          <div>${route.route} - ${route.bound === 'O' ? '往' : '返'} ${info.dest_tc}</div>
+          <button class="route-button" data-route="${route.route}" data-bound="${route.bound}" data-service="${route.service_type}">查看到站時間</button>
+        `;
+        routeListDiv.appendChild(div);
+      });
+      routeListDiv.querySelectorAll('.route-button').forEach(btn => {
+        btn.onclick = () => {
+          let r = btn.getAttribute('data-route');
+          let b = btn.getAttribute('data-bound');
+          let s = btn.getAttribute('data-service');
+          currentRoute = {route: r, bound: b, service: s};
+          showETA(currentStop.stop.trim(), r, s);
+        }
+      });
+
+      if(routeInfos.length === 0){
+        routeListDiv.innerHTML = '<div class="error">該站沒有有效巴士路線資料。</div>';
+      }
+    });
+  }
+
+  // Show ETA for chosen stop + route + service type with auto refresh and show share URL using current page URL base
+  function showETA(stopId, routeNum, serviceType){
+    urlSection.style.display = 'block';
+    etaSection.style.display = 'block';
+    etaStopDisplay.textContent = `巴士站：${currentStop.name_tc}，路線：${routeNum}`;
+    let baseUrl = window.location.origin + window.location.pathname;
+    shareUrlDiv.textContent = `${baseUrl}?stop_id=${encodeURIComponent(stopId)}&route=${encodeURIComponent(routeNum)}&service_type=${encodeURIComponent(serviceType)}`;
+
+    if(etaInterval) clearInterval(etaInterval);
+    fetchAndRenderETA(stopId, routeNum, serviceType);
+    etaInterval = setInterval(() => fetchAndRenderETA(stopId, routeNum, serviceType), 4000);
+  }
+
+  async function fetchAndRenderETA(stopId, routeNum, serviceType){
+    etaListDiv.innerHTML = '載入中...';
+    try {
+      let res = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/eta/${stopId}/${routeNum}/${serviceType}`);
+      if(!res.ok) throw new Error('API錯誤');
+      let json = await res.json();
+      if(!json.data || json.data.length===0){
+        etaListDiv.innerHTML = '<div class="error">目前沒有到站資料。</div>';
+        return;
+      }
+      let now = new Date();
+      etaListDiv.innerHTML = json.data.map(item => {
+        let etaTime = item.eta ? new Date(item.eta) : null;
+        let diffMin = etaTime ? Math.ceil((etaTime - now) / 60000) : null;
+        if(diffMin !== null && diffMin < 0) diffMin = 0;
+
+        let colorClass = 'time red';
+        if(diffMin !== null){
+          if(diffMin <= 5) colorClass = 'time green';
+          else if(diffMin <= 15) colorClass = 'time yellow';
+        }
+
+        let etaStr = etaTime ? `${diffMin} 分 (${etaTime.getHours().toString().padStart(2,'0')}:${etaTime.getMinutes().toString().padStart(2,'0')})` : '暫無預計';
+        let remarkEl = item.rmk_tc ? `<span class="remark">${item.rmk_tc}</span>` : '';
+
+        return `
+          <div class="eta-item">
+            <div class="destination">${item.dest_tc}</div>
+            <div class="${colorClass}">${etaStr}</div>
+            ${remarkEl}
+          </div>
+        `;
+      }).join('');
+    } catch(e) {
+      etaListDiv.innerHTML = `<div class="error">即時資料載入失敗，請稍後再試</div>`;
+    }
+  }
+
+  // Footer live clock
+  setInterval(() => {
+    let now = new Date();
+    footerClock.textContent = `現在時間：${now.getHours().toString().padStart(2,'0')} : ${now.getMinutes().toString().padStart(2,'0')} : ${now.getSeconds().toString().padStart(2,'0')}`;
+  }, 1000);
+
+  // Search input with debounce
+  stopSearchInput.addEventListener('input', debounce(() => {
+    let keyword = stopSearchInput.value;
+    let matchedStops = searchStops(keyword);
+    renderStopResults(matchedStops);
+  }, 300));
+
+  // Load data on page load
+  await loadStops();
+  await loadRouteStops();
+
+  // Handle URL params for direct loading
+  function getUrlParams() {
+    const params = {};
+    location.search.substring(1).split('&').forEach(part => {
+      let [k,v] = part.split('=');
+      if(k) params[k] = decodeURIComponent(v);
+    });
+    return params;
+  }
+
+  const params = getUrlParams();
+  if(params.stop_id && params.route && params.service_type){
+    let stop = allStops.find(s => s.stop.trim() === params.stop_id.trim());
+    if(stop){
+      onSelectStop(stop);
+      setTimeout(() => {
+        showETA(params.stop_id.trim(), params.route, params.service_type);
+      }, 1500);
+    }
+  }
+})();
+</script>
+</body>
+</html>
