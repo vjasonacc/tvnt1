@@ -132,7 +132,7 @@
                     </div>`;
                 });
                 etalistDiv.innerHTML = html || '<div class="error">沒有即時班次資料。</div>';
-                refreshDiv.textContent = "自動每30秒更新";
+                refreshDiv.textContent = "Version 1 自動每3秒更新";
             } catch {
                 etalistDiv.innerHTML = '<div class="error">班次資料載入失敗，請稍候重試。</div>';
                 refreshDiv.textContent = "";
@@ -144,7 +144,8 @@
         if (stop_id && route) {
             fetchStopInfo(stop_id).then(name => document.getElementById("station").textContent = name);
             fetchBusETA(stop_id, route, service_type);
-            setInterval(() => fetchBusETA(stop_id, route, service_type), 30000);
+            setInterval(() => fetchBusETA(stop_id, route, service_type), 3000);
+            //refresh the bus api in 3 seconds , 3000=3 sec
         } else {
             document.getElementById("main").innerHTML = `<h1>KMB 即時到站</h1>
                 <div class='error'>缺少必要網址參數 (stop_id, route)。<br>請於網址加上:?stop_id=XX&route=XX</div>`;
