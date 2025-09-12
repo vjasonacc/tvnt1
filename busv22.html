@@ -1,1 +1,181 @@
-y
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>KMB Bus ETA</title>
+    <style>
+        body {
+            font-family: Arial, "PingFang HK", "Microsoft JhengHei", sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 480px;
+            margin: 40px auto;
+            background: #fff;
+            box-shadow: 0 2px 10px #e0e0e0;
+            border-radius: 10px;
+            padding: 20px 16px 20px 16px;
+        }
+        h1 {
+            font-size: 2em;
+            text-align: center;
+            margin-top: 0;
+            color: #205d1e;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .station {
+            text-align: center;
+            font-size: 1.1em;
+            color: #205d1e;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .eta-list {
+            margin-top: 20px;
+        }
+        .eta-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 8px;
+            border-bottom: 1px solid #ececec;
+        }
+        .eta-item:last-child { border-bottom: none; }
+        .destination {
+            font-weight: bold;
+            color: #222;
+            font-size: 1.05em;
+            max-width: 60%;
+        }
+        .time {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-right: 15px;
+        }
+        .remark {
+            color: #888;
+            font-size: 0.88em;
+            margin-left: 4px;
+        }
+        .error {
+            color: #c62828;
+            text-align: center;
+            margin-top: 28px;
+        }
+        .refresh, .clock {
+            text-align: center;
+            color: #666;
+            font-size: 0.97em;
+            margin-top: 14px;
+            margin-bottom: 3px;
+        }
+        @media (max-width: 500px) {
+            .container { margin: 12px 0; padding: 12px 2px;}
+            h1 { font-size: 1.37em;}
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="main">
+        <div class="station" id="station"></div>
+        <div class="eta-list" id="eta-list"></div>
+        <div class="refresh" id="refresh"></div>
+        <div class="clock" id="clock"></div>
+    </div>
+    <script>
+        function getTimeStr(date) {
+            let h = date.getHours(), m = date.getMinutes();
+            return h + ":" + (m < 10 ? "0" : "") + m;
+        }
+
+        async function fetchStopInfo(stop_id) {
+            try {
+                let res = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop/${stop_id}`);
+                let json = await res.json();
+                if (json.data && json.data.name_tc)
+                    return json.data.name_tc;
+            } catch {}
+            return "巴士站 " + stop_id;
+        }
+
+        async function fetchBusETA(stop_id, route, service_type) {
+            let etalistDiv = document.getElementById("eta-list");
+            let refreshDiv = document.getElementById("refresh");
+
+            // Display a loading message only if the list is empty
+            if (!etalistDiv.innerHTML.trim()) {
+                etalistDiv.innerHTML = '<div class="remark">資料載入中...</div>';
+            }
+            refreshDiv.textContent = "";
+
+            let url = `https://data.etabus.gov.hk/v1/transport/kmb/eta/${stop_id}/${route}/${service_type}`;
+            try {
+                let resp = await fetch(url);
+                let data = await resp.json();
+                if (resp.status !== 200 || !data.data || !Array.isArray(data.data)) throw 0;
+
+                let etas = data.data;
+                let now = new Date();
+                let html = "";
+
+                etas.forEach(item => {
+                    let mins = null,
+                        tstr = "",
+                        arrival = item.eta ? new Date(item.eta) : null;
+
+                    if (arrival) {
+                        mins = Math.round((arrival - now) / 60000);
+                        if (mins < 0) mins = 0;
+
+                        let color = mins < 5 ? "#388e3c" : mins < 11 ? "#fbc02d" : "#c62828";
+                        tstr = `<span class="time" style="color:${color}">${mins}分 (${getTimeStr(arrival)})</span>`;
+                    } else {
+                        tstr = `<span class="time" style="color:#c62828">暫無預計</span>`;
+                    }
+
+                    let remark = item.rmk_tc ? `<span class="remark">${item.rmk_tc}</span>` : "";
+
+                    html += `<div class="eta-item" data-destination="${item.dest_tc}">
+                        <span class="destination">${item.dest_tc}</span>
+                        ${tstr}
+                        ${remark}
+                    </div>`;
+                });
+
+                // Update only the relevant parts of the list
+                etalistDiv.innerHTML = html || '<div class="error">沒有即時班次資料。</div>';
+                refreshDiv.textContent = "Version 1 自動每3秒更新";
+            } catch {
+                etalistDiv.innerHTML = '<div class="error">班次資料載入失敗，請稍候重試。</div>';
+                refreshDiv.textContent = "";
+            }
+        }
+
+        // get ?stop_id=xxx&route=xxx&service_type=xxx
+        let p = new URLSearchParams(window.location.search);
+        let stop_id = p.get("stop_id"), route = p.get("route"), service_type = p.get("service_type") || "1";
+        if (stop_id && route) {
+            fetchStopInfo(stop_id).then(name => document.getElementById("station").textContent = name);
+            fetchBusETA(stop_id, route, service_type);
+            setInterval(() => fetchBusETA(stop_id, route, service_type), 3000);
+            //refresh the bus api in 3 seconds , 3000=3 sec
+        } else {
+            document.getElementById("main").innerHTML = `<h1>KMB 即時到站</h1>
+                <div class='error'>缺少必要網址參數 (stop_id, route)。<br>請於網址加上:?stop_id=XX&route=XX</div>`;
+        }
+
+        setInterval(() => {
+            let now = new Date();
+            document.getElementById("clock").textContent =
+                now.getHours().toString().padStart(2, "0") + ":" +
+                now.getMinutes().toString().padStart(2, "0") + ":" +
+                now.getSeconds().toString().padStart(2, "0");
+        }, 950);
+    </script>
+</body>
+</html>
