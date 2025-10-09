@@ -5,3 +5,4 @@ ios mobile version link: https://vjasonacc.github.io/tvnt1/index.html?id=430&pla
 
 
 Bus : https://vjasonacc.github.io/tvnt1/busv22.html
+direct url : https://vjasonacc.github.io/tvnt1/bus.html?stop_id=BUSSTOPID&route=routeABC123&service_type=1
