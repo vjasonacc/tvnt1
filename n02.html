@@ -2,72 +2,118 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>N02 Journey Time Live (Raw Text Parsing)</title>
+  <title>N02 Journey Time PIDS Style</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      background: #f4f6fb;
-      font-family: "Segoe UI", Arial, sans-serif;
-      padding: 2.5em;
+      background: #010a1a;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: #e0f0ff;
+      margin: 0;
+      padding: 1.5em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
     h1 {
-      color: #234;
-      margin-bottom: 1em;
-      font-size: 2em;
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      letter-spacing: 2px;
+      text-shadow: 0 0 8px #3399ff;
+    }
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: #051833;
+      border-radius: 12px;
+      box-shadow: 0 0 20px #3366ff88;
+      padding: 1rem 0;
     }
     table {
-      width: 520px;
-      max-width: 99vw;
+      width: 100%;
       border-collapse: collapse;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(20, 20, 70, 0.12);
-      margin-bottom: 1em;
+      text-align: center;
+      font-size: 1.6rem;
+      font-weight: 600;
+      user-select: none;
+      letter-spacing: 1px;
+    }
+    thead {
+      background: #143366;
+      color: #7fc3ff;
+      text-transform: uppercase;
+      font-size: 1.2rem;
+      letter-spacing: 2px;
     }
     th, td {
-      padding: 0.9em 1em;
-      border: 1px solid #dee2e6;
-      text-align: left;
+      padding: 1rem 0.5rem;
+      border-bottom: 2px solid #3355aa;
+      min-width: 100px;
     }
-    th {
-      background: #e8edf8;
-      color: #279;
-      font-size: 1.08em;
+    tbody tr:hover {
+      background: #22448833;
     }
-    td {
-      color: #222;
-      font-size: 1.02em;
+    .method-ATL {
+      color: #55ccff;
+      font-weight: 700;
+      text-shadow: 0 0 5px #55ccffbb;
     }
-    .note {
-      color: #345;
-      font-size: 1em;
-      margin-top: 1.2em;
+    .method-TMCLK {
+      color: #99ffbb;
+      font-weight: 700;
+      text-shadow: 0 0 5px #99ffbbbb;
+    }
+    .timestamp {
+      font-size: 1.1rem;
+      color: #a0b8d8;
+      font-weight: normal;
+      letter-spacing: 0.5px;
     }
     .updated {
-      font-size: 0.97em;
-      color: #357;
-      margin-bottom: 1em;
+      color: #99ccffaa;
+      text-align: center;
+      margin-top: 0.8rem;
+      font-size: 1rem;
+      user-select: none;
+    }
+    @media (max-width: 360px) {
+      body {
+        padding: 1em 0.5em;
+      }
+      table {
+        font-size: 1.3rem;
+      }
+      th, td {
+        padding: 0.8rem 0.3rem;
+        min-width: 80px;
+      }
+      h1 {
+        font-size: 2rem;
+      }
     }
   </style>
 </head>
 <body>
   <h1>N02 Journey Time Live</h1>
-  <div class="updated" id="updated"></div>
-  <table>
-    <thead>
-      <tr>
-        <th>Route</th>
-        <th>Method</th>
-        <th>Timestamp</th>
-        <th>Journey Time (min)</th>
-      </tr>
-    </thead>
-    <tbody id="results">
-      <tr><td colspan="4">Loading...</td></tr>
-    </tbody>
-  </table>
-  <div class="note">
-    The table refreshes automatically every 20 seconds.<br />
-    Data source: HK TD Journey Time Indicators (raw text parsing).
+  <div class="container">
+    <table>
+      <thead>
+        <tr>
+          <th>Route</th>
+          <th>Method</th>
+          <th>Journey Time (min)</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody id="results">
+        <tr><td colspan="4">Loading...</td></tr>
+      </tbody>
+    </table>
+    <div class="updated" id="updated">Last updated: --</div>
   </div>
+
   <script>
     const url = "https://resource.data.one.gov.hk/td/jss/Journeytimev2.xml";
 
@@ -75,51 +121,66 @@
       fetch(url)
         .then((response) => response.text())
         .then((str) => {
-          // Parse XML
           const parser = new DOMParser();
           const xmlDoc = parser.parseFromString(str, "text/xml");
 
-          // Extract raw text data that contains the space-separated entries
-          // (Adjust this selector based on actual XML structure)
-          const rawTextNode = xmlDoc.querySelector("string") || xmlDoc.documentElement;
-          const rawText = rawTextNode.textContent.trim();
+          // Extract raw data text node: try common node candidates
+          let rawTextNode = xmlDoc.querySelector("string") || xmlDoc.documentElement;
+          let rawText = rawTextNode.textContent.trim();
 
-          // Split rawText by spaces to get tokens
+          // Parse tokens by whitespace
           const tokens = rawText.split(/\s+/);
 
-          // Each record seems to be 7 tokens: route, method, timestamp (ISO), number1, journey time, number2, number3
-          // We parse sequentially and filter route = N02
+          // Each record has 7 tokens per sample:
+          // [route, method, timestamp, num1, journeyTime, num2, num3]
+          // Extract all N02 entries
           const entries = [];
+          let foundATL = false;
+          let foundTMCLK = false;
+          
           for (let i = 0; i + 6 < tokens.length; i += 7) {
             const route = tokens[i];
             const method = tokens[i + 1];
             const timestamp = tokens[i + 2];
-            // tokens[i+3] is unknown number1, skip or store if needed
             const journeyTime = tokens[i + 4];
-            // tokens[i+5], tokens[i+6] skip
+
             if (route === "N02") {
+              // Save separately so we can confirm both sides shown
+              if (method === "ATL") foundATL = true;
+              if (method === "TMCLK") foundTMCLK = true;
+
               const methodFull = method === "ATL" ? "ATL (Tunnel)" : method === "TMCLK" ? "TMCLK (Tuen Mun)" : method;
+              const methodClass = method === "ATL" ? "method-ATL" : method === "TMCLK" ? "method-TMCLK" : "";
+
               entries.push(
                 `<tr>
                   <td>${route}</td>
-                  <td>${methodFull}</td>
-                  <td>${timestamp}</td>
+                  <td class="${methodClass}">${methodFull}</td>
                   <td>${journeyTime}</td>
+                  <td class="timestamp">${timestamp}</td>
                 </tr>`
               );
             }
           }
 
-          if (entries.length) {
+          // If any side missing, show message for user
+          if (!foundATL) {
+            entries.push(`<tr><td colspan="4" style="color:#ff6666;font-weight:bold;">No data for N02 ATL (Tunnel)</td></tr>`);
+          }
+          if (!foundTMCLK) {
+            entries.push(`<tr><td colspan="4" style="color:#ff6666;font-weight:bold;">No data for N02 TMCLK (Tuen Mun)</td></tr>`);
+          }
+
+          if (entries.length > 0) {
             document.getElementById("results").innerHTML = entries.join("");
           } else {
-            document.getElementById("results").innerHTML = `<tr><td colspan="4">No live data found for N02.</td></tr>`;
+            document.getElementById("results").innerHTML = `<tr><td colspan="4" style="color:#ff6666;font-weight:bold;">No live data found for N02.</td></tr>`;
           }
           document.getElementById("updated").textContent =
             "Last updated: " + new Date().toLocaleString();
         })
         .catch((err) => {
-          document.getElementById("results").innerHTML = `<tr><td colspan="4">Unable to fetch data.</td></tr>`;
+          document.getElementById("results").innerHTML = `<tr><td colspan="4" style="color:#ff6666;">Unable to fetch data.</td></tr>`;
           document.getElementById("updated").textContent =
             "Last updated: " + new Date().toLocaleString();
         });
