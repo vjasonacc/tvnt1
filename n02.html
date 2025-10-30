@@ -1,105 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>N02 Journey Time Live - A Tai Lam Tunnel & Tuen Mun</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      background: #ffffff;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      color: #222222;
-      margin: 0;
-      padding: 1.5em;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    h1 {
-      font-size: 2.8rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      letter-spacing: 1.5px;
-      color: #003366;
-      text-align: center;
-    }
-    .container {
-      width: 100%;
-      max-width: 520px;
-      background: #f9f9f9;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 51, 102, 0.2);
-      padding: 1rem 0;
-    }
+<meta charset="UTF-8" />
+<title>N02 Journey Time Live - Robust Parsing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  body {
+    background: #ffffff;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: #222222;
+    margin: 0;
+    padding: 1.5em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    letter-spacing: 1.5px;
+    color: #003366;
+    text-align: center;
+  }
+  .container {
+    width: 100%;
+    max-width: 520px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0, 51, 102, 0.2);
+    padding: 1rem 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 700;
+    user-select: none;
+    letter-spacing: 0.8px;
+    color: #003366;
+  }
+  thead {
+    background: #cce0ff;
+    color: #003366;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+    letter-spacing: 1.5px;
+  }
+  th, td {
+    padding: 1rem 0.75rem;
+    border-bottom: 3px solid #bdd7ff;
+    min-width: 110px;
+  }
+  tbody tr:hover {
+    background: #e2ebff;
+  }
+  .method-ATL {
+    color: #004080;
+    font-weight: 800;
+  }
+  .method-TMCLK {
+    color: #007a4d;
+    font-weight: 800;
+  }
+  .timestamp {
+    font-size: 1.15rem;
+    color: #666666;
+    font-weight: normal;
+    letter-spacing: 0.4px;
+    font-family: "Courier New", Courier, monospace;
+  }
+  .updated {
+    color: #777777;
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    user-select: none;
+  }
+  .no-data {
+    color: #cc3300;
+    font-weight: 700;
+    font-size: 1.2rem;
+    padding: 1rem 0;
+  }
+  @media (max-width: 400px) {
     table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: center;
-      font-size: 1.7rem;
-      font-weight: 700;
-      user-select: none;
-      letter-spacing: 0.8px;
-      color: #003366;
-    }
-    thead {
-      background: #cce0ff;
-      color: #003366;
-      text-transform: uppercase;
-      font-size: 1.1rem;
-      letter-spacing: 1.5px;
+      font-size: 1.3rem;
     }
     th, td {
-      padding: 1.1rem 0.75rem;
-      border-bottom: 3px solid #bdd7ff;
-      min-width: 110px;
+      padding: 0.9rem 0.5rem;
+      min-width: 90px;
     }
-    tbody tr:hover {
-      background: #e2ebff;
+    h1 {
+      font-size: 2rem;
     }
-    .method-ATL {
-      color: #004080;
-      font-weight: 800;
-    }
-    .method-TMCLK {
-      color: #007a4d;
-      font-weight: 800;
-    }
-    .timestamp {
-      font-size: 1.15rem;
-      color: #666666;
-      font-weight: normal;
-      letter-spacing: 0.4px;
-      font-family: "Courier New", Courier, monospace;
-    }
-    .updated {
-      color: #777777;
-      text-align: center;
-      margin-top: 1rem;
-      font-size: 1.1rem;
-      user-select: none;
-    }
-    .no-data {
-      color: #cc3300;
-      font-weight: 700;
-      font-size: 1.2rem;
-      padding: 1rem 0;
-    }
-    @media (max-width: 400px) {
-      table {
-        font-size: 1.3rem;
-      }
-      th, td {
-        padding: 0.9rem 0.5rem;
-        min-width: 90px;
-      }
-      h1 {
-        font-size: 2.1rem;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
   <h1>N02 Journey Time Live</h1>
@@ -120,80 +120,73 @@
     <div class="updated" id="updated" aria-live="polite">Last updated: --</div>
   </div>
 
-  <script>
-    const url = "https://resource.data.one.gov.hk/td/jss/Journeytimev2.xml";
+<script>
+  const url = "https://resource.data.one.gov.hk/td/jss/Journeytimev2.xml";
 
-    function fetchN02JourneyTimes() {
-      fetch(url)
-        .then(response => response.text())
-        .then(str => {
-          const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(str, "text/xml");
+  function fetchJourneyTimes() {
+    fetch(url)
+      .then(response => response.text())
+      .then(str => {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(str, "text/xml");
 
-          // Extract raw text node containing space-separated journey data
-          const rawTextNode = xmlDoc.querySelector("string") || xmlDoc.documentElement;
-          const rawText = rawTextNode.textContent.trim();
+        // Extract raw text data - check all text nodes, fallback to root
+        let rawTextNode = xmlDoc.querySelector("string") || xmlDoc.documentElement;
+        const rawText = rawTextNode.textContent.trim();
 
-          // Split the text into tokens by whitespace
-          const tokens = rawText.split(/\s+/);
+        // Split on spaces or newlines
+        const tokens = rawText.split(/\s+/);
 
-          // Each record contains 7 tokens:
-          // [route, method, timestamp, num1, journeyTime, num2, num3]
-          const entries = [];
-          let foundATL = false;
-          let foundTMCLK = false;
+        // For debugging: Log the first 30 tokens
+        console.log("First 30 tokens:", tokens.slice(0,30));
 
-          for (let i = 0; i + 6 < tokens.length; i += 7) {
-            const route = tokens[i];
-            const method = tokens[i + 1];
-            const timestamp = tokens[i + 2];
-            const journeyTime = tokens[i + 4];
+        const entries = [];
+        let countN02 = 0;
 
-            if (route === "N02") {
-              if (method === "ATL") foundATL = true;
-              if (method === "TMCLK") foundTMCLK = true;
+        for (let i = 0; i + 6 < tokens.length; i += 7) {
+          const route = tokens[i];
+          const method = tokens[i + 1];
+          const timestamp = tokens[i + 2];
+          const journeyTime = tokens[i + 4];
 
-              const methodFull = method === "ATL" ? "ATL (A Tai Lam Tunnel)" :
-                                 method === "TMCLK" ? "TMCLK (Tuen Mun Route)" : method;
-              const methodClass = method === "ATL" ? "method-ATL" :
-                                  method === "TMCLK" ? "method-TMCLK" : "";
+          if (route === "N02") {
+            countN02++;
+            const methodFull = method === "ATL" ? "ATL (A Tai Lam Tunnel)" :
+                               method === "TMCLK" ? "TMCLK (Tuen Mun Route)" : method;
+            const methodClass = method === "ATL" ? "method-ATL" :
+                                method === "TMCLK" ? "method-TMCLK" : "";
 
-              entries.push(`
-                <tr>
-                  <td>${route}</td>
-                  <td class="${methodClass}">${methodFull}</td>
-                  <td>${journeyTime}</td>
-                  <td class="timestamp">${timestamp}</td>
-                </tr>
-              `);
-            }
+            entries.push(`
+              <tr>
+                <td>${route}</td>
+                <td class="${methodClass}">${methodFull}</td>
+                <td>${journeyTime}</td>
+                <td class="timestamp">${timestamp}</td>
+              </tr>
+            `);
           }
+        }
 
-          if (!foundATL) {
-            entries.push(`<tr><td colspan="4" class="no-data">No data for N02 ATL (A Tai Lam Tunnel)</td></tr>`);
-          }
-          if (!foundTMCLK) {
-            entries.push(`<tr><td colspan="4" class="no-data">No data for N02 TMCLK (Tuen Mun Route)</td></tr>`);
-          }
+        if (countN02 === 0) {
+          document.getElementById("results").innerHTML = `<tr><td colspan="4" class="no-data">No live data found for N02.</td></tr>`;
+        } else {
+          document.getElementById("results").innerHTML = entries.join("");
+        }
 
-          if (entries.length > 0) {
-            document.getElementById("results").innerHTML = entries.join("");
-          } else {
-            document.getElementById("results").innerHTML = `<tr><td colspan="4" class="no-data">No live data found for N02.</td></tr>`;
-          }
+        document.getElementById("updated").textContent =
+          "Last updated: " + new Date().toLocaleString();
+      })
+      .catch(e => {
+        console.error("Fetch error:", e);
+        document.getElementById("results").innerHTML = `<tr><td colspan="4" class="no-data">Unable to fetch data.</td></tr>`;
+        document.getElementById("updated").textContent =
+          "Last updated: " + new Date().toLocaleString();
+      });
+  }
 
-          document.getElementById("updated").textContent =
-            "Last updated: " + new Date().toLocaleString();
-        })
-        .catch(() => {
-          document.getElementById("results").innerHTML = `<tr><td colspan="4" class="no-data">Unable to fetch data.</td></tr>`;
-          document.getElementById("updated").textContent =
-            "Last updated: " + new Date().toLocaleString();
-        });
-    }
+  fetchJourneyTimes();
+  setInterval(fetchJourneyTimes, 20000);
+</script>
 
-    fetchN02JourneyTimes();
-    setInterval(fetchN02JourneyTimes, 20000);
-  </script>
 </body>
 </html>
