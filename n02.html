@@ -100,7 +100,7 @@
             document.getElementById("results").innerHTML = `<tr><td colspan="4">No live data found for N02.</td></tr>`;
           }
           document.getElementById("updated").textContent = 
-            "Last updated: " + new Date().toLocaleString();
+            "ver 2 Last updated: " + new Date().toLocaleString();
         })
         .catch(err => {
           document.getElementById("results").innerHTML = `<tr><td colspan="4">Unable to fetch data.</td></tr>`;
