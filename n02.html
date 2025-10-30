@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>N02 Journey Time Live</title>
+  <title>N02 Journey Time Live (Sample Format)</title>
   <style>
     body {
       background: #f4f6fb;
@@ -15,22 +15,22 @@
       font-size: 2em;
     }
     table {
-      width: 400px;
-      max-width: 96vw;
+      width: 500px;
+      max-width: 99vw;
       border-collapse: collapse;
       background: #fff;
       box-shadow: 0 2px 8px rgba(20, 20, 70, 0.12);
       margin-bottom: 1em;
     }
     th, td {
-      padding: 0.9em 1.1em;
+      padding: 0.9em 1em;
       border: 1px solid #dee2e6;
       text-align: left;
     }
     th {
       background: #e8edf8;
       color: #279;
-      font-size: 1.11em;
+      font-size: 1.08em;
     }
     td {
       color: #222;
@@ -56,11 +56,12 @@
       <tr>
         <th>Route</th>
         <th>Method</th>
+        <th>Timestamp</th>
         <th>Journey Time (min)</th>
       </tr>
     </thead>
     <tbody id="results">
-      <tr><td colspan="3">Loading...</td></tr>
+      <tr><td colspan="4">Loading...</td></tr>
     </tbody>
   </table>
   <div class="note">
@@ -75,38 +76,34 @@
         .then(str => (new window.DOMParser()).parseFromString(str, "text/xml"))
         .then(data => {
           const journeys = data.querySelectorAll("jtis_journey");
-          // Collect matching journeys for N02 via ATL and TMCLK
           let results = [];
           journeys.forEach(journey => {
             const routeId = journey.querySelector("route_id")?.textContent;
-            if (routeId === "N02") {
-              const origin = journey.querySelector("origin")?.textContent || "-";
-              const destination = journey.querySelector("destination")?.textContent || "-";
-              const journeyTime = journey.querySelector("journey_time")?.textContent || "-";
-              const status = journey.querySelector("status")?.textContent || "-";
-              // Identify method based on origin/destination or other XML fields
-              let method = "-";
-              if (origin && origin.toUpperCase().includes("ATL")) method = "ATL (Tunnel)";
-              if (origin && origin.toUpperCase().includes("TMCLK")) method = "TMCLK (Tuen Mun)";
-              if (method !== "-") {
-                results.push(`<tr>
-                  <td>N02</td>
-                  <td>${method}</td>
-                  <td>${journeyTime}</td>
-                </tr>`);
-              }
+            const origin = journey.querySelector("origin")?.textContent || "-";
+            const timestamp = journey.querySelector("datetime")?.textContent || "-";
+            const journeyTime = journey.querySelector("journey_time")?.textContent || "-";
+            // Match both "N02 ATL" and "N02 TMCLK"
+            if (routeId === "N02" && (origin === "ATL" || origin === "TMCLK")) {
+              const method = origin === "ATL" ? "ATL (Tunnel)" : 
+                             origin === "TMCLK" ? "TMCLK (Tuen Mun)" : origin;
+              results.push(`<tr>
+                <td>N02</td>
+                <td>${method}</td>
+                <td>${timestamp}</td>
+                <td>${journeyTime}</td>
+              </tr>`);
             }
           });
           if (results.length) {
             document.getElementById("results").innerHTML = results.join('');
           } else {
-            document.getElementById("results").innerHTML = `<tr><td colspan="3">No live data found for N02.</td></tr>`;
+            document.getElementById("results").innerHTML = `<tr><td colspan="4">No live data found for N02.</td></tr>`;
           }
           document.getElementById("updated").textContent = 
             "Last updated: " + new Date().toLocaleString();
         })
         .catch(err => {
-          document.getElementById("results").innerHTML = `<tr><td colspan="3">Unable to fetch data.</td></tr>`;
+          document.getElementById("results").innerHTML = `<tr><td colspan="4">Unable to fetch data.</td></tr>`;
         });
     }
     fetchN02Data();
