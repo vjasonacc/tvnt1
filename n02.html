@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>N02 Journey Time Live (Sample Format)</title>
+  <meta charset="UTF-8" />
+  <title>N02 Journey Time Live (Raw Text Parsing)</title>
   <style>
     body {
       background: #f4f6fb;
@@ -15,7 +15,7 @@
       font-size: 2em;
     }
     table {
-      width: 500px;
+      width: 520px;
       max-width: 99vw;
       border-collapse: collapse;
       background: #fff;
@@ -65,49 +65,68 @@
     </tbody>
   </table>
   <div class="note">
-    The table refreshes automatically every 20 seconds.<br>
-    Data source: HK TD Journey Time Indicators[web:1][web:3].
+    The table refreshes automatically every 20 seconds.<br />
+    Data source: HK TD Journey Time Indicators (raw text parsing).
   </div>
   <script>
     const url = "https://resource.data.one.gov.hk/td/jss/Journeytimev2.xml";
-    function fetchN02Data() {
+
+    function fetchN02RawData() {
       fetch(url)
-        .then(response => response.text())
-        .then(str => (new window.DOMParser()).parseFromString(str, "text/xml"))
-        .then(data => {
-          const journeys = data.querySelectorAll("jtis_journey");
-          let results = [];
-          journeys.forEach(journey => {
-            const routeId = journey.querySelector("route_id")?.textContent;
-            const origin = journey.querySelector("origin")?.textContent || "-";
-            const timestamp = journey.querySelector("datetime")?.textContent || "-";
-            const journeyTime = journey.querySelector("journey_time")?.textContent || "-";
-            // Match both "N02 ATL" and "N02 TMCLK"
-            if (routeId === "N02" && (origin === "ATL" || origin === "TMCLK")) {
-              const method = origin === "ATL" ? "ATL (Tunnel)" : 
-                             origin === "TMCLK" ? "TMCLK (Tuen Mun)" : origin;
-              results.push(`<tr>
-                <td>N02</td>
-                <td>${method}</td>
-                <td>${timestamp}</td>
-                <td>${journeyTime}</td>
-              </tr>`);
+        .then((response) => response.text())
+        .then((str) => {
+          // Parse XML
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(str, "text/xml");
+
+          // Extract raw text data that contains the space-separated entries
+          // (Adjust this selector based on actual XML structure)
+          const rawTextNode = xmlDoc.querySelector("string") || xmlDoc.documentElement;
+          const rawText = rawTextNode.textContent.trim();
+
+          // Split rawText by spaces to get tokens
+          const tokens = rawText.split(/\s+/);
+
+          // Each record seems to be 7 tokens: route, method, timestamp (ISO), number1, journey time, number2, number3
+          // We parse sequentially and filter route = N02
+          const entries = [];
+          for (let i = 0; i + 6 < tokens.length; i += 7) {
+            const route = tokens[i];
+            const method = tokens[i + 1];
+            const timestamp = tokens[i + 2];
+            // tokens[i+3] is unknown number1, skip or store if needed
+            const journeyTime = tokens[i + 4];
+            // tokens[i+5], tokens[i+6] skip
+            if (route === "N02") {
+              const methodFull = method === "ATL" ? "ATL (Tunnel)" : method === "TMCLK" ? "TMCLK (Tuen Mun)" : method;
+              entries.push(
+                `<tr>
+                  <td>${route}</td>
+                  <td>${methodFull}</td>
+                  <td>${timestamp}</td>
+                  <td>${journeyTime}</td>
+                </tr>`
+              );
             }
-          });
-          if (results.length) {
-            document.getElementById("results").innerHTML = results.join('');
+          }
+
+          if (entries.length) {
+            document.getElementById("results").innerHTML = entries.join("");
           } else {
             document.getElementById("results").innerHTML = `<tr><td colspan="4">No live data found for N02.</td></tr>`;
           }
-          document.getElementById("updated").textContent = 
-            "ver 2 Last updated: " + new Date().toLocaleString();
+          document.getElementById("updated").textContent =
+            "Last updated: " + new Date().toLocaleString();
         })
-        .catch(err => {
+        .catch((err) => {
           document.getElementById("results").innerHTML = `<tr><td colspan="4">Unable to fetch data.</td></tr>`;
+          document.getElementById("updated").textContent =
+            "Last updated: " + new Date().toLocaleString();
         });
     }
-    fetchN02Data();
-    setInterval(fetchN02Data, 20000);
+
+    fetchN02RawData();
+    setInterval(fetchN02RawData, 20000);
   </script>
 </body>
 </html>
