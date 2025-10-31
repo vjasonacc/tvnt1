@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MTR PIDS Bus Display</title>
+    <title>MTR PIDS Bus Display v3</title>
     <style>
         :root {
             --mtr-purple: #6c2c8f;
@@ -308,6 +308,17 @@
             margin-top: 4px;
         }
 
+        .remark.alert {
+            background-color: #ffebee;
+            color: #c62828;
+            animation: flash 1.5s ease-in-out infinite;
+        }
+
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
         .no-eta {
             color: #999;
             font-style: italic;
@@ -464,7 +475,8 @@
                     if (eta) {
                         html += formatETA(eta.eta);
                         if (eta.rmk_tc) {
-                            html += `<div class="remark">${eta.rmk_tc}</div>`;
+                            const remarkClass = eta.rmk_tc === '原定班次' ? 'remark' : 'remark alert';
+                            html += `<div class="${remarkClass}">${eta.rmk_tc}</div>`;
                         }
                     } else {
                         html += '<span class="no-eta">--</span>';
