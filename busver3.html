@@ -46,6 +46,70 @@
           font-size: 44px;
           font-weight: bold;
       }
+      /* Mini PIDS Mode - iPhone 7 Plus size adjustments */
+      body.minipids .header {
+        height: 40px;
+        padding: 0 16px;
+        font-size: 18px;
+      }
+      body.minipids .header .weather {
+        font-size: 16px;
+        gap: 8px;
+      }
+      body.minipids .header .clock {
+        font-size: 20px;
+      }
+      body.minipids .eta-row {
+        padding: 12px 0 10px 16px;
+        min-height: 50px;
+        border-bottom: 1px solid #222;
+      }
+      body.minipids .eta-route {
+        flex: 0 0 60px;
+        margin-right: 16px;
+      }
+      body.minipids .eta-route-number {
+        font-size: 22px;
+      }
+      body.minipids .eta-route-station {
+        font-size: 9px;
+      }
+      body.minipids .eta-dest {
+        flex: 2 1 0;
+        font-size: 20px;
+        letter-spacing: 1px;
+      }
+      body.minipids .eta-times {
+        flex: 0 0 300px;
+        gap: 8px;
+        margin-right: 16px;
+      }
+      body.minipids .eta-time-block {
+        min-width: 80px;
+      }
+      body.minipids .eta-min-value {
+        font-size: 28px;
+        letter-spacing: 1px;
+      }
+      body.minipids .eta-min-text {
+        font-size: 14px;
+      }
+      body.minipids .eta-actual-time {
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      body.minipids .eta-remark {
+        font-size: 10px;
+        padding: 1px 6px;
+        margin-top: 4px;
+      }
+      body.minipids .no-eta {
+        font-size: 22px;
+      }
+      body.minipids .loading, body.minipids .error {
+        font-size: 16px;
+        padding: 30px 0 0 0;
+      }
       .eta-list {
         margin: 0;
         padding: 0;
@@ -87,7 +151,7 @@
         line-height: 1.2;
       }
       .eta-dest {
-        flex: 1.5 1 0;
+        flex: 2.5 1 0;
         font-size: 48px;
         letter-spacing: 2px;
         line-height: 1;
@@ -96,6 +160,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        max-width: none;
       }
       .eta-times {
         flex: 0 0 600px;
@@ -187,6 +252,7 @@
     const onlyShowRoute = getQueryParam('onlyshowroute', null);
     const hideRoute = getQueryParam('hideroute', null);
     const showStopName = getQueryParam('showstopname', 'on') === 'on';
+    const displayMode = getQueryParam('mode', 'normal'); // normal or minipids
 
     // -------- WEATHER API --------
     function mapWeatherIcon(code) {
@@ -293,10 +359,14 @@
         groups[key].etas.push(x);
       });
 
-      // Sort to show 269C first
+      // Sort to show 269C and 269S first
       const sortedGroups = Object.values(groups).sort((a, b) => {
-        if (a.route === '269C' && b.route !== '269C') return -1;
-        if (a.route !== '269C' && b.route === '269C') return 1;
+        const priorityRoutes = ['269C', '269S'];
+        const aIsPriority = priorityRoutes.includes(a.route);
+        const bIsPriority = priorityRoutes.includes(b.route);
+        
+        if (aIsPriority && !bIsPriority) return -1;
+        if (!aIsPriority && bIsPriority) return 1;
         return a.route.localeCompare(b.route);
       });
 
@@ -396,6 +466,11 @@
     async function doAllUpdates() {
       await renderSplitScreen(topStop, '#split-top');
       await renderSplitScreen(bottomStop, '#split-bottom');
+    }
+
+    // Apply display mode
+    if (displayMode === 'minipids') {
+      document.body.classList.add('minipids');
     }
 
     // Initialize
