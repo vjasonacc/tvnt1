@@ -20,6 +20,8 @@
       --pill-red-fg: #b31c1c;
       --pill-amber-bg: #fff3e0;
       --pill-amber-fg: #a15c00;
+      --pill-green-bg: #e8f5e9;
+      --pill-green-fg: #1b5e20;
       --text-strong: #0f172a;
     }
     * { box-sizing: border-box; }
@@ -34,9 +36,11 @@
       background: var(--brand); color: #fff; padding: 12px 16px;
       display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
+    body.pidstv header { display: none; } /* TV mode hides top bar */
     header .title { font-size: 16px; font-weight: 700; letter-spacing: .3px; }
     header .clock { font-variant-numeric: tabular-nums; font-weight: 700; }
-    main { padding: 12px; max-width: 900px; margin: 0 auto; }
+    main { padding: 12px; max-width: 1000px; margin: 0 auto; }
+
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
     .controls { display: grid; grid-template-columns: 1fr; gap: 10px; }
     .row { display: grid; grid-template-columns: 1fr; gap: 8px; }
@@ -57,6 +61,7 @@
     }
     button.secondary { background: #2563eb; }
     button.ghost { background: transparent; color: var(--brand); border: 1px solid var(--brand); }
+
     .status { margin-top: 12px; display: grid; gap: 8px; }
     .badge {
       display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 999px;
@@ -67,6 +72,27 @@
     .badge.warn { color: var(--warn); border-color: rgba(255,152,0,.25); background: #fff3e0; }
     .badge.bad { color: var(--bad); border-color: rgba(198,40,40,.25); background: #ffebee; }
     .meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+    /* Summary (TV) */
+    .summary {
+      display: none;
+      margin: 12px 0;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+    }
+    body.pidstv .summary { display: block; }
+    .summary .title {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 999px; font-weight: 800;
+    }
+    .summary .title.bad  { background: var(--pill-red-bg);   color: var(--pill-red-fg); }
+    .summary .title.warn { background: var(--pill-amber-bg); color: var(--pill-amber-fg); }
+    .summary .title.ok   { background: var(--pill-green-bg); color: var(--pill-green-fg); }
+    .summary .lines { margin-top: 10px; }
+    .summary .line { font-size: 14px; color: #111; padding: 4px 0; border-top: 1px dashed var(--line); }
+    .summary .line:first-child { border-top: none; }
 
     .list { margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
     .section { border-bottom: 1px solid var(--border); }
@@ -94,6 +120,21 @@
     .tips { margin-top: 12px; color: var(--muted); font-size: 12px; text-align: center; }
     footer.footer { margin: 16px 0; color: var(--muted); font-size: 12px; text-align: center; }
 
+    /* TV mode: hide user controls completely */
+    body.pidstv .card { display: none; }
+    body.pidstv .tips { display: none; }
+
+    /* Small floating bus button shown only in TV mode */
+    .fab-bus {
+      position: fixed; top: 10px; right: 10px; z-index: 9999;
+      display: none; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(0,0,0,0.15); color: #000; border: 1px solid rgba(0,0,0,0.2);
+      font-size: 20px; line-height: 1; cursor: pointer; backdrop-filter: blur(4px);
+    }
+    .fab-bus:hover { background: rgba(0,0,0,0.25); }
+    body.pidstv .fab-bus { display: inline-flex; }
+
     @media (min-width: 640px) {
       header .title { font-size: 18px; }
       .controls .row { grid-template-columns: 180px 1fr; align-items: center; }
@@ -107,11 +148,28 @@
   </header>
 
   <main>
+    <!-- TV summary (only visible in pidstv mode) -->
+    <div id="summary" class="summary" aria-live="polite">
+      <div id="summaryTitle" class="title ok">✅ 服務正常</div>
+      <div id="summaryLines" class="lines"></div>
+    </div>
+
+    <!-- TV mode floating bus to switch back to mobile -->
+    <button id="busSwitch" class="fab-bus" title="切換到手機模式">🚌</button>
+
     <div class="card">
       <div class="controls">
         <div class="row">
           <label for="routes">路線編號（支援多個，逗號或空白分隔，最多1000；或輸入 ALL）</label>
           <input id="routes" type="text" placeholder="例如：276A, 269C 33 或 ALL" inputmode="latin-name" autocapitalize="characters" />
+        </div>
+
+        <div class="row">
+          <label>模式</label>
+          <div class="chip-group" id="modeChips">
+            <div class="chip" data-value="mobile">Mobile</div>
+            <div class="chip" data-value="pidstv">TV (PIDS)</div>
+          </div>
         </div>
 
         <div class="row">
@@ -134,6 +192,13 @@
         </div>
 
         <div class="row">
+          <label>顯示選項</label>
+          <div class="chip-group" id="filterChips">
+            <div class="chip active" data-value="hideok">隱藏 正常/不適用</div>
+          </div>
+        </div>
+
+        <div class="row">
           <div class="actions">
             <button id="checkBtn" aria-label="Check congestion">查詢</button>
             <button id="refreshBtn" class="secondary" aria-label="Refresh">重新整理</button>
@@ -152,12 +217,11 @@
     <div id="results" class="list" style="display:block;"></div>
 
     <div class="tips">
-      資料來源：九巴即時到站（政府資料一線通）<br />
-      關鍵字判斷：受阻／行車受阻／延誤／行車緩慢／緩慢
+      資料來源：九巴即時到站（政府資料一線通） · 關鍵字：受阻／行車受阻／延誤／行車緩慢／緩慢／事故／取消
     </div>
 
     <footer class="footer" id="footer-info">
-      最後更新：--:--:-- · 版本：8
+      最後更新：--:--:-- · 版本：12
     </footer>
   </main>
 
@@ -188,20 +252,38 @@
       const url = new URL(window.location.href);
       return url.searchParams.get(name) ?? fallback;
     }
-    function safeSetParamsMulti(routes, dirSel, svcSel, { all = false } = {}) {
+    function setParams(key, val) {
+      const url = new URL(window.location.href);
+      if (val === undefined || val === null || val === '') url.searchParams.delete(key);
+      else url.searchParams.set(key, String(val));
+      history.replaceState(null, '', url.toString());
+    }
+    function safeSetParamsMulti(routes, mode, dirSel, svcSel, hideok) {
       const url = new URL(window.location.href);
       try {
-        const routeParam = all ? 'ALL' : routes.join(',');
+        const routeParam = allMode() ? 'ALL' : routes.join(',');
         url.searchParams.set('route', routeParam);
+        url.searchParams.set('mode', mode);
         url.searchParams.set('bound', dirSel);
         url.searchParams.set('serviceType', svcSel.join(','));
+        url.searchParams.set('hideok', hideok ? '1' : '0');
         history.replaceState(null, '', url.toString());
       } catch {}
     }
 
     // -------- API & rules --------
     const API = 'https://data.etabus.gov.hk/v1/transport/kmb';
-    const JAM_KEYWORDS = ['行車受阻','受阻','延誤','行車緩慢','緩慢'];
+
+    const SEVERE_KEYWORDS = [
+      '行車受阻', '受阻',
+      '此班次因事故取消', '此班次因',
+      '班次因事故取消', '班次因事故',
+      '因事故取消', '事故取消',
+      '事故', '取消'
+    ];
+    const WARN_KEYWORDS = [ '延誤', '行車緩慢', '緩慢' ];
+    const ALL_JAM_KEYWORDS = [...new Set([...SEVERE_KEYWORDS, ...WARN_KEYWORDS])];
+
     const OK_TEXT = '服務正常';
     const WARN_TEXT = '可能延誤／行車緩慢';
     const BAD_TEXT = '行車受阻';
@@ -247,14 +329,12 @@
       catch { return stopId; }
     }
 
-    function containsJamKeyword(text) {
-      if (!text) return false;
-      return JAM_KEYWORDS.some(k => text.includes(k));
-    }
+    function containsAny(text, arr) { if (!text) return false; return arr.some(k => text.includes(k)); }
+    function containsJamKeyword(text) { return containsAny(text, ALL_JAM_KEYWORDS); }
     function severityOf(text) {
       if (!text) return 0;
-      if (text.includes('行車受阻') || text.includes('受阻')) return 2;
-      if (text.includes('延誤') || text.includes('行車緩慢') || text.includes('緩慢')) return 1;
+      if (containsAny(text, SEVERE_KEYWORDS)) return 2;
+      if (containsAny(text, WARN_KEYWORDS)) return 1;
       return 0;
     }
 
@@ -269,18 +349,13 @@
         const err = new Error((e && e.message) || 'TRANSIENT'); err.code = 'TRANSIENT'; throw err;
       }
     }
-    async function getETAForStopRoute(stopId, route, svc) {
-      const j = await fetchJSON(`${API}/eta/${stopId}/${route}/${svc}`);
-      return j?.data || [];
-    }
+    async function getETAForStopRoute(stopId, route, svc) { const j = await fetchJSON(`${API}/eta/${stopId}/${route}/${svc}`); return j?.data || []; }
 
-    // -------- Core: Single combination detection (collect top 3 ETAs per affected stop) --------
-    // Output per combo: { route, bound, svc, meta, na?, transient?, hits:[{ stopId, seq, etas:[{eta, rmk_tc}] , sev }] , maxSeverity, tookMs }
+    // -------- Collect 3 ETAs per affected stop --------
     async function detectJamForCombo({ route, bound, svc }) {
       const startedAt = Date.now();
       const dirChar = bound === 'inbound' ? 'I' : 'O';
 
-      // route-stop (availability)
       let stops = [];
       try { stops = await getStopsForRoute(route, bound, svc); }
       catch (e) {
@@ -292,7 +367,6 @@
         return { route, bound, svc, meta: null, hits: [], maxSeverity: 0, tookMs: Date.now() - startedAt, na: true };
       }
 
-      // ETAs for each stop
       let etaErrors = 0;
       const perStop = await pMap(stops, async (stop) => {
         try {
@@ -301,51 +375,37 @@
             .filter(x => x?.eta && x?.dir === dirChar)
             .sort((a,b)=> new Date(a.eta) - new Date(b.eta));
           const top3 = list.slice(0, 3).map(x => ({ eta: x.eta, rmk_tc: x.rmk_tc || '' }));
-          // Keep stop only if any of the top3 has jam keyword
           const hasHit = top3.some(x => x.rmk_tc && containsJamKeyword(x.rmk_tc));
           if (hasHit) {
-            // determine stop-level severity (max of its 3)
             const sev = top3.reduce((m, e) => Math.max(m, severityOf(e.rmk_tc)), 0);
             return { stopId: stop.stop, seq: Number(stop.seq), etas: top3, sev };
           }
           return null;
         } catch {
-          etaErrors++;
-          return null;
+          etaErrors++; return null;
         }
       }, 4);
 
-      // Sort hits: severe stop first, then warning, then by seq
       const hits = perStop
         .filter(Boolean)
-        .sort((a, b) => {
-          if (b.sev !== a.sev) return b.sev - a.sev;
-          return a.seq - b.seq;
-        });
+        .sort((a, b) => { if (b.sev !== a.sev) return b.sev - a.sev; return a.seq - b.seq; });
 
-      // Combo severity = max across all stop ETAs
       let maxSeverity = 0;
-      for (const st of hits) {
-        for (const e of st.etas) {
-          maxSeverity = Math.max(maxSeverity, severityOf(e.rmk_tc));
-        }
-      }
+      for (const st of hits) for (const e of st.etas) maxSeverity = Math.max(maxSeverity, severityOf(e.rmk_tc));
 
       const meta = await getRouteMeta(route, bound, svc).catch(() => null);
-      // consider transient if ETA errors are dominant
       const etaTransient = etaErrors / stops.length >= 0.8;
 
       return { route, bound, svc, meta, hits, maxSeverity, tookMs: Date.now() - startedAt, transient: etaTransient || false };
     }
 
-    // -------- Section ordering: always rank severe on top --------
+    // -------- Section ordering (⛔ on top) --------
     function comboOrderValue(o) {
-      // Lower value = higher priority
       if (o.na) return 5;
       if (o.transient) return 4;
-      if ((o.maxSeverity || 0) >= 2) return 0; // severe (⛔) first
+      if ((o.maxSeverity || 0) >= 2) return 0; // severe
       if ((o.maxSeverity || 0) === 1) return 1; // warning
-      if ((o.hits?.length || 0) > 0) return 2;  // has hits but mapped as non-severe/non-warn (rare)
+      if ((o.hits?.length || 0) > 0) return 2;
       return 3; // normal
     }
     function reorderSections(container) {
@@ -354,7 +414,6 @@
         const av = Number(a.getAttribute('data-order') || 99);
         const bv = Number(b.getAttribute('data-order') || 99);
         if (av !== bv) return av - bv;
-        // tie-break by route text to keep stable order
         const at = a.querySelector('.sh-left')?.textContent || '';
         const bt = b.querySelector('.sh-left')?.textContent || '';
         return at.localeCompare(bt, 'zh-HK', { numeric: true });
@@ -362,8 +421,16 @@
       sections.forEach(s => container.appendChild(s));
     }
 
-    // -------- UI incremental upsert --------
+    // -------- UI state --------
     const resultsEl = $('#results');
+    const summaryTitleEl = $('#summaryTitle');
+    const summaryLinesEl = $('#summaryLines');
+
+    let hideOk = true;     // hide 正常/不適用 routes
+    let mode = 'mobile';   // 'mobile' | 'pidstv'
+
+    const comboStore = new Map(); // key -> { data:o, names: {stopId: name} }
+
     function keyOf(o) { return `${o.route}-${o.bound}-${o.svc}`; }
     function sanitizeId(s) { return s.replace(/[^a-zA-Z0-9_-]/g,'_'); }
     function subBadgeText(sev, flags) {
@@ -371,9 +438,12 @@
       if (flags?.transient) return '⏳ 暫時不可用';
       return sev === 0 ? '✅ 正常' : sev >= 2 ? '⛔ 受阻' : '⚠️ 緩慢/延誤';
     }
-    function rmkClass(rmk) {
-      const s = severityOf(rmk || '');
-      return s >= 2 ? 'bad' : s === 1 ? 'warn' : '';
+    function rmkClass(rmk) { const s = severityOf(rmk || ''); return s >= 2 ? 'bad' : s === 1 ? 'warn' : ''; }
+
+    function applyHideRule(section, o) {
+      const normal = !o.na && !o.transient && (o.maxSeverity || 0) === 0 && ((o.hits?.length || 0) === 0);
+      const shouldHide = (hideOk || mode === 'pidstv') && (o.na || normal);
+      section.style.display = shouldHide ? 'none' : '';
     }
 
     function upsertSection(o, runId) {
@@ -408,30 +478,44 @@
         if (shBadge) shBadge.textContent = subBadge;
       }
 
-      // rank attributes + run tag
       section.setAttribute('data-run-id', String(runId));
       section.setAttribute('data-order', String(orderVal));
 
-      // Reorder sections so ⛔ are always on top (incrementally)
+      // Reorder with ⛔ first
       reorderSections(resultsEl);
 
-      // Rows content
       const rowsId = `rows-${sanitizeId(key)}`;
       const rowsEl = document.getElementById(rowsId);
       if (!rowsEl) return;
 
-      if (o.na) { rowsEl.innerHTML = `<div class="na">${NA_TEXT}</div>`; return; }
-      if (o.transient) { rowsEl.innerHTML = `<div class="transient">${TRANSIENT_TEXT}</div>`; return; }
+      if (o.na) {
+        rowsEl.innerHTML = `<div class="na">${NA_TEXT}</div>`;
+        applyHideRule(section, o);
+        comboStore.set(key, { data: o, names: {} });
+        updateSummaryBar();
+        return;
+      }
+      if (o.transient) {
+        rowsEl.innerHTML = `<div class="transient">${TRANSIENT_TEXT}</div>`;
+        applyHideRule(section, o);
+        comboStore.set(key, { data: o, names: {} });
+        updateSummaryBar();
+        return;
+      }
 
       if ((o.hits?.length || 0) === 0) {
         rowsEl.innerHTML = `<div class="empty">未偵測到包含關鍵字的提示。</div>`;
+        applyHideRule(section, o);
+        comboStore.set(key, { data: o, names: {} });
+        updateSummaryBar();
       } else {
-        // Resolve stop names and render list style
+        // Resolve stop names and render list
         Promise.all(o.hits.map(h => getStopName(h.stopId))).then(names => {
+          const nameMap = {};
+          names.forEach((nm, idx) => { nameMap[o.hits[idx].stopId] = nm; });
+
           rowsEl.innerHTML = o.hits.map((h, i) => {
             const name = names[i] || h.stopId;
-
-            // Build ETA list items (always up to 3, even if same remark)
             const etaLis = (h.etas || []).slice(0, 3).map(et => {
               const { min, time } = toMinAndTime(et.eta);
               const klass = rmkClass(et.rmk_tc);
@@ -439,34 +523,116 @@
               return `
                 <li class="eta-li">
                   <div class="eta-left">
-                    <span class="eta-min">${min}</span><span class="eta-min-text">mins</span>
+                    <span class="eta-min">${min}</span><span class="eta-min-text">分</span>
                     ${rmkHtml}
                   </div>
                   <div class="eta-time">${time}</div>
                 </li>
               `;
-            }).join('') || `
-              <li class="eta-li">
-                <div class="eta-left">
-                  <span class="eta-min">--</span><span class="eta-min-text">分</span>
-                </div>
-                <div class="eta-time">--:--</div>
-              </li>
-            `;
-
+            }).join('');
             return `
               <div class="rowitem">
                 <div class="stop-head">
                   <div class="seq">${h.seq}.</div>
                   <div class="title2">${name}</div>
                 </div>
-                <ul class="eta-ul">
-                  ${etaLis}
-                </ul>
+                <ul class="eta-ul">${etaLis}</ul>
               </div>
             `;
           }).join('');
+
+          comboStore.set(key, { data: o, names: nameMap });
+          applyHideRule(section, o);
+          updateSummaryBar();
         });
+      }
+    }
+
+    // -------- Summary bar (TV) --------
+    function updateSummaryBar() {
+      if (mode !== 'pidstv') return; // only in TV mode
+
+      // Gather severe, warn, and route-level normals
+      const severeCombos = [];
+      const warnCombos = [];
+      const routeAgg = new Map(); // route -> { worst: -1/0/1/2, hasApplicable: false, hasTransient:false }
+
+      comboStore.forEach(entry => {
+        const o = entry.data;
+        if (!o) return;
+
+        // Build route aggregation
+        if (!o.na) {
+          const agg = routeAgg.get(o.route) || { worst: -1, hasApplicable: false, hasTransient: false };
+          agg.hasApplicable = true;
+          if (o.transient) agg.hasTransient = true;
+          const sev = o.maxSeverity || 0;
+          if (!o.transient) agg.worst = Math.max(agg.worst, sev);
+          routeAgg.set(o.route, agg);
+        }
+
+        // Build combo lists
+        if (o.transient || o.na) return;
+        if ((o.maxSeverity || 0) >= 2) {
+          severeCombos.push({ o, entry });
+        } else if ((o.maxSeverity || 0) === 1) {
+          warnCombos.push({ o, entry });
+        }
+      });
+
+      // Decide title and lines
+      if (severeCombos.length > 0) {
+        summaryTitleEl.textContent = '⛔ 行車受阻';
+        summaryTitleEl.classList.remove('ok', 'warn');
+        summaryTitleEl.classList.add('bad');
+
+        const lines = severeCombos.map(({ o, entry }) => {
+          const dirLabel = o.bound === 'outbound' ? '往目的地' : '返回程';
+          const severeStops = (o.hits || []).filter(st => (st.etas || []).some(e => severityOf(e.rmk_tc) >= 2));
+          const names = severeStops.slice(0, 3).map(st => entry.names?.[st.stopId] || st.stopId);
+          return `${o.route}｜${dirLabel}｜服務類型：${o.svc} — ${names.join('、')}`;
+        });
+        summaryLinesEl.innerHTML = lines.map(t => `<div class="line">${t}</div>`).join('');
+
+      } else if (warnCombos.length > 0) {
+        // Show warning state if any warning (no severe)
+        summaryTitleEl.textContent = '⚠️ 可能延誤／行車緩慢';
+        summaryTitleEl.classList.remove('ok', 'bad');
+        summaryTitleEl.classList.add('warn');
+
+        const lines = warnCombos.map(({ o, entry }) => {
+          const dirLabel = o.bound === 'outbound' ? '往目的地' : '返回程';
+          // use first few warning stops
+          const warnStops = (o.hits || []).filter(st => (st.etas || []).some(e => severityOf(e.rmk_tc) === 1));
+          const names = warnStops.slice(0, 3).map(st => entry.names?.[st.stopId] || st.stopId);
+          return `${o.route}｜${dirLabel}｜服務類型：${o.svc} — ${names.join('、')}`;
+        });
+        summaryLinesEl.innerHTML = lines.length
+          ? lines.map(t => `<div class="line">${t}</div>`).join('')
+          : `<div class="line">偵測到延誤／緩慢，但未能取得站點詳情。</div>`;
+
+      } else {
+        // No severe, no warn => ONLY now consider as "正常"
+        summaryTitleEl.textContent = '✅ 服務正常';
+        summaryTitleEl.classList.remove('bad', 'warn');
+        summaryTitleEl.classList.add('ok');
+
+        // List "route number 服務正常" for truly normal routes
+        const normalRoutes = [];
+        routeAgg.forEach((agg, route) => {
+          // Truly normal when has applicable combos, worst severity == 0, and not transient
+          if (agg.hasApplicable && agg.worst === 0 && !agg.hasTransient) {
+            normalRoutes.push(route);
+          }
+        });
+        normalRoutes.sort((a,b)=>a.localeCompare(b,'zh-HK',{numeric:true}));
+        if (normalRoutes.length === 0) {
+          summaryLinesEl.innerHTML = `<div class="line">目前未偵測到「行車受阻」的路線。</div>`;
+        } else {
+          summaryLinesEl.innerHTML = normalRoutes
+            .map(r => `<div class="line">${r} 服務正常</div>`)
+            .join('');
+        }
       }
     }
 
@@ -504,9 +670,9 @@
     let usingAllRoutes = false;
     let currentRunId = 0;
 
-    function setFooterUpdated() { $('#footer-info').textContent = `最後更新：${nowStr()} · 版本：8`; }
+    function setFooterUpdated() { $('#footer-info').textContent = `最後更新：${nowStr()} · 版本：12`; }
 
-    function setActive(chipEl, active) { chipEl.classList.toggle('active', !!active); }
+    function setActive(el, active) { if (!el) return; el.classList.toggle('active', !!active); }
     function getDirSelection() {
       const active = [...$('#dirChips').querySelectorAll('.chip.active')].map(c => c.dataset.value);
       if (active.includes('both')) return 'both';
@@ -519,49 +685,59 @@
       if (active.length === 0) active = ['1'];
       return active;
     }
+    function setMode(m) {
+      mode = m === 'pidstv' ? 'pidstv' : 'mobile';
+      document.body.classList.toggle('pidstv', mode === 'pidstv');
+      if (mode === 'pidstv') {
+        hideOk = true;
+        setActive($('#filterChips .chip[data-value="hideok"]'), true);
+        document.querySelectorAll('.section').forEach(sec => {
+          const key = sec.getAttribute('data-key');
+          const entry = comboStore.get(key);
+          if (entry) applyHideRule(sec, entry.data);
+        });
+        updateSummaryBar();
+      }
+    }
     function setFromParams() {
+      // Defaults
+      setActive($('#dirChips .chip[data-value="outbound"]'), true);
+      setActive($('#svcChips .chip[data-value="1"]'), true);
+      setActive($('#modeChips .chip[data-value="mobile"]'), true);
+      setActive($('#filterChips .chip[data-value="hideok"]'), true);
+
       const routeParam = (getParam('route') || '').trim();
+      const modeParam = (getParam('mode') || 'mobile').toLowerCase();
       const boundParam = (getParam('bound') || 'outbound').toLowerCase();
       const svcParam = (getParam('serviceType') || '1');
+      const hideokParam = getParam('hideok');
 
       $('#routes').value = routeParam;
 
+      // mode
+      [...$('#modeChips').children].forEach(c => setActive(c, false));
+      setActive($('#modeChips .chip[data-value="'+(modeParam==='pidstv'?'pidstv':'mobile')+'"]'), true);
+      setMode(modeParam);
+
+      // direction
       [...$('#dirChips').children].forEach(c => setActive(c, false));
       const dirToActivate = (boundParam === 'both') ? ['both'] : [boundParam];
-      dirToActivate.forEach(v => { const el = $('#dirChips').querySelector(`.chip[data-value="${v}"]`); if (el) setActive(el, true); });
-      if (![...$('#dirChips').querySelectorAll('.chip.active')].length) setActive($('#dirChips').querySelector('.chip[data-value="outbound"]'), true);
+      dirToActivate.forEach(v => setActive($('#dirChips .chip[data-value="'+v+'"]'), true));
+      if (![...$('#dirChips').querySelectorAll('.chip.active')].length) setActive($('#dirChips .chip[data-value="outbound"]'), true);
 
+      // service
       [...$('#svcChips').children].forEach(c => setActive(c, false));
       const svcVals = svcParam.split(',').map(s => s.trim()).filter(Boolean);
-      if (svcVals.includes('all')) setActive($('#svcChips').querySelector('.chip[data-value="all"]'), true);
+      if (svcVals.includes('all')) setActive($('#svcChips .chip[data-value="all"]'), true);
       else {
-        svcVals.forEach(v => { const el = $('#svcChips').querySelector(`.chip[data-value="${v}"]`); if (el) setActive(el, true); });
-        if (![...$('#svcChips').querySelectorAll('.chip.active')].length) setActive($('#svcChips').querySelector('.chip[data-value="1"]'), true);
+        svcVals.forEach(v => setActive($('#svcChips .chip[data-value="'+v+'"]'), true));
+        if (![...$('#svcChips').querySelectorAll('.chip.active')].length) setActive($('#svcChips .chip[data-value="1"]'), true);
       }
+
+      // hide ok/NA
+      hideOk = hideokParam === null ? true : hideokParam === '1';
+      setActive($('#filterChips .chip[data-value="hideok"]'), hideOk);
     }
-
-    $('#dirChips').addEventListener('click', (e) => {
-      const chip = e.target.closest('.chip'); if (!chip) return;
-      const val = chip.dataset.value;
-      if (val === 'both') { [...$('#dirChips').children].forEach(c => setActive(c, c.dataset.value === 'both')); }
-      else {
-        const was = chip.classList.contains('active');
-        if (was && $('#dirChips').querySelectorAll('.chip.active').length === 1) return;
-        setActive(chip, !was); setActive($('#dirChips').querySelector('.chip[data-value="both"]'), false);
-        if (!$('#dirChips').querySelector('.chip.active')) setActive($('#dirChips').querySelector('.chip[data-value="outbound"]'), true);
-      }
-    });
-
-    $('#svcChips').addEventListener('click', (e) => {
-      const chip = e.target.closest('.chip'); if (!chip) return;
-      const val = chip.dataset.value;
-      if (val === 'all') { [...$('#svcChips').children].forEach(c => setActive(c, c.dataset.value === 'all')); }
-      else {
-        const was = chip.classList.contains('active');
-        setActive(chip, !was); setActive($('#svcChips').querySelector('.chip[data-value="all"]'), false);
-        if (!$('#svcChips').querySelector('.chip.active')) setActive(chip, true);
-      }
-    });
 
     function normalizeRoutes(input) {
       const parts = input.split(/[\s,]+/).map(x => x.trim().toUpperCase()).filter(Boolean);
@@ -570,9 +746,16 @@
 
     async function gatherRoutes() {
       const value = $('#routes').value.trim().toUpperCase();
-      if (value === 'ALL') return await fetchAllRouteCodes(1000);
+      if (value === 'ALL') {
+        usingAllRoutes = true;
+        const j = await fetchJSON(`${API}/route`);
+        const list = (j?.data || []).map(x => (x.route || '').toUpperCase()).filter(Boolean);
+        return [...new Set(list)].slice(0, 1000);
+      }
+      usingAllRoutes = false;
       return normalizeRoutes(value);
     }
+    function allMode() { return $('#routes').value.trim().toUpperCase() === 'ALL'; }
 
     function setBusy(busy, { auto = false } = {}) {
       $('#checkBtn').disabled = busy && !auto;
@@ -631,12 +814,9 @@
 
       if (routes.length === 0) { alert('請輸入至少一個路線編號（例如：276A 或 276A,269C，或輸入 ALL）'); return; }
 
-      const value = $('#routes').value.trim().toUpperCase();
-      usingAllRoutes = (value === 'ALL');
-
-      const key = JSON.stringify({ routesKey: usingAllRoutes ? 'ALL' : routes.join(','), dirSel, svcSel });
-      if (!force && key === lastQueryKey) { /* same params */ }
-      else { const tooLong = routes.join(',').length > 200 || usingAllRoutes; safeSetParamsMulti(routes, dirSel, svcSel, { all: tooLong }); }
+      const key = JSON.stringify({ routesKey: usingAllRoutes ? 'ALL' : routes.join(','), mode, dirSel, svcSel, hideOk });
+      if (!force && key === lastQueryKey) { /* no-op */ }
+      else { safeSetParamsMulti(routes, mode, dirSel, svcSel, hideOk); }
       lastQueryKey = key;
 
       currentRunId++; const runId = currentRunId;
@@ -659,26 +839,20 @@
       autoTimer = setInterval(() => runDetect(true, { auto: true }), 30000);
     }
 
-    // Load all KMB route codes via API and run both directions
-    async function fetchAllRouteCodes(limit = 1000) {
-      const j = await fetchJSON(`${API}/route`);
-      const list = (j?.data || []).map(x => (x.route || '').toUpperCase()).filter(Boolean);
-      const uniq = [...new Set(list)].sort((a, b) => a.localeCompare(b, 'zh-HK', { numeric: true }));
-      return uniq.slice(0, limit);
-    }
-
-    // Events
+    // -------- Events --------
     $('#checkBtn').addEventListener('click', () => { runDetect(); startAutoRefresh(); });
     $('#refreshBtn').addEventListener('click', () => runDetect(true));
     $('#shareBtn').addEventListener('click', async () => {
       const dirSel = getDirSelection(); const svcSel = getSvcSelection();
-      const value = $('#routes').value.trim().toUpperCase();
-      const routes = (value === 'ALL') ? ['ALL'] : normalizeRoutes(value);
-      const tooLong = routes.join(',').length > 200 || value === 'ALL';
+      const routesVal = $('#routes').value.trim().toUpperCase();
+      const routes = routesVal === 'ALL' ? ['ALL'] : normalizeRoutes(routesVal);
+      const tooLong = routes.join(',').length > 200 || routesVal === 'ALL';
       const url = new URL(window.location.href);
       url.searchParams.set('route', tooLong ? 'ALL' : routes.join(','));
+      url.searchParams.set('mode', mode);
       url.searchParams.set('bound', dirSel);
       url.searchParams.set('serviceType', svcSel.join(','));
+      url.searchParams.set('hideok', hideOk ? '1' : '0');
       const shareUrl = url.toString();
       try {
         if (navigator.share) await navigator.share({ title: 'KMB Bus Service Update', url: shareUrl });
@@ -686,10 +860,10 @@
         else { prompt('複製以下連結：', shareUrl); }
       } catch {}
     });
-
     $('#allRoutesBtn').addEventListener('click', async () => {
       if (!confirm('此操作會抓取全港所有九巴路線並以「兩方向」分析，可能非常耗時並消耗流量。是否繼續？')) return;
       $('#routes').value = 'ALL';
+      // force both directions
       [...$('#dirChips').children].forEach(c => c.classList.remove('active'));
       const bothEl = $('#dirChips').querySelector('.chip[data-value="both"]');
       if (bothEl) bothEl.classList.add('active');
@@ -697,10 +871,72 @@
       startAutoRefresh();
     });
 
-    // Init
+    // Mode chips
+    $('#modeChips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip'); if (!chip) return;
+      [...$('#modeChips').children].forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      setMode(chip.dataset.value);
+      setParams('mode', mode);
+      updateSummaryBar();
+    });
+
+    // Direction chips
+    $('#dirChips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip'); if (!chip) return;
+      const val = chip.dataset.value;
+      if (val === 'both') {
+        [...$('#dirChips').children].forEach(c => c.classList.toggle('active', c.dataset.value === 'both'));
+      } else {
+        const was = chip.classList.contains('active');
+        if (was && $('#dirChips').querySelectorAll('.chip.active').length === 1) return;
+        chip.classList.toggle('active', !was);
+        $('#dirChips .chip[data-value="both"]').classList.remove('active');
+        if (!$('#dirChips').querySelectorAll('.chip.active').length) $('#dirChips .chip[data-value="outbound"]').classList.add('active');
+      }
+    });
+
+    // Service chips
+    $('#svcChips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip'); if (!chip) return;
+      const val = chip.dataset.value;
+      if (val === 'all') {
+        [...$('#svcChips').children].forEach(c => c.classList.toggle('active', c.dataset.value === 'all'));
+      } else {
+        const was = chip.classList.contains('active');
+        chip.classList.toggle('active', !was);
+        $('#svcChips .chip[data-value="all"]').classList.remove('active');
+        if (!$('#svcChips').querySelectorAll('.chip.active')) setActive(chip, true);
+      }
+    });
+
+    // Filter chips
+    $('#filterChips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip'); if (!chip) return;
+      if (chip.dataset.value === 'hideok') {
+        hideOk = !chip.classList.contains('active');
+        chip.classList.toggle('active', hideOk);
+        document.querySelectorAll('.section').forEach(sec => {
+          const key = sec.getAttribute('data-key');
+          const entry = comboStore.get(key);
+          if (entry) applyHideRule(sec, entry.data);
+        });
+        setParams('hideok', hideOk ? '1' : '0');
+      }
+    });
+
+    // TV floating bus: switch to mobile
+    $('#busSwitch').addEventListener('click', () => {
+      setMode('mobile');
+      // Reflect in chips and URL
+      [...$('#modeChips').children].forEach(c => c.classList.remove('active'));
+      $('#modeChips .chip[data-value="mobile"]').classList.add('active');
+      setParams('mode', 'mobile');
+      updateSummaryBar();
+    });
+
+    // -------- Init --------
     (function init() {
-      setActive($('#dirChips .chip[data-value="outbound"]'), true);
-      setActive($('#svcChips .chip[data-value="1"]'), true);
       setFromParams();
       const initial = (getParam('route') || '').trim().toUpperCase();
       if (initial) {
