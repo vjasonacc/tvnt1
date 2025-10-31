@@ -70,6 +70,21 @@
         font-weight: bold;
         color: #000;
         margin-right: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .eta-route-number {
+        font-size: 48px;
+        font-weight: bold;
+        color: #000;
+      }
+      .eta-route-station {
+        font-size: 18px;
+        font-weight: 400;
+        color: #666;
+        margin-top: 2px;
+        line-height: 1.2;
       }
       .eta-dest {
         flex: 1.5 1 0;
@@ -78,6 +93,9 @@
         line-height: 1;
         font-weight: 400;
         color: #000;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .eta-times {
         flex: 0 0 600px;
@@ -154,7 +172,7 @@
       <span id="weather-icon">☁️</span> 
       <span id="weather-temp">--°C</span>
     </div>
-    <span class="clock" id="main-clock">--:--</span>
+    <span class="clock" id="main-clock">--:--:--</span>
   </div>
   <div id="split-top" class="split-section"></div>
   <div id="split-bottom" class="split-section"></div>
@@ -168,6 +186,7 @@
     const bottomStop = getQueryParam('bottom_id', 'F97A667725CDEB82');
     const onlyShowRoute = getQueryParam('onlyshowroute', null);
     const hideRoute = getQueryParam('hideroute', null);
+    const showStopName = getQueryParam('showstopname', 'on') === 'on';
 
     // -------- WEATHER API --------
     function mapWeatherIcon(code) {
@@ -202,6 +221,17 @@
       }
     }
 
+    // -------- STOP INFO API --------
+    async function fetchStopInfo(stop_id) {
+      try {
+        let res = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop/${stop_id}`);
+        let json = await res.json();
+        if (json.data && json.data.name_tc)
+          return json.data.name_tc;
+      } catch {}
+      return "巴士站 " + stop_id;
+    }
+
     // -------- COMPONENTS --------
     function pad2(n) {
       return n > 9 ? n : '0' + n;
@@ -211,9 +241,10 @@
       const d = new Date();
       let h = d.getHours();
       const m = d.getMinutes();
+      const s = d.getSeconds();
       // Convert to 12-hour format
       h = h % 12 || 12;
-      return h + ':' + pad2(m);
+      return h + ':' + pad2(m) + ':' + pad2(s);
     }
 
     function formatETA(etaString) {
@@ -235,7 +266,7 @@
       };
     }
 
-    function makeETAList(etaData) {
+    function makeETAList(etaData, stopName) {
       // Filter by route parameters
       let filteredData = etaData;
       if (onlyShowRoute) {
@@ -301,7 +332,10 @@
         
         rows.push(`
           <li class="eta-row${i % 2 ? ' even' : ''}">
-            <span class="eta-route">${group.route}</span>
+            <div class="eta-route">
+              <span class="eta-route-number">${group.route}</span>
+              ${showStopName ? `<span class="eta-route-station">${stopName}</span>` : ''}
+            </div>
             <span class="eta-dest">${group.dest}</span>
             <div class="eta-times">
               ${etaTimes.join('')}
@@ -314,9 +348,21 @@
       return `<ul class="eta-list">${rows.join('')}</ul>`;
     }
 
+    // Cache for stop names
+    const stopNameCache = {};
+
     // -------- API + UI wiring --------
     async function renderSplitScreen(stopId, selector) {
-      document.querySelector(selector).innerHTML = `<div class="loading">載入中...</div>`;
+      const container = document.querySelector(selector);
+      if (!container.hasChildNodes() || container.querySelector('.loading, .error')) {
+        container.innerHTML = `<div class="loading">載入中...</div>`;
+      }
+      
+      // Fetch stop name if not cached
+      if (!stopNameCache[stopId]) {
+        stopNameCache[stopId] = await fetchStopInfo(stopId);
+      }
+      const stopName = stopNameCache[stopId];
       
       const url = `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${stopId}`;
       try {
@@ -325,12 +371,24 @@
         const visible = (data.data || []).filter(x => x.eta);
         
         if (visible.length === 0) {
-          document.querySelector(selector).innerHTML = `<div class="loading">暫無班次</div>`;
+          container.innerHTML = `<div class="loading">暫無班次</div>`;
         } else {
-          document.querySelector(selector).innerHTML = makeETAList(visible);
+          const newContent = makeETAList(visible, stopName);
+          // Update existing rows instead of full replace to prevent flash
+          const existingList = container.querySelector('.eta-list');
+          if (existingList) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = newContent;
+            const newList = tempDiv.querySelector('.eta-list');
+            if (newList) {
+              existingList.innerHTML = newList.innerHTML;
+            }
+          } else {
+            container.innerHTML = newContent;
+          }
         }
       } catch(e) {
-        document.querySelector(selector).innerHTML = `<div class="error">載入失敗</div>`;
+        container.innerHTML = `<div class="error">載入失敗</div>`;
       }
     }
 
@@ -352,7 +410,7 @@
     document.getElementById('main-clock').textContent = getClockString();
     setInterval(() => {
       document.getElementById('main-clock').textContent = getClockString();
-    }, 20000);
+    }, 1000);
   </script>
 </body>
 </html>
