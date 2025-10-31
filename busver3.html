@@ -46,69 +46,69 @@
           font-size: 44px;
           font-weight: bold;
       }
-      /* Mini PIDS Mode - iPhone 7 Plus size adjustments */
+      /* Mini PIDS Mode - iPhone 7 Plus size adjustments - even smaller */
       body.minipids .header {
-        height: 40px;
-        padding: 0 16px;
-        font-size: 18px;
+        height: 28px;
+        padding: 0 12px;
+        font-size: 14px;
       }
       body.minipids .header .weather {
-        font-size: 16px;
-        gap: 8px;
+        font-size: 12px;
+        gap: 6px;
       }
       body.minipids .header .clock {
-        font-size: 20px;
+        font-size: 14px;
       }
       body.minipids .eta-row {
-        padding: 12px 0 10px 16px;
-        min-height: 50px;
+        padding: 8px 0 8px 12px;
+        min-height: 40px;
         border-bottom: 1px solid #222;
       }
       body.minipids .eta-route {
-        flex: 0 0 60px;
-        margin-right: 16px;
+        flex: 0 0 50px;
+        margin-right: 12px;
       }
       body.minipids .eta-route-number {
-        font-size: 22px;
+        font-size: 16px;
       }
       body.minipids .eta-route-station {
-        font-size: 9px;
+        font-size: 8px;
       }
       body.minipids .eta-dest {
-        flex: 2 1 0;
-        font-size: 20px;
-        letter-spacing: 1px;
+        flex: 1.5 1 0;
+        font-size: 15px;
+        letter-spacing: 0.5px;
       }
       body.minipids .eta-times {
-        flex: 0 0 300px;
-        gap: 8px;
-        margin-right: 16px;
+        flex: 0 0 240px;
+        gap: 6px;
+        margin-right: 12px;
       }
       body.minipids .eta-time-block {
-        min-width: 80px;
+        min-width: 65px;
       }
       body.minipids .eta-min-value {
-        font-size: 28px;
-        letter-spacing: 1px;
+        font-size: 20px;
+        letter-spacing: 0.5px;
       }
       body.minipids .eta-min-text {
-        font-size: 14px;
+        font-size: 10px;
       }
       body.minipids .eta-actual-time {
-        font-size: 12px;
-        margin-top: 2px;
+        font-size: 9px;
+        margin-top: 1px;
       }
       body.minipids .eta-remark {
-        font-size: 10px;
-        padding: 1px 6px;
-        margin-top: 4px;
+        font-size: 8px;
+        padding: 1px 4px;
+        margin-top: 2px;
       }
       body.minipids .no-eta {
-        font-size: 22px;
+        font-size: 16px;
       }
       body.minipids .loading, body.minipids .error {
-        font-size: 16px;
-        padding: 30px 0 0 0;
+        font-size: 12px;
+        padding: 20px 0 0 0;
       }
       .eta-list {
         margin: 0;
@@ -247,12 +247,15 @@
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(name) || fallback;
     }
-    const topStop = getQueryParam('top_id', 'B10F5697E4DA810B');
-    const bottomStop = getQueryParam('bottom_id', 'F97A667725CDEB82');
+    const topStop = getQueryParam('top_id', 'B10F5697E4DA810B'); // default
+    const bottomStop = getQueryParam('bottom_id', 'F97A667725CDEB82'); // default
     const onlyShowRoute = getQueryParam('onlyshowroute', null);
-    const hideRoute = getQueryParam('hideroute', null);
-    const showStopName = getQueryParam('showstopname', 'on') === 'on';
+    const hideRoute = getQueryParam('hideroute', null); // hide route
+    const showStopName = getQueryParam('showstopname', 'on') === 'on'; //// default show station name
     const displayMode = getQueryParam('mode', 'normal'); // normal or minipids
+    const showTrafficNews = getQueryParam('app1trafficnews', 'false') === 'true';
+    const trafficRoute = getQueryParam('trafficroute', '276A'); // default route for traffic news
+    const showHome = getQueryParam('home', null) === 'true';
 
     // -------- WEATHER API --------
     function mapWeatherIcon(code) {
@@ -468,18 +471,340 @@
       await renderSplitScreen(bottomStop, '#split-bottom');
     }
 
+    // -------- TRAFFIC NEWS FEATURE (ALL STATIONS ETA VIEW) --------
+    async function fetchRouteAllStationsETA() {
+      const stationETAs = [];
+      
+      try {
+        // Use trafficRoute parameter (default: 276A)
+        const routeCode = trafficRoute.toUpperCase();
+        
+        // Fetch both INBOUND and OUTBOUND directions
+        const directions = ['inbound', 'outbound'];
+        
+        for (const direction of directions) {
+          // Fetch route info for this direction
+          const routeResp = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route/${routeCode}/${direction}/1`);
+          const routeData = await routeResp.json();
+          
+          if (!routeData.data) continue; // Skip if direction doesn't exist
+          
+          const route = routeData.data;
+          const directionLabel = direction === 'outbound' ? '往' : '返';
+          
+          // Fetch all stops for this route and direction
+          const routeStopsResp = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${routeCode}/${direction}/1`);
+          const routeStopsData = await routeStopsResp.json();
+          const stops = routeStopsData.data || [];
+          
+          console.log(`Found ${stops.length} stops for route ${routeCode} ${direction}`);
+          
+          // Fetch ETA for each station
+          for (let i = 0; i < stops.length; i++) {
+            const stop = stops[i];
+            
+            // Get stop name
+            const stopInfoResp = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/stop/${stop.stop}`);
+            const stopInfo = await stopInfoResp.json();
+            const stopName = stopInfo.data?.name_tc || '未知站點';
+            
+            // Get ETAs for this stop and route
+            const etaResp = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/eta/${stop.stop}/${routeCode}/1`);
+            const etaData = await etaResp.json();
+            
+            const routeETAs = (etaData.data || []).filter(x => x.eta && x.dir === direction.substring(0, 1).toUpperCase());
+            
+            stationETAs.push({
+              route: routeCode,
+              dest: `${directionLabel}${route.dest_tc}`,
+              direction: directionLabel,
+              seq: stop.seq,
+              stopName: stopName,
+              etas: routeETAs.slice(0, 3), // Next 3 buses
+              hasAlert: routeETAs.some(x => x.rmk_tc && x.rmk_tc !== '原定班次')
+            });
+          }
+        }
+        
+        if (stationETAs.length === 0) {
+          return [{error: `找不到路線 ${routeCode}`}];
+        }
+      } catch (e) {
+        console.error('Traffic news fetch error:', e);
+        return [{error: `載入失敗: ${e.message}`}];
+      }
+      
+      return stationETAs;
+    }
+
+    function renderAllStationsETA(stations) {
+      const container = document.querySelector('#split-bottom');
+      container.style.display = 'block';
+      
+      if (stations.length === 0 || stations[0]?.error) {
+        container.innerHTML = `
+          <div style="padding: 40px; text-align: center; font-size: 24px; color: #555;">
+            <div>載入失敗</div>
+            <div style="font-size: 16px; color: #999; margin-top: 10px;">${stations[0]?.error || '未知錯誤'}</div>
+          </div>
+        `;
+        return;
+      }
+      
+      let html = '<ul class="eta-list">';
+      stations.forEach((station, i) => {
+        const etaTimes = [];
+        for (let j = 0; j < 3; j++) {
+          if (station.etas[j]) {
+            const eta = formatETA(station.etas[j].eta);
+            const remarkText = station.etas[j].rmk_tc;
+            let remark = '';
+            if (remarkText) {
+              if (remarkText === '原定班次') {
+                remark = `<div class="eta-remark">原定班次</div>`;
+              } else {
+                remark = `<div class="eta-remark alert">${remarkText}</div>`;
+              }
+            }
+            
+            etaTimes.push(`
+              <div class="eta-time-block">
+                <span class="eta-min-value">${eta.minutes}</span><span class="eta-min-text">分鐘</span>
+                <div class="eta-actual-time">${eta.time}</div>
+                ${remark}
+              </div>
+            `);
+          } else {
+            etaTimes.push(`
+              <div class="eta-time-block">
+                <span class="no-eta">--</span>
+              </div>
+            `);
+          }
+        }
+        
+        html += `
+          <li class="eta-row${i % 2 ? ' even' : ''}">
+            <div class="eta-route">
+              <span class="eta-route-number">${station.route}</span>
+              <span class="eta-route-station">${station.seq}. ${station.stopName}</span>
+            </div>
+            <span class="eta-dest">${station.dest}</span>
+            <div class="eta-times">
+              ${etaTimes.join('')}
+            </div>
+          </li>
+        `;
+      });
+      html += '</ul>';
+      
+      container.innerHTML = html;
+    }
+
+    async function showTrafficNewsView() {
+      const container = document.querySelector('#split-bottom');
+      container.style.display = 'block';
+      container.innerHTML = `<div class="loading">正在載入路線資料...</div>`;
+      
+      updateWeather();
+      
+      const stations = await fetchRouteAllStationsETA();
+      renderAllStationsETA(stations);
+      
+      // Refresh every 30 seconds
+      setInterval(async () => {
+        const stations = await fetchRouteAllStationsETA();
+        renderAllStationsETA(stations);
+      }, 30000);
+      
+      // Update weather
+      setInterval(updateWeather, 60000);
+    }
+
     // Apply display mode
     if (displayMode === 'minipids') {
       document.body.classList.add('minipids');
     }
 
-    // Initialize
-    updateWeather();
-    doAllUpdates();
-    
-    // Intervals
-    setInterval(doAllUpdates, 10000); // Bus data every 10 seconds
-    setInterval(updateWeather, 60000); // Weather every 60 seconds
+    // -------- HOME PAGE FEATURE --------
+    function showHomePage() {
+      document.getElementById('split-top').style.display = 'none';
+      document.getElementById('split-bottom').style.display = 'block';
+      
+      const container = document.querySelector('#split-bottom');
+      container.innerHTML = `
+        <div style="padding: 40px; max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif;">
+          <h1 style="color: #003d6b; margin-bottom: 30px;">MTR PIDS 巴士到站顯示系統</h1>
+          
+          <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+            <h2 style="color: #003d6b; font-size: 20px; margin-bottom: 15px;">基礎網址</h2>
+            <input type="text" id="base-url" value="https://vjasonacc.github.io/tvnt1/busver3.html" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px;">
+            
+            <h2 style="color: #003d6b; font-size: 20px; margin-bottom: 15px;">選擇顯示模式</h2>
+            <select id="mode-select" style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px;">
+              <option value="normal">正常模式（大螢幕）</option>
+              <option value="minipids">迷你模式（小螢幕）</option>
+            </select>
+            
+            <h2 style="color: #003d6b; font-size: 20px; margin-bottom: 15px;">選擇功能</h2>
+            <label style="display: block; margin-bottom: 10px;">
+              <input type="radio" name="feature" value="eta" checked> 到站時間顯示（雙站點）
+            </label>
+            <label style="display: block; margin-bottom: 10px;">
+              <input type="radio" name="feature" value="traffic"> 路線交通資訊（全站點）
+            </label>
+          </div>
+          
+          <div id="eta-config" style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="color: #003d6b; font-size: 20px; margin-bottom: 15px;">到站時間配置</h2>
+            <label style="display: block; margin-bottom: 10px;">
+              上方站點 ID:
+              <input type="text" id="top-stop" value="B10F5697E4DA810B" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </label>
+            <label style="display: block; margin-bottom: 10px;">
+              下方站點 ID:
+              <input type="text" id="bottom-stop" value="F97A667725CDEB82" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </label>
+            <label style="display: block; margin-bottom: 10px;">
+              只顯示路線（逗號分隔，例如: 269C,269S）:
+              <input type="text" id="only-routes" placeholder="留空顯示全部" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </label>
+            <label style="display: block; margin-bottom: 10px;">
+              隱藏路線（逗號分隔）:
+              <input type="text" id="hide-routes" placeholder="留空不隱藏" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </label>
+            <label style="display: block; margin-bottom: 10px;">
+              <input type="checkbox" id="show-stopname" checked> 顯示站點名稱
+            </label>
+          </div>
+          
+          <div id="traffic-config" style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: none;">
+            <h2 style="color: #003d6b; font-size: 20px; margin-bottom: 15px;">路線交通資訊配置</h2>
+            <label style="display: block; margin-bottom: 10px;">
+              路線編號:
+              <input type="text" id="traffic-route" value="276A" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </label>
+          </div>
+          
+          <button id="generate-btn" style="width: 100%; padding: 15px; font-size: 18px; background: #003d6b; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 20px;">
+            生成網址
+          </button>
+          
+          <div id="result" style="display: none; background: #e5f1fb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #003d6b; margin-bottom: 10px;">您的專屬網址：</h3>
+            <input type="text" id="generated-url" readonly style="width: 100%; padding: 10px; border: 1px solid #003d6b; border-radius: 4px; margin-bottom: 10px; font-family: monospace; font-size: 14px;">
+            <button id="copy-btn" style="width: 100%; padding: 10px; background: #2176ae; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px;">
+              複製網址
+            </button>
+            <button id="open-btn" style="width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              開啟網址
+            </button>
+          </div>
+          
+          <div style="background: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
+            <h3 style="color: #856404; margin-bottom: 10px;">💡 使用指南</h3>
+            <p style="color: #856404; line-height: 1.6; margin: 5px 0;"><strong>iOS Safari:</strong> 點擊「分享」→「加入主畫面」</p>
+            <p style="color: #856404; line-height: 1.6; margin: 5px 0;"><strong>Android Chrome:</strong> 點擊「⋮」→「加到主畫面」</p>
+            <p style="color: #856404; line-height: 1.6; margin: 5px 0;"><strong>電腦:</strong> 按 Ctrl+D（Mac: Cmd+D）加入書籤</p>
+          </div>
+        </div>
+      `;
+      
+      // Event listeners
+      const featureRadios = document.querySelectorAll('input[name="feature"]');
+      const etaConfig = document.getElementById('eta-config');
+      const trafficConfig = document.getElementById('traffic-config');
+      
+      featureRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          if (e.target.value === 'eta') {
+            etaConfig.style.display = 'block';
+            trafficConfig.style.display = 'none';
+          } else {
+            etaConfig.style.display = 'none';
+            trafficConfig.style.display = 'block';
+          }
+        });
+      });
+      
+      document.getElementById('generate-btn').addEventListener('click', () => {
+        const mode = document.getElementById('mode-select').value;
+        const feature = document.querySelector('input[name="feature"]:checked').value;
+        
+        const baseUrl = document.getElementById('base-url').value.trim();
+        let params = [];
+        
+        if (mode !== 'normal') {
+          params.push(`mode=${mode}`);
+        }
+        
+        if (feature === 'traffic') {
+          params.push('app1trafficnews=true');
+          const trafficRoute = document.getElementById('traffic-route').value.trim();
+          if (trafficRoute) {
+            params.push(`trafficroute=${trafficRoute}`);
+          }
+        } else {
+          const topStop = document.getElementById('top-stop').value.trim();
+          const bottomStop = document.getElementById('bottom-stop').value.trim();
+          if (topStop !== 'B10F5697E4DA810B') {
+            params.push(`top_id=${topStop}`);
+          }
+          if (bottomStop !== 'F97A667725CDEB82') {
+            params.push(`bottom_id=${bottomStop}`);
+          }
+          
+          const onlyRoutes = document.getElementById('only-routes').value.trim();
+          if (onlyRoutes) {
+            params.push(`onlyshowroute=${onlyRoutes}`);
+          }
+          
+          const hideRoutes = document.getElementById('hide-routes').value.trim();
+          if (hideRoutes) {
+            params.push(`hideroute=${hideRoutes}`);
+          }
+          
+          const showStopname = document.getElementById('show-stopname').checked;
+          if (!showStopname) {
+            params.push('showstopname=off');
+          }
+        }
+        
+        const finalUrl = params.length > 0 ? `${baseUrl}?${params.join('&')}` : baseUrl;
+        
+        document.getElementById('generated-url').value = finalUrl;
+        document.getElementById('result').style.display = 'block';
+      });
+      
+      document.getElementById('copy-btn').addEventListener('click', () => {
+        const urlInput = document.getElementById('generated-url');
+        urlInput.select();
+        document.execCommand('copy');
+        alert('網址已複製到剪貼簿！');
+      });
+      
+      document.getElementById('open-btn').addEventListener('click', () => {
+        const url = document.getElementById('generated-url').value;
+        window.location.href = url;
+      });
+    }
+
+    // Traffic News Mode
+    if (showHome) {
+      showHomePage();
+    } else if (showTrafficNews) {
+      document.getElementById('split-top').style.display = 'none';
+      document.getElementById('split-bottom').style.display = 'none';
+      showTrafficNewsView();
+    } else {
+      // Initialize normal mode
+      updateWeather();
+      doAllUpdates();
+      
+      // Intervals
+      setInterval(doAllUpdates, 10000); // Bus data every 10 seconds
+      setInterval(updateWeather, 60000); // Weather every 60 seconds
+    }
     
     // Initialize and update main clock
     document.getElementById('main-clock').textContent = getClockString();
