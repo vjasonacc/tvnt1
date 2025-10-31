@@ -15,6 +15,12 @@
       --muted: #6b7280;
       --card: #f5f7fa;
       --border: #e5e7eb;
+      --line: #e5e7eb;
+      --pill-red-bg: #ffe8e8;
+      --pill-red-fg: #b31c1c;
+      --pill-amber-bg: #fff3e0;
+      --pill-amber-fg: #a15c00;
+      --text-strong: #0f172a;
     }
     * { box-sizing: border-box; }
     body {
@@ -24,99 +30,70 @@
       color: #111827;
     }
     header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: var(--brand);
-      color: #fff;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      position: sticky; top: 0; z-index: 10;
+      background: var(--brand); color: #fff; padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
     header .title { font-size: 16px; font-weight: 700; letter-spacing: .3px; }
     header .clock { font-variant-numeric: tabular-nums; font-weight: 700; }
     main { padding: 12px; max-width: 900px; margin: 0 auto; }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-    }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
     .controls { display: grid; grid-template-columns: 1fr; gap: 10px; }
     .row { display: grid; grid-template-columns: 1fr; gap: 8px; }
     label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
-    input[type="text"], select {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 16px;
-      background: #fff;
+    input[type="text"] {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; background: #fff;
     }
     .chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
     .chip {
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: #fff;
-      color: #111827;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      user-select: none;
+      padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border);
+      background: #fff; color: #111827; font-weight: 600; font-size: 14px; cursor: pointer; user-select: none;
     }
     .chip.active { background: var(--brand); color: #fff; border-color: var(--brand); }
     .actions { display: flex; gap: 8px; flex-wrap: wrap; }
     button {
-      appearance: none;
-      border: none;
-      background: var(--brand);
-      color: #fff;
-      padding: 10px 14px;
-      font-size: 16px;
-      border-radius: 10px;
-      font-weight: 700;
-      cursor: pointer;
+      appearance: none; border: none; background: var(--brand); color: #fff;
+      padding: 10px 14px; font-size: 16px; border-radius: 10px; font-weight: 700; cursor: pointer;
     }
     button.secondary { background: #2563eb; }
     button.ghost { background: transparent; color: var(--brand); border: 1px solid var(--brand); }
     .status { margin-top: 12px; display: grid; gap: 8px; }
     .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      border-radius: 999px;
-      font-weight: 700;
-      font-size: 14px;
-      border: 1px solid var(--border);
-      background: #fff;
-      width: 100%;
-      justify-content: center;
-      text-align: center;
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 999px;
+      font-weight: 700; font-size: 14px; border: 1px solid var(--border); background: #fff; width: 100%;
+      justify-content: center; text-align: center;
     }
     .badge.ok { color: var(--ok); border-color: rgba(46,125,50,.25); background: #e8f5e9; }
     .badge.warn { color: var(--warn); border-color: rgba(255,152,0,.25); background: #fff3e0; }
     .badge.bad { color: var(--bad); border-color: rgba(198,40,40,.25); background: #ffebee; }
     .meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
     .list { margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
     .section { border-bottom: 1px solid var(--border); }
     .section-header { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f9fafb; font-weight: 700; }
-    .rows { padding: 8px 0; }
-    .rowitem {
-      display: grid; grid-template-columns: auto 1fr; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--border); align-items: start;
-    }
+    .rows { padding: 8px 12px; }
+
+    /* Stop row and ETA list styles */
+    .rowitem { padding: 10px 0; border-top: 1px solid var(--line); }
     .rowitem:first-child { border-top: none; }
+    .stop-head { display: flex; gap: 10px; align-items: baseline; margin-bottom: 6px; }
     .seq { min-width: 40px; font-weight: 700; color: var(--muted); text-align: right; padding-right: 4px; }
-    .title2 { font-weight: 700; margin-bottom: 4px; line-height: 1.2; }
-    .rmk { display: inline-block; margin-top: 2px; padding: 3px 8px; border-radius: 6px; font-size: 12px; line-height: 1; background: #e5f1fb; color: #2176ae; }
-    .rmk.bad { background: #fee; color: #b31c1c; }
-    .eta { margin-top: 6px; font-size: 12px; color: var(--muted); }
-    .empty, .loading, .error { text-align: center; color: var(--muted); padding: 16px; font-size: 14px; }
+    .title2 { font-weight: 700; line-height: 1.2; }
+    .eta-ul { list-style: none; margin: 0; padding: 0; }
+    .eta-li { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px dashed var(--line); }
+    .eta-li:first-child { border-top: none; }
+    .eta-left { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+    .eta-min { font-family: Arial, sans-serif; font-weight: 800; font-size: 22px; color: var(--text-strong); }
+    .eta-min-text { font-weight: 700; color: var(--text-strong); }
+    .eta-time { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 700; }
+    .eta-rmk { display: inline-block; padding: 6px 10px; border-radius: 12px; font-size: 12px; margin-top: 6px; }
+    .eta-rmk.bad { background: var(--pill-red-bg); color: var(--pill-red-fg); }
+    .eta-rmk.warn { background: var(--pill-amber-bg); color: var(--pill-amber-fg); }
+
+    .empty, .loading, .error, .na, .transient { text-align: center; color: var(--muted); padding: 12px; font-size: 14px; }
     .tips { margin-top: 12px; color: var(--muted); font-size: 12px; text-align: center; }
     footer.footer { margin: 16px 0; color: var(--muted); font-size: 12px; text-align: center; }
+
     @media (min-width: 640px) {
       header .title { font-size: 18px; }
       .controls .row { grid-template-columns: 180px 1fr; align-items: center; }
@@ -172,16 +149,15 @@
       </div>
     </div>
 
-    <div id="results" class="list" style="display:none;"></div>
+    <div id="results" class="list" style="display:block;"></div>
 
     <div class="tips">
       資料來源：九巴即時到站（政府資料一線通）<br />
-      關鍵字判斷：受阻／行車受阻／延誤／行車緩慢／緩慢<br />
-      提示：查詢所有路線可能非常耗時，請耐心等候。
+      關鍵字判斷：受阻／行車受阻／延誤／行車緩慢／緩慢
     </div>
 
     <footer class="footer" id="footer-info">
-      最後更新：--:--:-- · 版本：2
+      最後更新：--:--:-- · 版本：8
     </footer>
   </main>
 
@@ -190,18 +166,21 @@
     const $ = (sel) => document.querySelector(sel);
     const pad2 = (n) => (n > 9 ? '' : '0') + n;
     const nowStr = () => {
-      const d = new Date();
-      let h = d.getHours();
-      const m = d.getMinutes();
-      const s = d.getSeconds();
-      h = h % 12 || 12;
-      return h + ':' + pad2(m) + ':' + pad2(s);
+      const d = new Date(); let h = d.getHours(), m = d.getMinutes(), s = d.getSeconds();
+      h = h % 12 || 12; return h + ':' + pad2(m) + ':' + pad2(s);
     };
     const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    const jitter = (ms) => ms + Math.floor(Math.random() * ms * 0.2);
+    const toMinAndTime = (iso) => {
+      if (!iso) return { min: '--', time: '--:--' };
+      const t = new Date(iso), n = new Date();
+      const mins = Math.max(0, Math.floor((t - n) / 60000));
+      const hh = (t.getHours() % 12) || 12, mm = pad2(t.getMinutes());
+      return { min: isNaN(mins) ? '--' : mins, time: `${hh}:${mm}` };
+    };
 
     // -------- Clock --------
-    const clock = $('#clock');
-    clock.textContent = nowStr();
+    const clock = $('#clock'); clock.textContent = nowStr();
     setInterval(() => (clock.textContent = nowStr()), 1000);
 
     // -------- Params --------
@@ -217,41 +196,43 @@
         url.searchParams.set('bound', dirSel);
         url.searchParams.set('serviceType', svcSel.join(','));
         history.replaceState(null, '', url.toString());
-      } catch {
-        // ignore URL update failures
-      }
+      } catch {}
     }
 
-    // -------- API --------
+    // -------- API & rules --------
     const API = 'https://data.etabus.gov.hk/v1/transport/kmb';
     const JAM_KEYWORDS = ['行車受阻','受阻','延誤','行車緩慢','緩慢'];
     const OK_TEXT = '服務正常';
     const WARN_TEXT = '可能延誤／行車緩慢';
     const BAD_TEXT = '行車受阻';
+    const OFFLINE_TEXT = '無法連線 / 離線';
+    const NA_TEXT = '不適用（該服務類型未提供）';
+    const TRANSIENT_TEXT = '暫時不可用（稍後重試）';
 
-    async function fetchJSON(url, { retries = 2, retryDelay = 500 } = {}) {
+    async function fetchJSON(url, { retries = 3, baseDelay = 500 } = {}) {
       for (let i = 0; i <= retries; i++) {
         try {
           const res = await fetch(url, { cache: 'no-store' });
           if (!res.ok) throw new Error('HTTP ' + res.status);
           return await res.json();
         } catch (e) {
-          if (i === retries) throw e;
-          await sleep(retryDelay * (i + 1));
+          if (i === retries) { const err = new Error((e && e.message) || 'NETWORK_ERROR'); err.code = 'NETWORK_ERROR'; throw err; }
+          await sleep(jitter(baseDelay * Math.pow(2, i)));
         }
       }
     }
 
-    // Concurrency map with progress callback
-    async function pMap(arr, mapper, concurrency = 8, onProgress) {
+    async function pMap(arr, mapper, concurrency = 4, { onEach, onProgress } = {}) {
       const ret = new Array(arr.length);
       let idx = 0, done = 0;
       const workers = Array(Math.min(concurrency, arr.length)).fill(0).map(async () => {
         while (true) {
-          const i = idx++;
-          if (i >= arr.length) break;
-          ret[i] = await mapper(arr[i], i);
-          done++;
+          const i = idx++; if (i >= arr.length) break;
+          let out;
+          try { out = await mapper(arr[i], i); }
+          catch (e) { out = { transient: true, error: (e && e.message) || 'UNKNOWN_ERROR' }; }
+          ret[i] = out; done++;
+          if (onEach) onEach(out, i, done, arr.length);
           if (onProgress) onProgress(done, arr.length);
         }
       });
@@ -262,12 +243,8 @@
     const stopNameCache = new Map();
     async function getStopName(stopId) {
       if (stopNameCache.has(stopId)) return stopNameCache.get(stopId);
-      try {
-        const data = await fetchJSON(`${API}/stop/${stopId}`);
-        const name = data?.data?.name_tc || stopId;
-        stopNameCache.set(stopId, name);
-        return name;
-      } catch { return stopId; }
+      try { const data = await fetchJSON(`${API}/stop/${stopId}`); const name = data?.data?.name_tc || stopId; stopNameCache.set(stopId, name); return name; }
+      catch { return stopId; }
     }
 
     function containsJamKeyword(text) {
@@ -282,90 +259,262 @@
     }
 
     async function getRouteMeta(route, bound, svc) {
-      try {
-        const j = await fetchJSON(`${API}/route/${route}/${bound}/${svc}`);
-        return j?.data || null;
-      } catch { return null; }
+      try { const j = await fetchJSON(`${API}/route/${route}/${bound}/${svc}`); return j?.data || null; }
+      catch (e) { if ((e && e.message || '').includes('HTTP 404')) return { NA: true }; return null; }
     }
     async function getStopsForRoute(route, bound, svc) {
-      const j = await fetchJSON(`${API}/route-stop/${route}/${bound}/${svc}`);
-      return j?.data || [];
+      try { const j = await fetchJSON(`${API}/route-stop/${route}/${bound}/${svc}`); return j?.data || []; }
+      catch (e) {
+        if ((e && e.message || '').includes('HTTP 404')) { const err = new Error('NA'); err.code = 'NA'; throw err; }
+        const err = new Error((e && e.message) || 'TRANSIENT'); err.code = 'TRANSIENT'; throw err;
+      }
     }
     async function getETAForStopRoute(stopId, route, svc) {
       const j = await fetchJSON(`${API}/eta/${stopId}/${route}/${svc}`);
       return j?.data || [];
     }
 
-    // -------- Core: Single combination detection --------
+    // -------- Core: Single combination detection (collect top 3 ETAs per affected stop) --------
+    // Output per combo: { route, bound, svc, meta, na?, transient?, hits:[{ stopId, seq, etas:[{eta, rmk_tc}] , sev }] , maxSeverity, tookMs }
     async function detectJamForCombo({ route, bound, svc }) {
       const startedAt = Date.now();
       const dirChar = bound === 'inbound' ? 'I' : 'O';
+
+      // route-stop (availability)
       let stops = [];
-      try {
-        stops = await getStopsForRoute(route, bound, svc);
-      } catch (e) {
-        return { route, bound, svc, meta: null, hits: [], maxSeverity: 0, tookMs: Date.now() - startedAt, error: e.message || String(e) };
+      try { stops = await getStopsForRoute(route, bound, svc); }
+      catch (e) {
+        if (e && e.code === 'NA') return { route, bound, svc, meta: null, hits: [], maxSeverity: 0, tookMs: Date.now() - startedAt, na: true };
+        return { route, bound, svc, meta: null, hits: [], maxSeverity: 0, tookMs: Date.now() - startedAt, transient: true, error: 'route-stop-transient' };
       }
 
-      const results = await pMap(stops, async (stop) => {
+      if (!Array.isArray(stops) || stops.length === 0) {
+        return { route, bound, svc, meta: null, hits: [], maxSeverity: 0, tookMs: Date.now() - startedAt, na: true };
+      }
+
+      // ETAs for each stop
+      let etaErrors = 0;
+      const perStop = await pMap(stops, async (stop) => {
         try {
-          const etas = await getETAForStopRoute(stop.stop, route, svc);
-          const list = etas.filter(x => x?.eta && x?.dir === dirChar);
-          const hit = list.find(x => x.rmk_tc && x.rmk_tc !== '原定班次' && containsJamKeyword(x.rmk_tc));
-          if (hit) {
-            return { stopId: stop.stop, seq: Number(stop.seq), remark: hit.rmk_tc, eta: hit.eta };
+          const all = await getETAForStopRoute(stop.stop, route, svc);
+          const list = all
+            .filter(x => x?.eta && x?.dir === dirChar)
+            .sort((a,b)=> new Date(a.eta) - new Date(b.eta));
+          const top3 = list.slice(0, 3).map(x => ({ eta: x.eta, rmk_tc: x.rmk_tc || '' }));
+          // Keep stop only if any of the top3 has jam keyword
+          const hasHit = top3.some(x => x.rmk_tc && containsJamKeyword(x.rmk_tc));
+          if (hasHit) {
+            // determine stop-level severity (max of its 3)
+            const sev = top3.reduce((m, e) => Math.max(m, severityOf(e.rmk_tc)), 0);
+            return { stopId: stop.stop, seq: Number(stop.seq), etas: top3, sev };
           }
-        } catch {}
-        return null;
-      }, 6);
+          return null;
+        } catch {
+          etaErrors++;
+          return null;
+        }
+      }, 4);
 
-      const hits = results.filter(Boolean).sort((a, b) => a.seq - b.seq);
-      let maxSeverity = 0; for (const h of hits) maxSeverity = Math.max(maxSeverity, severityOf(h.remark));
+      // Sort hits: severe stop first, then warning, then by seq
+      const hits = perStop
+        .filter(Boolean)
+        .sort((a, b) => {
+          if (b.sev !== a.sev) return b.sev - a.sev;
+          return a.seq - b.seq;
+        });
+
+      // Combo severity = max across all stop ETAs
+      let maxSeverity = 0;
+      for (const st of hits) {
+        for (const e of st.etas) {
+          maxSeverity = Math.max(maxSeverity, severityOf(e.rmk_tc));
+        }
+      }
+
       const meta = await getRouteMeta(route, bound, svc).catch(() => null);
+      // consider transient if ETA errors are dominant
+      const etaTransient = etaErrors / stops.length >= 0.8;
 
-      return { route, bound, svc, meta, hits, maxSeverity, tookMs: Date.now() - startedAt };
+      return { route, bound, svc, meta, hits, maxSeverity, tookMs: Date.now() - startedAt, transient: etaTransient || false };
     }
 
-    // -------- Multi detection --------
-    async function detectJamMulti({ routes, dirSel, svcSel, onProgress }) {
-      const bounds = dirSel === 'both' ? ['outbound','inbound'] : [dirSel];
-      const svcs = svcSel.includes('all') ? ['1','2','A'] : svcSel;
-      const tasks = [];
-      for (const r of routes) for (const b of bounds) for (const s of svcs) tasks.push({ route: r, bound: b, svc: s });
-      const startedAt = Date.now();
-      const outcomes = await pMap(tasks, detectJamForCombo, 6, onProgress);
-      const tookMs = Date.now() - startedAt;
-      let overall = 0;
-      for (const o of outcomes) overall = Math.max(overall, o.maxSeverity || 0);
-      return { outcomes, overall, tookMs };
+    // -------- Section ordering: always rank severe on top --------
+    function comboOrderValue(o) {
+      // Lower value = higher priority
+      if (o.na) return 5;
+      if (o.transient) return 4;
+      if ((o.maxSeverity || 0) >= 2) return 0; // severe (⛔) first
+      if ((o.maxSeverity || 0) === 1) return 1; // warning
+      if ((o.hits?.length || 0) > 0) return 2;  // has hits but mapped as non-severe/non-warn (rare)
+      return 3; // normal
+    }
+    function reorderSections(container) {
+      const sections = Array.from(container.children);
+      sections.sort((a, b) => {
+        const av = Number(a.getAttribute('data-order') || 99);
+        const bv = Number(b.getAttribute('data-order') || 99);
+        if (av !== bv) return av - bv;
+        // tie-break by route text to keep stable order
+        const at = a.querySelector('.sh-left')?.textContent || '';
+        const bt = b.querySelector('.sh-left')?.textContent || '';
+        return at.localeCompare(bt, 'zh-HK', { numeric: true });
+      });
+      sections.forEach(s => container.appendChild(s));
     }
 
-    // -------- UI Binding --------
-    const routesInput = $('#routes');
-    const dirChips = $('#dirChips');
-    const svcChips = $('#svcChips');
-    const checkBtn = $('#checkBtn');
-    const refreshBtn = $('#refreshBtn');
-    const shareBtn = $('#shareBtn');
-    const allRoutesBtn = $('#allRoutesBtn');
+    // -------- UI incremental upsert --------
+    const resultsEl = $('#results');
+    function keyOf(o) { return `${o.route}-${o.bound}-${o.svc}`; }
+    function sanitizeId(s) { return s.replace(/[^a-zA-Z0-9_-]/g,'_'); }
+    function subBadgeText(sev, flags) {
+      if (flags?.na) return 'ℹ️ 不適用';
+      if (flags?.transient) return '⏳ 暫時不可用';
+      return sev === 0 ? '✅ 正常' : sev >= 2 ? '⛔ 受阻' : '⚠️ 緩慢/延誤';
+    }
+    function rmkClass(rmk) {
+      const s = severityOf(rmk || '');
+      return s >= 2 ? 'bad' : s === 1 ? 'warn' : '';
+    }
 
-    const statusArea = $('#statusArea');
-    const statusBadge = $('#statusBadge');
-    const metaText = $('#metaText');
-    const results = $('#results');
-    const footerInfo = $('#footer-info');
+    function upsertSection(o, runId) {
+      const key = keyOf(o);
+      const id = `section-${sanitizeId(key)}`;
+      let section = document.getElementById(id);
 
-    function setFooterUpdated() { footerInfo.textContent = `最後更新：${nowStr()} · 版本：2`; }
+      const dirLabel = o.bound === 'outbound' ? '往目的地' : '返回程';
+      const dest = o.meta?.dest_tc ? ` → ${o.meta.dest_tc}` : '';
+      const subBadge = subBadgeText(o.maxSeverity || 0, { transient: !!o.transient, na: !!o.na });
+      const orderVal = comboOrderValue(o);
+
+      if (!section) {
+        section = document.createElement('div');
+        section.className = 'section';
+        section.id = id;
+        section.setAttribute('data-key', key);
+        section.innerHTML = `
+          <div class="section-header">
+            <div class="sh-left">${o.route}${dest}｜${dirLabel}｜服務類型：${o.svc}</div>
+            <div class="sh-badge">${subBadge}</div>
+          </div>
+          <div class="rows" id="rows-${sanitizeId(key)}">
+            <div class="loading">載入站點詳情…</div>
+          </div>
+        `;
+        resultsEl.appendChild(section);
+      } else {
+        const shLeft = section.querySelector('.section-header .sh-left');
+        const shBadge = section.querySelector('.section-header .sh-badge');
+        if (shLeft) shLeft.textContent = `${o.route}${dest}｜${dirLabel}｜服務類型：${o.svc}`;
+        if (shBadge) shBadge.textContent = subBadge;
+      }
+
+      // rank attributes + run tag
+      section.setAttribute('data-run-id', String(runId));
+      section.setAttribute('data-order', String(orderVal));
+
+      // Reorder sections so ⛔ are always on top (incrementally)
+      reorderSections(resultsEl);
+
+      // Rows content
+      const rowsId = `rows-${sanitizeId(key)}`;
+      const rowsEl = document.getElementById(rowsId);
+      if (!rowsEl) return;
+
+      if (o.na) { rowsEl.innerHTML = `<div class="na">${NA_TEXT}</div>`; return; }
+      if (o.transient) { rowsEl.innerHTML = `<div class="transient">${TRANSIENT_TEXT}</div>`; return; }
+
+      if ((o.hits?.length || 0) === 0) {
+        rowsEl.innerHTML = `<div class="empty">未偵測到包含關鍵字的提示。</div>`;
+      } else {
+        // Resolve stop names and render list style
+        Promise.all(o.hits.map(h => getStopName(h.stopId))).then(names => {
+          rowsEl.innerHTML = o.hits.map((h, i) => {
+            const name = names[i] || h.stopId;
+
+            // Build ETA list items (always up to 3, even if same remark)
+            const etaLis = (h.etas || []).slice(0, 3).map(et => {
+              const { min, time } = toMinAndTime(et.eta);
+              const klass = rmkClass(et.rmk_tc);
+              const rmkHtml = et.rmk_tc ? `<div class="eta-rmk ${klass}">${et.rmk_tc}</div>` : '';
+              return `
+                <li class="eta-li">
+                  <div class="eta-left">
+                    <span class="eta-min">${min}</span><span class="eta-min-text">mins</span>
+                    ${rmkHtml}
+                  </div>
+                  <div class="eta-time">${time}</div>
+                </li>
+              `;
+            }).join('') || `
+              <li class="eta-li">
+                <div class="eta-left">
+                  <span class="eta-min">--</span><span class="eta-min-text">分</span>
+                </div>
+                <div class="eta-time">--:--</div>
+              </li>
+            `;
+
+            return `
+              <div class="rowitem">
+                <div class="stop-head">
+                  <div class="seq">${h.seq}.</div>
+                  <div class="title2">${name}</div>
+                </div>
+                <ul class="eta-ul">
+                  ${etaLis}
+                </ul>
+              </div>
+            `;
+          }).join('');
+        });
+      }
+    }
+
+    // -------- Progress + badge meta --------
+    function updateProgressMeta({ total, completed, hitCombos, naCombos, transientCombos, overall, tookMs }) {
+      const pct = total ? Math.round((completed / total) * 100) : 0;
+      $('#metaText').innerHTML = `
+        <span>組合數：${total}</span>
+        <span>已完成：${completed}/${total}（${pct}%）</span>
+        <span>有異常組合：${hitCombos}</span>
+        <span>不適用組合：${naCombos}</span>
+        <span>暫時不可用：${transientCombos}</span>
+        <span>上次更新：${nowStr()}</span>
+        ${typeof tookMs === 'number' ? `<span>耗時：${tookMs}ms</span>` : ''}
+      `;
+
+      const badge = $('#statusBadge');
+      const applicable = Math.max(0, total - naCombos);
+      const mostlyTransient = applicable > 0 && transientCombos / applicable >= 0.8;
+
+      if (!navigator.onLine || mostlyTransient) { badge.className = 'badge bad'; badge.textContent = `❌ ${OFFLINE_TEXT}`; return; }
+      if (hitCombos > 0) {
+        if (overall >= 2) { badge.className = 'badge bad'; badge.textContent = `⛔ ${BAD_TEXT}`; }
+        else { badge.className = 'badge warn'; badge.textContent = `⚠️ ${WARN_TEXT}`; }
+        return;
+      }
+      badge.className = 'badge ok';
+      badge.textContent = `✅ ${OK_TEXT}`;
+    }
+
+    // -------- Multi detection with incremental rendering --------
+    const resultsElRef = $('#results');
+    let lastQueryKey = '';
+    let autoTimer = null;
+    let usingAllRoutes = false;
+    let currentRunId = 0;
+
+    function setFooterUpdated() { $('#footer-info').textContent = `最後更新：${nowStr()} · 版本：8`; }
 
     function setActive(chipEl, active) { chipEl.classList.toggle('active', !!active); }
     function getDirSelection() {
-      const active = [...dirChips.querySelectorAll('.chip.active')].map(c => c.dataset.value);
+      const active = [...$('#dirChips').querySelectorAll('.chip.active')].map(c => c.dataset.value);
       if (active.includes('both')) return 'both';
       if (active.includes('outbound') && active.includes('inbound')) return 'both';
       return active[0] || 'outbound';
     }
     function getSvcSelection() {
-      let active = [...svcChips.querySelectorAll('.chip.active')].map(c => c.dataset.value);
+      let active = [...$('#svcChips').querySelectorAll('.chip.active')].map(c => c.dataset.value);
       if (active.includes('all')) return ['all'];
       if (active.length === 0) active = ['1'];
       return active;
@@ -375,245 +524,134 @@
       const boundParam = (getParam('bound') || 'outbound').toLowerCase();
       const svcParam = (getParam('serviceType') || '1');
 
-      routesInput.value = routeParam;
+      $('#routes').value = routeParam;
 
-      [...dirChips.children].forEach(c => setActive(c, false));
+      [...$('#dirChips').children].forEach(c => setActive(c, false));
       const dirToActivate = (boundParam === 'both') ? ['both'] : [boundParam];
-      dirToActivate.forEach(v => {
-        const el = dirChips.querySelector(`.chip[data-value="${v}"]`);
-        if (el) setActive(el, true);
-      });
-      if (![...dirChips.querySelectorAll('.chip.active')].length) {
-        setActive(dirChips.querySelector('.chip[data-value="outbound"]'), true);
-      }
+      dirToActivate.forEach(v => { const el = $('#dirChips').querySelector(`.chip[data-value="${v}"]`); if (el) setActive(el, true); });
+      if (![...$('#dirChips').querySelectorAll('.chip.active')].length) setActive($('#dirChips').querySelector('.chip[data-value="outbound"]'), true);
 
-      [...svcChips.children].forEach(c => setActive(c, false));
+      [...$('#svcChips').children].forEach(c => setActive(c, false));
       const svcVals = svcParam.split(',').map(s => s.trim()).filter(Boolean);
-      if (svcVals.includes('all')) {
-        setActive(svcChips.querySelector('.chip[data-value="all"]'), true);
-      } else {
-        svcVals.forEach(v => {
-          const el = svcChips.querySelector(`.chip[data-value="${v}"]`);
-          if (el) setActive(el, true);
-        });
-        if (![...svcChips.querySelectorAll('.chip.active')].length) {
-          setActive(svcChips.querySelector('.chip[data-value="1"]'), true);
-        }
+      if (svcVals.includes('all')) setActive($('#svcChips').querySelector('.chip[data-value="all"]'), true);
+      else {
+        svcVals.forEach(v => { const el = $('#svcChips').querySelector(`.chip[data-value="${v}"]`); if (el) setActive(el, true); });
+        if (![...$('#svcChips').querySelectorAll('.chip.active')].length) setActive($('#svcChips').querySelector('.chip[data-value="1"]'), true);
       }
     }
 
-    dirChips.addEventListener('click', (e) => {
+    $('#dirChips').addEventListener('click', (e) => {
       const chip = e.target.closest('.chip'); if (!chip) return;
       const val = chip.dataset.value;
-      if (val === 'both') {
-        [...dirChips.children].forEach(c => setActive(c, c.dataset.value === 'both'));
-      } else {
+      if (val === 'both') { [...$('#dirChips').children].forEach(c => setActive(c, c.dataset.value === 'both')); }
+      else {
         const was = chip.classList.contains('active');
-        if (was && dirChips.querySelectorAll('.chip.active').length === 1) return;
-        setActive(chip, !was);
-        setActive(dirChips.querySelector('.chip[data-value="both"]'), false);
-        if (!dirChips.querySelector('.chip.active')) setActive(dirChips.querySelector('.chip[data-value="outbound"]'), true);
+        if (was && $('#dirChips').querySelectorAll('.chip.active').length === 1) return;
+        setActive(chip, !was); setActive($('#dirChips').querySelector('.chip[data-value="both"]'), false);
+        if (!$('#dirChips').querySelector('.chip.active')) setActive($('#dirChips').querySelector('.chip[data-value="outbound"]'), true);
       }
     });
 
-    svcChips.addEventListener('click', (e) => {
+    $('#svcChips').addEventListener('click', (e) => {
       const chip = e.target.closest('.chip'); if (!chip) return;
       const val = chip.dataset.value;
-      if (val === 'all') {
-        [...svcChips.children].forEach(c => setActive(c, c.dataset.value === 'all'));
-      } else {
+      if (val === 'all') { [...$('#svcChips').children].forEach(c => setActive(c, c.dataset.value === 'all')); }
+      else {
         const was = chip.classList.contains('active');
-        setActive(chip, !was);
-        setActive(svcChips.querySelector('.chip[data-value="all"]'), false);
-        if (!svcChips.querySelector('.chip.active')) setActive(chip, true);
+        setActive(chip, !was); setActive($('#svcChips').querySelector('.chip[data-value="all"]'), false);
+        if (!$('#svcChips').querySelector('.chip.active')) setActive(chip, true);
       }
     });
 
     function normalizeRoutes(input) {
       const parts = input.split(/[\s,]+/).map(x => x.trim().toUpperCase()).filter(Boolean);
-      const uniq = [...new Set(parts)].slice(0, 1000);
-      return uniq;
+      const uniq = [...new Set(parts)].slice(0, 1000); return uniq;
     }
 
-    // Handle ALL token
     async function gatherRoutes() {
-      const value = routesInput.value.trim().toUpperCase();
-      if (value === 'ALL') {
-        return await fetchAllRouteCodes(1000);
-      }
+      const value = $('#routes').value.trim().toUpperCase();
+      if (value === 'ALL') return await fetchAllRouteCodes(1000);
       return normalizeRoutes(value);
     }
 
     function setBusy(busy, { auto = false } = {}) {
-      // Do not hide results to avoid flashing; only adjust controls on manual runs
-      checkBtn.disabled = busy && !auto;
-      refreshBtn.disabled = busy && !auto;
-      routesInput.disabled = busy && !auto;
-      allRoutesBtn.disabled = busy && !auto;
-      statusArea.style.display = 'block';
-      statusBadge.textContent = busy ? (auto ? '更新中…' : '分析中…') : statusBadge.textContent;
-      // Keep results visible during refresh
+      $('#checkBtn').disabled = busy && !auto;
+      $('#refreshBtn').disabled = busy && !auto;
+      $('#routes').disabled = busy && !auto;
+      $('#allRoutesBtn').disabled = busy && !auto;
+      $('#statusArea').style.display = 'block';
+      $('#statusBadge').textContent = busy ? (auto ? '更新中…' : '分析中…') : $('#statusBadge').textContent;
     }
 
-    function renderProgress(completed, total) {
-      const pct = total ? Math.round((completed / total) * 100) : 0;
-      const safePct = isFinite(pct) ? pct : 0;
-      const pieces = metaText.innerHTML ? metaText.innerHTML.split('</span>') : [];
-      // Append or update a progress piece
-      const progText = `<span>進度：${completed}/${total}（${safePct}%）</span>`;
-      // Simple approach: always rebuild meta with current progress appended
-      // Keep last update and other info on final render
-      metaText.innerHTML = progText;
-    }
+    async function detectJamMulti({ routes, dirSel, svcSel, runId }) {
+      const bounds = dirSel === 'both' ? ['outbound','inbound'] : [dirSel];
+      const svcs = svcSel.includes('all') ? ['1','2','A'] : svcSel;
+      const tasks = [];
+      for (const r of routes) for (const b of bounds) for (const s of svcs) tasks.push({ route: r, bound: b, svc: s });
 
-    function renderMultiOutcome(summary) {
-      const { outcomes, overall, tookMs } = summary;
-      statusArea.style.display = 'block';
-      results.style.display = 'block';
+      let completed = 0, hitCombos = 0, naCombos = 0, transientCombos = 0, overall = 0;
+      updateProgressMeta({ total: tasks.length, completed, hitCombos, naCombos, transientCombos, overall });
 
-      if (overall === 0) {
-        statusBadge.className = 'badge ok';
-        statusBadge.textContent = `✅ ${OK_TEXT}`;
-      } else if (overall >= 2) {
-        statusBadge.className = 'badge bad';
-        statusBadge.textContent = `⛔ ${BAD_TEXT}`;
-      } else {
-        statusBadge.className = 'badge warn';
-        statusBadge.textContent = `⚠️ ${WARN_TEXT}`;
-      }
-
-      const hitCombos = outcomes.filter(o => (o?.hits?.length || 0) > 0).length;
-      metaText.innerHTML = `
-        <span>組合數：${outcomes.length}</span>
-        <span>有異常組合：${hitCombos}</span>
-        <span>上次更新：${nowStr()}</span>
-        <span>耗時：${tookMs}ms</span>
-      `;
-
-      // Update footer time
-      setFooterUpdated();
-
-      if (outcomes.length === 0) {
-        results.innerHTML = `<div class="empty">沒有可顯示的組合</div>`;
-        return;
-      }
-
-      const sectionHtml = outcomes.map((o) => {
-        const dirLabel = o.bound === 'outbound' ? '往目的地' : '返回程';
-        const dest = o.meta?.dest_tc ? ` → ${o.meta.dest_tc}` : '';
-        const sev = o.maxSeverity || 0;
-        const subBadge = sev === 0 ? '✅ 正常' : sev >= 2 ? '⛔ 受阻' : '⚠️ 緩慢/延誤';
-
-        if ((o.hits?.length || 0) === 0) {
-          return `
-            <div class="section" data-key="${o.route}-${o.bound}-${o.svc}">
-              <div class="section-header">
-                <div>${o.route}${dest}｜${dirLabel}｜服務類型：${o.svc}</div>
-                <div>${subBadge}</div>
-              </div>
-              <div class="rows">
-                <div class="empty">未偵測到包含關鍵字的提示。</div>
-              </div>
-            </div>
-          `;
+      const startedAt = Date.now();
+      await pMap(
+        tasks,
+        detectJamForCombo,
+        4,
+        {
+          onEach: (out) => {
+            if (runId !== currentRunId) return;
+            upsertSection(out, runId);
+            completed++;
+            if (out.na) naCombos++;
+            else if (out.transient) transientCombos++;
+            else if ((out.hits?.length || 0) > 0) hitCombos++;
+            overall = Math.max(overall, out.maxSeverity || 0);
+            updateProgressMeta({ total: tasks.length, completed, hitCombos, naCombos, transientCombos, overall });
+          }
         }
+      );
 
-        const placeholderId = `rows-${o.route}-${o.bound}-${o.svc}`.replace(/[^a-zA-Z0-9_-]/g,'_');
-        // Asynchronously resolve names and update the rows container in-place
-        Promise.all(o.hits.map(h => getStopName(h.stopId))).then(names => {
-          const rowsEl = document.getElementById(placeholderId);
-          if (!rowsEl) return;
-          rowsEl.innerHTML = o.hits.map((h, i) => {
-            const name = names[i] || h.stopId;
-            const s = severityOf(h.remark);
-            const rmkClass = s >= 2 ? 'rmk bad' : 'rmk';
-            const t = h.eta ? new Date(h.eta) : null;
-            const etaStr = t ? `${(t.getHours()%12)||12}:${pad2(t.getMinutes())}` : '--:--';
-            return `
-              <div class="rowitem">
-                <div class="seq">${h.seq}.</div>
-                <div>
-                  <div class="title2">${name}</div>
-                  <span class="${rmkClass}">${h.remark}</span>
-                  <div class="eta">下一班到達時間：${etaStr}</div>
-                </div>
-              </div>
-            `;
-          }).join('');
-        });
+      const tookMs = Date.now() - startedAt;
 
-        return `
-          <div class="section" data-key="${o.route}-${o.bound}-${o.svc}">
-            <div class="section-header">
-              <div>${o.route}${dest}｜${dirLabel}｜服務類型：${o.svc}</div>
-              <div>${subBadge}</div>
-            </div>
-            <div class="rows" id="${placeholderId}">
-              <div class="loading">載入站點詳情…</div>
-            </div>
-          </div>
-        `;
-      }).join('');
+      // Remove stale sections from previous runs
+      [...resultsElRef.children].forEach(sec => {
+        if (sec.getAttribute && sec.getAttribute('data-run-id') !== String(runId)) {
+          resultsElRef.removeChild(sec);
+        }
+      });
 
-      // Replace sections content but keep container visible to avoid flash
-      results.innerHTML = sectionHtml;
+      updateProgressMeta({ total: tasks.length, completed, hitCombos, naCombos, transientCombos, overall, tookMs });
+      return { overall, tookMs };
     }
-
-    let lastQueryKey = '';
-    let autoTimer = null;
-    let usingAllRoutes = false;
 
     async function runDetect(force = false, { auto = false } = {}) {
       const dirSel = getDirSelection();
       const svcSel = getSvcSelection();
+      const routes = await gatherRoutes();
 
-      // Determine routes
-      let routes;
-      const value = routesInput.value.trim().toUpperCase();
-      if (value === 'ALL') {
-        usingAllRoutes = true;
-        routes = await fetchAllRouteCodes(1000);
-      } else {
-        usingAllRoutes = false;
-        routes = normalizeRoutes(value);
-      }
+      if (routes.length === 0) { alert('請輸入至少一個路線編號（例如：276A 或 276A,269C，或輸入 ALL）'); return; }
 
-      if (routes.length === 0) {
-        alert('請輸入至少一個路線編號（例如：276A 或 276A,269C，或輸入 ALL）');
-        return;
-      }
+      const value = $('#routes').value.trim().toUpperCase();
+      usingAllRoutes = (value === 'ALL');
 
       const key = JSON.stringify({ routesKey: usingAllRoutes ? 'ALL' : routes.join(','), dirSel, svcSel });
-      if (!force && key === lastQueryKey) {
-        // same params
-      } else {
-        // If too long, store as ALL; otherwise store actual list
-        const tooLong = routes.join(',').length > 200 || usingAllRoutes;
-        safeSetParamsMulti(routes, dirSel, svcSel, { all: tooLong });
-      }
+      if (!force && key === lastQueryKey) { /* same params */ }
+      else { const tooLong = routes.join(',').length > 200 || usingAllRoutes; safeSetParamsMulti(routes, dirSel, svcSel, { all: tooLong }); }
       lastQueryKey = key;
+
+      currentRunId++; const runId = currentRunId;
 
       setBusy(true, { auto });
       try {
-        const summary = await detectJamMulti({
-          routes, dirSel, svcSel,
-          onProgress: (completed, total) => {
-            // Only show progress during long manual runs to avoid noisy updates in auto refresh
-            if (!auto) renderProgress(completed, total);
-          }
-        });
-        renderMultiOutcome(summary);
+        await detectJamMulti({ routes, dirSel, svcSel, runId });
+        setFooterUpdated();
       } catch (e) {
-        statusArea.style.display = 'block';
-        statusBadge.className = 'badge';
-        statusBadge.textContent = '❌ 載入失敗';
-        results.style.display = 'block';
+        $('#statusArea').style.display = 'block';
+        $('#statusBadge').className = 'badge bad';
+        $('#statusBadge').textContent = `❌ ${OFFLINE_TEXT}`;
         const msg = (e && e.message) ? e.message : String(e || '未知錯誤');
-        // Keep existing results; just show an inline error
-        metaText.innerHTML = `<span style="color:#b31c1c;">錯誤：${msg}</span>`;
-      } finally {
-        setBusy(false, { auto });
-      }
+        $('#metaText').innerHTML = `<span style="color:#b31c1c;">錯誤：${msg}</span>`;
+      } finally { setBusy(false, { auto }); }
     }
 
     function startAutoRefresh() {
@@ -633,10 +671,8 @@
     $('#checkBtn').addEventListener('click', () => { runDetect(); startAutoRefresh(); });
     $('#refreshBtn').addEventListener('click', () => runDetect(true));
     $('#shareBtn').addEventListener('click', async () => {
-      // When sharing, if ALL mode or too long, share with route=ALL
-      const dirSel = getDirSelection();
-      const svcSel = getSvcSelection();
-      const value = routesInput.value.trim().toUpperCase();
+      const dirSel = getDirSelection(); const svcSel = getSvcSelection();
+      const value = $('#routes').value.trim().toUpperCase();
       const routes = (value === 'ALL') ? ['ALL'] : normalizeRoutes(value);
       const tooLong = routes.join(',').length > 200 || value === 'ALL';
       const url = new URL(window.location.href);
@@ -645,43 +681,34 @@
       url.searchParams.set('serviceType', svcSel.join(','));
       const shareUrl = url.toString();
       try {
-        if (navigator.share) {
-          await navigator.share({ title: 'KMB Bus Service Update', url: shareUrl });
-        } else if (navigator.clipboard) {
-          await navigator.clipboard.writeText(shareUrl);
-          alert('已複製分享連結到剪貼簿');
-        } else {
-          prompt('複製以下連結：', shareUrl);
-        }
+        if (navigator.share) await navigator.share({ title: 'KMB Bus Service Update', url: shareUrl });
+        else if (navigator.clipboard) { await navigator.clipboard.writeText(shareUrl); alert('已複製分享連結到剪貼簿'); }
+        else { prompt('複製以下連結：', shareUrl); }
       } catch {}
     });
 
-    // NEW: All routes button
     $('#allRoutesBtn').addEventListener('click', async () => {
       if (!confirm('此操作會抓取全港所有九巴路線並以「兩方向」分析，可能非常耗時並消耗流量。是否繼續？')) return;
-      try {
-        // Mark ALL mode in input to trigger special handling (no huge URL injection)
-        routesInput.value = 'ALL';
-        // force direction to both
-        [...dirChips.children].forEach(c => c.classList.remove('active'));
-        const bothEl = dirChips.querySelector('.chip[data-value="both"]');
-        if (bothEl) bothEl.classList.add('active');
-        await runDetect(true);
-        startAutoRefresh();
-      } catch (e) {
-        alert('抓取所有路線失敗：' + (e.message || e));
-      }
+      $('#routes').value = 'ALL';
+      [...$('#dirChips').children].forEach(c => c.classList.remove('active'));
+      const bothEl = $('#dirChips').querySelector('.chip[data-value="both"]');
+      if (bothEl) bothEl.classList.add('active');
+      await runDetect(true);
+      startAutoRefresh();
     });
 
-    // Init from URL
-    setFromParams();
-    // If route=ALL in URL, leave the input as ALL; otherwise use the provided list.
-    const initial = (getParam('route') || '').trim().toUpperCase();
-    if (initial) {
-      if (initial === 'ALL') routesInput.value = 'ALL';
-      runDetect(false);
-      startAutoRefresh();
-    }
+    // Init
+    (function init() {
+      setActive($('#dirChips .chip[data-value="outbound"]'), true);
+      setActive($('#svcChips .chip[data-value="1"]'), true);
+      setFromParams();
+      const initial = (getParam('route') || '').trim().toUpperCase();
+      if (initial) {
+        if (initial === 'ALL') $('#routes').value = 'ALL';
+        runDetect(false);
+        startAutoRefresh();
+      }
+    })();
   </script>
 </body>
 </html>
