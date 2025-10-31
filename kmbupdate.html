@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <title>KMB Bus Service Update</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="theme-color" content="#003d6b" />
+  <style>
+    :root {
+      --brand: #003d6b;
+      --ok: #2e7d32;
+      --warn: #ff9800;
+      --bad: #c62828;
+      --bg: #ffffff;
+      --muted: #6b7280;
+      --card: #f5f7fa;
+      --border: #e5e7eb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans CJK TC", "PingFang TC", "Heiti TC", Arial, sans-serif;
+      background: var(--bg);
+      color: #111827;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--brand);
+      color: #fff;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    header .title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+    header .clock {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+    }
+    main {
+      padding: 12px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .controls .full { grid-column: 1 / -1; }
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      background: #fff;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      appearance: none;
+      border: none;
+      background: var(--brand);
+      color: #fff;
+      padding: 10px 14px;
+      font-size: 16px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+    button.secondary { background: #2563eb; }
+    button.ghost {
+      background: transparent;
+      color: var(--brand);
+      border: 1px solid var(--brand);
+    }
+    .status {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+      width: 100%;
+      justify-content: center;
+      text-align: center;
+    }
+    .badge.ok { color: var(--ok); border-color: rgba(46,125,50,.25); background: #e8f5e9; }
+    .badge.warn { color: var(--warn); border-color: rgba(255,152,0,.25); background: #fff3e0; }
+    .badge.bad { color: var(--bad); border-color: rgba(198,40,40,.25); background: #ffebee; }
+    .meta {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .list {
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+    }
+    .row:last-child { border-bottom: none; }
+    .seq {
+      min-width: 40px;
+      font-weight: 700;
+      color: var(--muted);
+      text-align: right;
+      padding-right: 4px;
+    }
+    .row .title2 {
+      font-weight: 700;
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    .rmk {
+      display: inline-block;
+      margin-top: 2px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      line-height: 1;
+      background: #e5f1fb;
+      color: #2176ae;
+    }
+    .rmk.bad { background: #fee; color: #b31c1c; }
+    .eta {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .empty, .loading, .error {
+      text-align: center;
+      color: var(--muted);
+      padding: 16px;
+      font-size: 14px;
+    }
+    .tips {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    /* Mobile-first; small enhancements for larger screens */
+    @media (min-width: 640px) {
+      header .title { font-size: 18px; }
+      .controls { grid-template-columns: 1fr 120px 120px; }
+      .controls .full { grid-column: 1 / 4; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">KMB Bus Service Update</div>
+    <div class="clock" id="clock">--:--:--</div>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="controls">
+        <div class="full">
+          <label for="route">路線編號</label>
+          <input id="route" type="text" placeholder="例如：276A" inputmode="latin-name" autocapitalize="characters" />
+        </div>
+        <div>
+          <label for="bound">方向</label>
+          <select id="bound">
+            <option value="outbound">往目的地 (outbound)</option>
+            <option value="inbound">返回程 (inbound)</option>
+          </select>
+        </div>
+        <div>
+          <label for="svc">服務類型</label>
+          <select id="svc">
+            <option value="1" selected>1（常用）</option>
+            <option value="2">2</option>
+            <option value="A">A（如有）</option>
+          </select>
+        </div>
+        <div class="full actions">
+          <button id="checkBtn" aria-label="Check congestion">查詢</button>
+          <button id="refreshBtn" class="secondary" aria-label="Refresh">重新整理</button>
+          <button id="shareBtn" class="ghost" aria-label="Share link">分享</button>
+        </div>
+      </div>
+
+      <div class="status" id="statusArea" style="display:none;">
+        <div id="statusBadge" class="badge">載入中…</div>
+        <div class="meta" id="metaText"></div>
+      </div>
+    </div>
+
+    <div id="results" class="list" style="display:none;"></div>
+
+    <div class="tips">
+      資料來源：九巴即時到站（政府資料一線通）<br />
+      關鍵字判斷：受阻／行車受阻／延誤／行車緩慢／緩慢
+    </div>
+  </main>
+
+  <script>
+    // -------- Utilities --------
+    const $ = (sel) => document.querySelector(sel);
+    const pad2 = (n) => (n > 9 ? '' : '0') + n;
+    const nowStr = () => {
+      const d = new Date();
+      let h = d.getHours();
+      const m = d.getMinutes();
+      const s = d.getSeconds();
+      h = h % 12 || 12;
+      return h + ':' + pad2(m) + ':' + pad2(s);
+    };
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+    // -------- Clock --------
+    const clock = $('#clock');
+    clock.textContent = nowStr();
+    setInterval(() => (clock.textContent = nowStr()), 1000);
+
+    // -------- Params --------
+    function getParam(name, fallback = '') {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name) ?? fallback;
+    }
+    function setParams(route, bound, svc) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('route', route);
+      url.searchParams.set('bound', bound);
+      url.searchParams.set('serviceType', svc);
+      history.replaceState(null, '', url.toString());
+    }
+
+    // -------- API --------
+    const API = 'https://data.etabus.gov.hk/v1/transport/kmb';
+    const JAM_KEYWORDS = [
+      '行車受阻',
+      '受阻',
+      '延誤',
+      '行車緩慢',
+      '緩慢'
+      // 可自行擴充：'擠塞','塞車','交通擠塞'
+    ];
+    const OK_TEXT = '服務正常';
+    const WARN_TEXT = '可能延誤／行車緩慢';
+    const BAD_TEXT = '行車受阻';
+
+    // fetch JSON helper with basic retry
+    async function fetchJSON(url, { retries = 2, retryDelay = 500 } = {}) {
+      for (let i = 0; i <= retries; i++) {
+        try {
+          const res = await fetch(url, { cache: 'no-store' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return await res.json();
+        } catch (e) {
+          if (i === retries) throw e;
+          await sleep(retryDelay * (i + 1));
+        }
+      }
+    }
+
+    // limit concurrency for many stop ETA calls
+    async function pMap(arr, mapper, concurrency = 10) {
+      const ret = [];
+      let idx = 0;
+      const workers = Array(Math.min(concurrency, arr.length)).fill(0).map(async () => {
+        while (idx < arr.length) {
+          const i = idx++;
+          ret[i] = await mapper(arr[i], i);
+        }
+      });
+      await Promise.all(workers);
+      return ret;
+    }
+
+    // cache stop names to reduce requests
+    const stopNameCache = new Map();
+    async function getStopName(stopId) {
+      if (stopNameCache.has(stopId)) return stopNameCache.get(stopId);
+      try {
+        const data = await fetchJSON(`${API}/stop/${stopId}`);
+        const name = data?.data?.name_tc || stopId;
+        stopNameCache.set(stopId, name);
+        return name;
+      } catch {
+        return stopId;
+      }
+    }
+
+    function containsJamKeyword(text) {
+      if (!text) return false;
+      return JAM_KEYWORDS.some(k => text.includes(k));
+    }
+
+    function severityOf(text) {
+      if (!text) return 0;
+      if (text.includes('行車受阻') || text.includes('受阻')) return 2; // severe
+      if (text.includes('延誤')) return 1;
+      if (text.includes('行車緩慢') || text.includes('緩慢')) return 1;
+      return 0;
+    }
+
+    async function getRouteMeta(route, bound, svc) {
+      // Best-effort get route info; not strictly required
+      try {
+        const j = await fetchJSON(`${API}/route/${route}/${bound}/${svc}`);
+        return j?.data || null;
+      } catch {
+        return null;
+      }
+    }
+
+    async function getStopsForRoute(route, bound, svc) {
+      const j = await fetchJSON(`${API}/route-stop/${route}/${bound}/${svc}`);
+      return j?.data || [];
+    }
+
+    async function getETAForStopRoute(stopId, route, svc) {
+      const j = await fetchJSON(`${API}/eta/${stopId}/${route}/${svc}`);
+      return j?.data || [];
+    }
+
+    // -------- Core: Jam Detection --------
+    async function detectJam({ route, bound, svc }) {
+      const startedAt = Date.now();
+
+      // Gather route stops
+      const stops = await getStopsForRoute(route, bound, svc);
+
+      // For each stop, check ETA remarks for jam keywords
+      const results = await pMap(stops, async (stop) => {
+        try {
+          const etas = await getETAForStopRoute(stop.stop, route, svc);
+          // limit to next few ETAs and match bound (KMB: dir is 'I' or 'O')
+          const dirChar = bound === 'inbound' ? 'I' : 'O';
+          const list = etas.filter(x => x?.eta && x?.dir === dirChar);
+          const hit = list.find(x => x.rmk_tc && x.rmk_tc !== '原定班次' && containsJamKeyword(x.rmk_tc));
+          if (hit) {
+            return {
+              stopId: stop.stop,
+              seq: Number(stop.seq),
+              remark: hit.rmk_tc,
+              eta: hit.eta
+            };
+          }
+        } catch {
+          // ignore per-stop errors
+        }
+        return null;
+      }, 10);
+
+      const hits = results.filter(Boolean).sort((a, b) => a.seq - b.seq);
+
+      // Derive severity
+      let maxSeverity = 0;
+      for (const h of hits) maxSeverity = Math.max(maxSeverity, severityOf(h.remark));
+
+      // Route meta (destination names etc.)
+      const meta = await getRouteMeta(route, bound, svc);
+
+      return {
+        route,
+        bound,
+        svc,
+        meta,
+        hits,
+        maxSeverity,
+        tookMs: Date.now() - startedAt
+      };
+    }
+
+    // -------- UI Binding --------
+    const routeInput = $('#route');
+    const boundSelect = $('#bound');
+    const svcSelect = $('#svc');
+    const checkBtn = $('#checkBtn');
+    const refreshBtn = $('#refreshBtn');
+    const shareBtn = $('#shareBtn');
+
+    const statusArea = $('#statusArea');
+    const statusBadge = $('#statusBadge');
+    const metaText = $('#metaText');
+    const results = $('#results');
+
+    function applyInputsFromParams() {
+      const r = (getParam('route') || '').toUpperCase();
+      const b = (getParam('bound') || 'outbound').toLowerCase();
+      const s = (getParam('serviceType') || '1');
+
+      if (r) routeInput.value = r;
+      boundSelect.value = (b === 'inbound' || b === 'outbound') ? b : 'outbound';
+      svcSelect.value = s;
+    }
+
+    function setBusy(busy) {
+      checkBtn.disabled = busy;
+      refreshBtn.disabled = busy;
+      routeInput.disabled = busy;
+      boundSelect.disabled = busy;
+      svcSelect.disabled = busy;
+      statusArea.style.display = 'block';
+      statusBadge.textContent = busy ? '分析中…' : statusBadge.textContent;
+      statusBadge.className = 'badge'; // reset class; will be set after
+      results.style.display = busy ? 'none' : results.style.display;
+    }
+
+    function renderOutcome(o) {
+      statusArea.style.display = 'block';
+      results.style.display = 'block';
+
+      // Badge
+      if (o.hits.length === 0) {
+        statusBadge.className = 'badge ok';
+        statusBadge.textContent = `✅ ${OK_TEXT}`;
+      } else if (o.maxSeverity >= 2) {
+        statusBadge.className = 'badge bad';
+        statusBadge.textContent = `⛔ ${BAD_TEXT}`;
+      } else {
+        statusBadge.className = 'badge warn';
+        statusBadge.textContent = `⚠️ ${WARN_TEXT}`;
+      }
+
+      // Meta info
+      const dirLabel = o.bound === 'outbound' ? '往目的地' : '返回程';
+      const dest = o.meta?.dest_tc ? ` → ${o.meta.dest_tc}` : '';
+      metaText.innerHTML = `
+        <span>路線：<strong>${o.route}</strong>${dest}</span>
+        <span>方向：${dirLabel}</span>
+        <span>服務類型：${o.svc}</span>
+        <span>上次更新：${nowStr()}</span>
+        <span>耗時：${o.tookMs}ms</span>
+        <span>${o.hits.length ? '關鍵站點：' + o.hits.length + ' 個' : '未見異常關鍵字'}</span>
+      `;
+
+      // List of hit stops
+      if (o.hits.length === 0) {
+        results.innerHTML = `<div class="empty">目前未偵測到含有「${JAM_KEYWORDS.join('／')}」的提示。</div>`;
+        return;
+      }
+
+      // We will resolve stop names only for hits (reduce API calls)
+      Promise.all(o.hits.map(h => getStopName(h.stopId))).then(names => {
+        const html = o.hits.map((h, i) => {
+          const name = names[i] || h.stopId;
+          const sev = severityOf(h.remark);
+          const rmkClass = sev >= 2 ? 'rmk bad' : 'rmk';
+          const t = h.eta ? new Date(h.eta) : null;
+          const etaStr = t ? `${(t.getHours()%12)||12}:${pad2(t.getMinutes())}` : '--:--';
+          return `
+            <div class="row">
+              <div class="seq">${h.seq}.</div>
+              <div>
+                <div class="title2">${name}</div>
+                <span class="${rmkClass}">${h.remark}</span>
+                <div class="eta">下一班到達時間：${etaStr}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+        results.innerHTML = html;
+      });
+    }
+
+    let lastQuery = { route: '', bound: '', svc: '' };
+    let autoTimer = null;
+
+    async function runDetect(force = false) {
+      const route = routeInput.value.trim().toUpperCase();
+      const bound = boundSelect.value;
+      const svc = svcSelect.value.trim() || '1';
+      if (!route) {
+        alert('請輸入路線編號（例如：276A）');
+        return;
+      }
+      if (!force && lastQuery.route === route && lastQuery.bound === bound && lastQuery.svc === svc) {
+        // same params; continue
+      } else {
+        setParams(route, bound, svc);
+      }
+      lastQuery = { route, bound, svc };
+
+      setBusy(true);
+      try {
+        const outcome = await detectJam({ route, bound, svc });
+        renderOutcome(outcome);
+      } catch (e) {
+        statusArea.style.display = 'block';
+        statusBadge.className = 'badge';
+        statusBadge.textContent = '❌ 載入失敗';
+        results.style.display = 'block';
+        results.innerHTML = `<div class="error">載入或分析失敗：${e.message || e}</div>`;
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function startAutoRefresh() {
+      if (autoTimer) clearInterval(autoTimer);
+      autoTimer = setInterval(() => runDetect(true), 30000);
+    }
+
+    // -------- Events --------
+    checkBtn.addEventListener('click', () => { runDetect(); startAutoRefresh(); });
+    refreshBtn.addEventListener('click', () => runDetect(true));
+    shareBtn.addEventListener('click', async () => {
+      const route = routeInput.value.trim().toUpperCase();
+      const bound = boundSelect.value;
+      const svc = svcSelect.value.trim() || '1';
+      const url = new URL(window.location.href);
+      url.searchParams.set('route', route);
+      url.searchParams.set('bound', bound);
+      url.searchParams.set('serviceType', svc);
+      const shareUrl = url.toString();
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: 'KMB Bus Service Update', url: shareUrl });
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(shareUrl);
+          alert('已複製分享連結到剪貼簿');
+        } else {
+          prompt('複製以下連結：', shareUrl);
+        }
+      } catch {}
+    });
+
+    // -------- Init --------
+    applyInputsFromParams();
+    if (routeInput.value.trim()) {
+      runDetect();
+      startAutoRefresh();
+    }
+  </script>
+</body>
+</html>
