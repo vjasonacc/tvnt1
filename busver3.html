@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTR PIDS Bus Display</title>
+    <style>
+        :root {
+            --mtr-purple: #6c2c8f;
+            --mtr-text: #000000;
+            --mtr-bg: #ffffff;
+            --mtr-border: #cccccc;
+            --mtr-orange: #ff6600;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            background-color: var(--mtr-bg);
+            color: var(--mtr-text);
+            padding: 0;
+            margin: 0;
+        }
+
+        /* TVPIDS Mode - Large display for TV screens */
+        body.mode-tvpids {
+            font-size: 120%;
+        }
+
+        body.mode-tvpids .pids-container {
+            max-width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.mode-tvpids .header {
+            padding: 24px 32px;
+        }
+
+        body.mode-tvpids .stop-name {
+            font-size: 42px;
+        }
+
+        body.mode-tvpids .clock {
+            font-size: 36px;
+        }
+
+        body.mode-tvpids .eta-table th {
+            font-size: 20px;
+            padding: 16px 20px;
+        }
+
+        body.mode-tvpids .eta-table td {
+            padding: 24px 20px;
+            font-size: 22px;
+        }
+
+        body.mode-tvpids .route-number {
+            font-size: 32px;
+            padding: 12px 20px;
+            min-width: 80px;
+        }
+
+        body.mode-tvpids .destination {
+            font-size: 26px;
+        }
+
+        body.mode-tvpids .destination-en {
+            font-size: 18px;
+        }
+
+        body.mode-tvpids .eta-time {
+            font-size: 32px;
+        }
+
+        body.mode-tvpids .eta-minutes {
+            font-size: 18px;
+        }
+
+        body.mode-tvpids #content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Mobile Mode - Compact display */
+        body.mode-mobile .pids-container {
+            max-width: 100%;
+        }
+
+        body.mode-mobile .header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 12px 16px;
+        }
+
+        body.mode-mobile .stop-name {
+            font-size: 20px;
+        }
+
+        body.mode-mobile .stop-id {
+            font-size: 12px;
+        }
+
+        body.mode-mobile .clock {
+            font-size: 18px;
+            align-self: flex-end;
+        }
+
+        body.mode-mobile .eta-table {
+            font-size: 14px;
+        }
+
+        body.mode-mobile .eta-table th {
+            padding: 8px 12px;
+            font-size: 11px;
+        }
+
+        body.mode-mobile .eta-table td {
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        body.mode-mobile .route-number {
+            font-size: 16px;
+            padding: 6px 12px;
+            min-width: 50px;
+        }
+
+        body.mode-mobile .destination {
+            font-size: 15px;
+        }
+
+        body.mode-mobile .destination-en {
+            font-size: 12px;
+        }
+
+        body.mode-mobile .eta-time {
+            font-size: 18px;
+        }
+
+        body.mode-mobile .eta-minutes {
+            font-size: 12px;
+        }
+
+        body.mode-mobile .remark {
+            font-size: 10px;
+            padding: 3px 8px;
+        }
+
+        body.mode-mobile .footer {
+            padding: 8px 16px;
+            font-size: 11px;
+        }
+
+        /* Computer Mode - Default styling (already defined above) */
+
+        .pids-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+        }
+
+        .header {
+            background-color: var(--mtr-purple);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #e6007e;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .stop-name {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .stop-id {
+            font-size: 14px;
+            opacity: 0.9;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 4px;
+        }
+
+        .clock {
+            font-size: 24px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        .eta-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .eta-table thead {
+            background-color: #f5f5f5;
+            border-bottom: 2px solid var(--mtr-border);
+        }
+
+        .eta-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 0.5px;
+        }
+
+        .eta-table th:first-child {
+            width: 100px;
+        }
+
+        .eta-table th:nth-child(2) {
+            width: 40%;
+        }
+
+        .eta-table th:nth-child(3) {
+            width: 150px;
+        }
+
+        .eta-table tbody tr {
+            border-bottom: 1px solid #e5e5e5;
+            transition: background-color 0.2s;
+        }
+
+        .eta-table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .eta-table td {
+            padding: 16px;
+            font-size: 16px;
+        }
+
+        .route-number {
+            background-color: var(--mtr-orange);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 20px;
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .destination {
+            font-weight: 500;
+            font-size: 18px;
+            color: #000;
+        }
+
+        .destination-en {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .eta-time {
+            font-weight: bold;
+            font-size: 22px;
+            color: var(--mtr-purple);
+            font-family: 'Courier New', monospace;
+        }
+
+        .eta-time.arriving {
+            color: #d32f2f;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .eta-minutes {
+            font-size: 14px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .remark {
+            display: inline-block;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .no-eta {
+            color: #999;
+            font-style: italic;
+        }
+
+        .footer {
+            background-color: #f5f5f5;
+            padding: 12px 24px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid var(--mtr-border);
+        }
+
+        .last-update {
+            margin-top: 4px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 16px 24px;
+            margin: 16px;
+            border-radius: 4px;
+            border-left: 4px solid #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="pids-container">
+        <div class="header">
+            <div class="header-left">
+                <div class="stop-name">Bus Stop</div>
+                <div class="stop-id" id="stopId">B10F5697E4DA810B</div>
+            </div>
+            <div class="clock" id="clock">--:--:--</div>
+        </div>
+
+        <div id="content">
+            <div class="loading">載入巴士到站資訊中...</div>
+        </div>
+
+        <div class="footer">
+            <div>實時巴士到站資訊 | 九巴</div>
+            <div class="last-update">最後更新: <span id="lastUpdate">--</span></div>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        function getURLParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                stop_id: params.get('stop_id') || 'B10F5697E4DA810B',
+                mode: params.get('mode') || 'computer'
+            };
+        }
+
+        const urlParams = getURLParams();
+        const API_URL = `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${urlParams.stop_id}`;
+        let updateInterval;
+
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        function calculateMinutes(etaString) {
+            if (!etaString) return null;
+            const etaTime = new Date(etaString);
+            const now = new Date();
+            const diff = Math.floor((etaTime - now) / 1000 / 60);
+            return diff;
+        }
+
+        function formatETA(etaString) {
+            if (!etaString) return '<span class="no-eta">--</span>';
+            
+            const minutes = calculateMinutes(etaString);
+            
+            if (minutes < 0) {
+                return '<span class="no-eta">已開出</span>';
+            } else if (minutes === 0) {
+                return '<span class="eta-time arriving">即將抵達</span>';
+            } else if (minutes === 1) {
+                return `<div class="eta-time">${minutes}</div><div class="eta-minutes">分鐘</div>`;
+            } else {
+                return `<div class="eta-time">${minutes}</div><div class="eta-minutes">分鐘</div>`;
+            }
+        }
+
+        function groupByRoute(data) {
+            const grouped = {};
+            data.forEach(item => {
+                const key = `${item.route}-${item.dir}-${item.dest_en}`;
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        route: item.route,
+                        dest_tc: item.dest_tc,
+                        dest_en: item.dest_en,
+                        etas: []
+                    };
+                }
+                grouped[key].etas.push({
+                    eta: item.eta,
+                    rmk_en: item.rmk_en,
+                    rmk_tc: item.rmk_tc,
+                    eta_seq: item.eta_seq
+                });
+            });
+            
+            // Sort ETAs within each route
+            Object.values(grouped).forEach(route => {
+                route.etas.sort((a, b) => {
+                    if (!a.eta) return 1;
+                    if (!b.eta) return -1;
+                    return new Date(a.eta) - new Date(b.eta);
+                });
+            });
+            
+            return Object.values(grouped);
+        }
+
+        function renderETATable(data) {
+            const routes = groupByRoute(data);
+            
+            let html = '<table class="eta-table"><thead><tr>';
+            html += '<th>路線</th>';
+            html += '<th>目的地</th>';
+            html += '<th>下班車</th>';
+            html += '<th>次班車</th>';
+            html += '<th>再下班車</th>';
+            html += '</tr></thead><tbody>';
+            
+            routes.forEach(route => {
+                html += '<tr>';
+                html += `<td><span class="route-number">${route.route}</span></td>`;
+                html += `<td><div class="destination">${route.dest_tc}</div><div class="destination-en">${route.dest_en}</div></td>`;
+                
+                // Display up to 3 ETAs
+                for (let i = 0; i < 3; i++) {
+                    const eta = route.etas[i];
+                    html += '<td>';
+                    if (eta) {
+                        html += formatETA(eta.eta);
+                        if (eta.rmk_tc) {
+                            html += `<div class="remark">${eta.rmk_tc}</div>`;
+                        }
+                    } else {
+                        html += '<span class="no-eta">--</span>';
+                    }
+                    html += '</td>';
+                }
+                
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            return html;
+        }
+
+        async function fetchBusData() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                
+                if (result.data && result.data.length > 0) {
+                    document.getElementById('content').innerHTML = renderETATable(result.data);
+                    
+                    // Update last update time
+                    const updateTime = new Date(result.generated_timestamp);
+                    document.getElementById('lastUpdate').textContent = updateTime.toLocaleTimeString('en-HK', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    });
+                } else {
+                    document.getElementById('content').innerHTML = '<div class="loading">此站暫無巴士服務</div>';
+                }
+            } catch (error) {
+                console.error('Error fetching bus ', error);
+                document.getElementById('content').innerHTML = `<div class="error">無法載入巴士到站資訊。請檢查網絡連線後重試。</div>`;
+            }
+        }
+
+        // Apply mode styling
+        function applyMode() {
+            document.body.className = `mode-${urlParams.mode}`;
+            document.getElementById('stopId').textContent = urlParams.stop_id;
+        }
+
+        // Initialize
+        applyMode();
+        updateClock();
+        setInterval(updateClock, 1000);
+        
+        fetchBusData();
+        updateInterval = setInterval(fetchBusData, 10000); // Update every 10 seconds
+    </script>
+</body>
+</html>
