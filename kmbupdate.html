@@ -289,7 +289,7 @@
     </div>
 
     <footer class="footer" id="footer-info">
-      最後更新：--:--:-- · 版本：13
+      最後更新：--:--:-- · 版本：14
     </footer>
   </main>
 
@@ -630,7 +630,7 @@
         tvSummaryTitle.className = 'title ok';
       }
 
-      // Lines: show severe, warn, and ALWAYS also normal (fix)
+      // Lines: show severe, warn, and ALWAYS also normal
       const parts = [];
       if (severeLines.length) {
         parts.push(`<div class="section-label">⛔ 受阻</div>`);
@@ -711,7 +711,7 @@
     let usingAllRoutes = false;
     let currentRunId = 0;
 
-    function setFooterUpdated() { $('#footer-info').textContent = `最後更新：${nowStr()} · 版本：13`; }
+    function setFooterUpdated() { $('#footer-info').textContent = `最後更新：${nowStr()} · 版本：14`; }
 
     function setActive(el, active) { if (!el) return; el.classList.toggle('active', !!active); }
     function getDirSelection() {
@@ -802,38 +802,80 @@
       return finalRoutes;
     }
 
-    // -------- ETA Preview --------
+    // -------- ETA Preview (fixed with fallbacks) --------
     async function renderEtaPreview() {
       if (!showEta) { etaPreview.style.display = 'none'; return; }
       const route = ($('#etaRoute').value || '').trim().toUpperCase();
       const stop = ($('#etaStop').value || '').trim().toUpperCase();
       const svc = ($('#etaSvc').value || '1').trim();
       const bound = ($('#etaBound').value || 'outbound');
-      if (!route || !stop) { etaPreview.style.display = 'block'; etaPreviewBody.innerHTML = `<div class="line">請輸入路線與站點 ID。</div>`; return; }
+
+      if (!route || !stop) {
+        etaPreview.style.display = 'block';
+        etaPreviewBody.innerHTML = `<div class="line">請輸入路線與站點 ID。</div>`;
+        return;
+      }
 
       try {
         const dirChar = bound === 'inbound' ? 'I' : 'O';
         const data = await fetchJSON(`${API}/eta/${stop}/${route}/${svc}`);
-        const list = (data?.data || []).filter(x => x?.eta && x?.dir === dirChar).sort((a,b)=> new Date(a.eta) - new Date(b.eta)).slice(0,3);
-        if (!list.length) {
+        const all = Array.isArray(data?.data) ? data.data : [];
+
+        // Primary: exact dir with ETA
+        let list = all.filter(x => x?.eta && x?.dir === dirChar).sort((a,b)=> new Date(a.eta) - new Date(b.eta));
+        let note = '';
+
+        // Fallback 1: alternate dir (user may have chosen the other bound for this stop)
+        if (list.length === 0) {
+          const alt = dirChar === 'I' ? 'O' : 'I';
+          const altList = all.filter(x => x?.eta && x?.dir === alt).sort((a,b)=> new Date(a.eta) - new Date(b.eta));
+          if (altList.length) {
+            list = altList;
+            note = '（提示：此站此路線的另一方向有班次）';
+          }
+        }
+
+        // Fallback 2: any ETA regardless of dir (some feeds omit dir)
+        if (list.length === 0) {
+          const anyList = all.filter(x => x?.eta).sort((a,b)=> new Date(a.eta) - new Date(b.eta));
+          if (anyList.length) {
+            list = anyList;
+            note = '（提示：資料未標示方向，已顯示所有方向）';
+          }
+        }
+
+        const stopName = await getStopName(stop);
+        const head = `<div class="section-label">路線：${route}｜站點：${stopName}（${stop}）｜${bound}｜服務類型：${svc}</div>`;
+
+        if (list.length) {
+          const rows = list.slice(0,3).map(e => {
+            const { min, time } = toMinAndTime(e.eta);
+            const klass = rmkClass(e.rmk_tc || '');
+            const rmkHtml = e.rmk_tc ? `<span class="eta-rmk ${klass}" style="margin-left:8px;">${e.rmk_tc}</span>` : '';
+            return `<div class="line"><b>${min} 分</b>（${time}）${rmkHtml}</div>`;
+          });
+          const noteLine = note ? `<div class="line" style="color:#64748b;">${note}</div>` : '';
+          etaPreviewBody.innerHTML = head + rows.join('') + noteLine;
           etaPreview.style.display = 'block';
-          etaPreviewBody.innerHTML = `<div class="line">沒有 ETA 可顯示。</div>`;
           return;
         }
-        const rows = await (async () => {
-          const stopName = await getStopName(stop);
-          return [
-            `<div class="section-label">路線：${route}｜站點：${stopName}（${stop}）｜${bound}｜服務類型：${svc}</div>`,
-            ...list.map(e => {
-              const { min, time } = toMinAndTime(e.eta);
-              const klass = rmkClass(e.rmk_tc || '');
-              const rmkHtml = e.rmk_tc ? `<span class="eta-rmk ${klass}" style="margin-left:8px;">${e.rmk_tc}</span>` : '';
-              return `<div class="line"><b>${min} 分</b>（${time}）${rmkHtml}</div>`;
-            })
-          ];
-        })();
-        etaPreviewBody.innerHTML = rows.join('');
+
+        // Fallback 3: show remark-only records (e.g., 取消/事故 without ETA)
+        const remarkOnly = all.filter(x => (x?.rmk_tc || x?.rmk_en)).slice(0,3);
+        if (remarkOnly.length) {
+          const rows = remarkOnly.map(e => {
+            const klass = rmkClass(e.rmk_tc || e.rmk_en || '');
+            const rmk = e.rmk_tc || e.rmk_en || '';
+            return `<div class="line"><b>-- 分</b>（--:--）<span class="eta-rmk ${klass}" style="margin-left:8px;">${rmk}</span></div>`;
+          });
+          etaPreviewBody.innerHTML = head + rows.join('') + `<div class="line" style="color:#64748b;">（提示：無即時班次，僅有公告）</div>`;
+          etaPreview.style.display = 'block';
+          return;
+        }
+
+        // No data at all
         etaPreview.style.display = 'block';
+        etaPreviewBody.innerHTML = head + `<div class="line">沒有 ETA 可顯示。</div>`;
       } catch (e) {
         etaPreview.style.display = 'block';
         etaPreviewBody.innerHTML = `<div class="line" style="color:#b31c1c;">ETA 取得失敗：${(e && e.message) ? e.message : e}</div>`;
