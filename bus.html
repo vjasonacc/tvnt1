@@ -126,9 +126,9 @@
                     }
                     let remark = item.rmk_tc ? `<span class="remark">${item.rmk_tc}</span>` : '';
                     html += `<div class="eta-item">
-                        <span class="destination">${item.dest_tc}</span>
-                        ${tstr}
-                        ${remark}
+                        <span class="destination"> ${route}${item.dest_tc}</span>
+                       ${remark}
+                       ${tstr}
                     </div>`;
                 });
                 etalistDiv.innerHTML = html || '<div class="error">沒有即時班次資料。</div>';
