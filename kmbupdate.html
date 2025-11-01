@@ -2,7 +2,7 @@
 <html lang="zh-HK">
 <head>
   <meta charset="UTF-8" />
-  <title>KMB Bus Service Update</title>
+  <title>route number updates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <meta name="theme-color" content="#003d6b" />
   <style>
@@ -36,7 +36,7 @@
       background: var(--brand); color: #fff; padding: 12px 16px;
       display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
-    body.pidstv header { display: none; } /* TV mode hides top bar */
+    body.pidstv header { display: none; } /* TV: hide top bar */
     header .title { font-size: 16px; font-weight: 700; letter-spacing: .3px; }
     header .clock { font-variant-numeric: tabular-nums; font-weight: 700; }
     main { padding: 12px; max-width: 1000px; margin: 0 auto; }
@@ -45,7 +45,7 @@
     .controls { display: grid; grid-template-columns: 1fr; gap: 10px; }
     .row { display: grid; grid-template-columns: 1fr; gap: 8px; }
     label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
-    input[type="text"] {
+    input[type="text"], select {
       width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; background: #fff;
     }
     .chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -73,16 +73,16 @@
     .badge.bad { color: var(--bad); border-color: rgba(198,40,40,.25); background: #ffebee; }
     .meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
-    /* Summary (TV) */
+    /* Summary blocks */
     .summary {
-      display: none;
+      display: block;
       margin: 12px 0;
       padding: 12px;
       border: 1px solid var(--border);
       border-radius: 10px;
       background: #fff;
     }
-    body.pidstv .summary { display: block; }
+    body.pidstv .summary.mobile-only { display: none; } /* mobile summary hidden in TV */
     .summary .title {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 8px 14px; border-radius: 999px; font-weight: 800;
@@ -93,6 +93,7 @@
     .summary .lines { margin-top: 10px; }
     .summary .line { font-size: 14px; color: #111; padding: 4px 0; border-top: 1px dashed var(--line); }
     .summary .line:first-child { border-top: none; }
+    .summary .section-label { font-weight: 800; color: #334155; margin-top: 8px; }
 
     .list { margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff; }
     .section { border-bottom: 1px solid var(--border); }
@@ -148,10 +149,10 @@
   </header>
 
   <main>
-    <!-- TV summary (only visible in pidstv mode) -->
-    <div id="summary" class="summary" aria-live="polite">
-      <div id="summaryTitle" class="title ok">✅ 服務正常</div>
-      <div id="summaryLines" class="lines"></div>
+    <!-- TV summary (pidstv) -->
+    <div id="tvSummary" class="summary" aria-live="polite" style="display:none;">
+      <div id="tvSummaryTitle" class="title ok">✅ 服務正常</div>
+      <div id="tvSummaryLines" class="lines"></div>
     </div>
 
     <!-- TV mode floating bus to switch back to mobile -->
@@ -195,6 +196,61 @@
           <label>顯示選項</label>
           <div class="chip-group" id="filterChips">
             <div class="chip active" data-value="hideok">隱藏 正常/不適用</div>
+            <div class="chip active" data-value="affsum">顯示受影響摘要（頂部）</div>
+          </div>
+        </div>
+
+        <!-- Advanced route scan -->
+        <div class="row">
+          <label>路線掃描（可選，支援 URL）</label>
+          <div class="chip-group" id="scanChips">
+            <div class="chip" data-value="enable">啟用掃描</div>
+          </div>
+          <div class="row" style="margin-top:6px;">
+            <label>來源</label>
+            <div class="chip-group" id="scanSourceChips">
+              <div class="chip active" data-value="all">全港路線</div>
+              <div class="chip" data-value="input">僅限輸入</div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:6px;">
+            <label>前綴（多個以逗號分隔，例如：A,E,B 或 2,3）</label>
+            <input id="scanPrefixes" type="text" placeholder="例如：A,E,B 或 2,3" />
+          </div>
+          <div class="row">
+            <label>後綴（多個以逗號分隔，例如：A,B 或 P,X）</label>
+            <input id="scanEnds" type="text" placeholder="例如：A,B 或 P,X" />
+          </div>
+          <div class="row">
+            <label>範圍（含首尾；字母或數字）</label>
+            <div style="display:flex; gap:8px;">
+              <input id="scanFrom" style="flex:1" type="text" placeholder="起（例如：1 或 A）" />
+              <input id="scanTo" style="flex:1" type="text" placeholder="訖（例如：99 或 E99）" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ETA preview (optional) -->
+        <div class="row">
+          <label>ETA 預覽（可選，支援 URL）</label>
+          <div class="chip-group" id="etaToggleChips">
+            <div class="chip" data-value="eta">顯示 ETA 預覽</div>
+          </div>
+          <div class="row" style="margin-top:6px;">
+            <label>路線／站點／方向／服務類型</label>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:8px;">
+              <input id="etaRoute" type="text" placeholder="例如：276A" />
+              <input id="etaStop" type="text" placeholder="站點 ID 例如：WC674" />
+              <select id="etaBound">
+                <option value="outbound">outbound</option>
+                <option value="inbound">inbound</option>
+              </select>
+              <select id="etaSvc">
+                <option value="1">服務 1</option>
+                <option value="2">服務 2</option>
+                <option value="A">服務 A</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -214,6 +270,18 @@
       </div>
     </div>
 
+    <!-- Mobile affected summary (optional, default on) -->
+    <div id="mobileSummary" class="summary mobile-only" aria-live="polite" style="display:none;">
+      <div id="mobileSummaryTitle" class="title ok">✅ 服務正常</div>
+      <div id="mobileSummaryLines" class="lines"></div>
+    </div>
+
+    <!-- Optional ETA preview result -->
+    <div id="etaPreview" class="summary" style="display:none;">
+      <div class="title ok">ETA 預覽</div>
+      <div id="etaPreviewBody" class="lines"></div>
+    </div>
+
     <div id="results" class="list" style="display:block;"></div>
 
     <div class="tips">
@@ -221,7 +289,7 @@
     </div>
 
     <footer class="footer" id="footer-info">
-      最後更新：--:--:-- · 版本：12
+      最後更新：--:--:-- · 版本：13
     </footer>
   </main>
 
@@ -229,10 +297,7 @@
     // -------- Utilities --------
     const $ = (sel) => document.querySelector(sel);
     const pad2 = (n) => (n > 9 ? '' : '0') + n;
-    const nowStr = () => {
-      const d = new Date(); let h = d.getHours(), m = d.getMinutes(), s = d.getSeconds();
-      h = h % 12 || 12; return h + ':' + pad2(m) + ':' + pad2(s);
-    };
+    const nowStr = () => { const d = new Date(); let h = d.getHours(), m = d.getMinutes(), s = d.getSeconds(); h = h % 12 || 12; return h + ':' + pad2(m) + ':' + pad2(s); };
     const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     const jitter = (ms) => ms + Math.floor(Math.random() * ms * 0.2);
     const toMinAndTime = (iso) => {
@@ -242,33 +307,21 @@
       const hh = (t.getHours() % 12) || 12, mm = pad2(t.getMinutes());
       return { min: isNaN(mins) ? '--' : mins, time: `${hh}:${mm}` };
     };
+    const naturalCompare = (a, b) => a.localeCompare(b, 'zh-HK', { numeric: true, sensitivity: 'base' });
 
     // -------- Clock --------
-    const clock = $('#clock'); clock.textContent = nowStr();
-    setInterval(() => (clock.textContent = nowStr()), 1000);
+    const clock = $('#clock'); clock.textContent = nowStr(); setInterval(() => (clock.textContent = nowStr()), 1000);
 
-    // -------- Params --------
-    function getParam(name, fallback = '') {
+    // -------- Params helpers --------
+    function getParam(name, fallback = '') { const url = new URL(window.location.href); return url.searchParams.get(name) ?? fallback; }
+    function setParams(key, val) { const url = new URL(window.location.href); if (val === undefined || val === null || val === '') url.searchParams.delete(key); else url.searchParams.set(key, String(val)); history.replaceState(null, '', url.toString()); }
+    function safeSetParamsAll(obj) {
       const url = new URL(window.location.href);
-      return url.searchParams.get(name) ?? fallback;
-    }
-    function setParams(key, val) {
-      const url = new URL(window.location.href);
-      if (val === undefined || val === null || val === '') url.searchParams.delete(key);
-      else url.searchParams.set(key, String(val));
+      Object.entries(obj).forEach(([k,v])=>{
+        if (v === undefined || v === null || v === '') url.searchParams.delete(k);
+        else url.searchParams.set(k, Array.isArray(v)? v.join(','): String(v));
+      });
       history.replaceState(null, '', url.toString());
-    }
-    function safeSetParamsMulti(routes, mode, dirSel, svcSel, hideok) {
-      const url = new URL(window.location.href);
-      try {
-        const routeParam = allMode() ? 'ALL' : routes.join(',');
-        url.searchParams.set('route', routeParam);
-        url.searchParams.set('mode', mode);
-        url.searchParams.set('bound', dirSel);
-        url.searchParams.set('serviceType', svcSel.join(','));
-        url.searchParams.set('hideok', hideok ? '1' : '0');
-        history.replaceState(null, '', url.toString());
-      } catch {}
     }
 
     // -------- API & rules --------
@@ -293,29 +346,17 @@
 
     async function fetchJSON(url, { retries = 3, baseDelay = 500 } = {}) {
       for (let i = 0; i <= retries; i++) {
-        try {
-          const res = await fetch(url, { cache: 'no-store' });
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return await res.json();
-        } catch (e) {
-          if (i === retries) { const err = new Error((e && e.message) || 'NETWORK_ERROR'); err.code = 'NETWORK_ERROR'; throw err; }
-          await sleep(jitter(baseDelay * Math.pow(2, i)));
-        }
+        try { const res = await fetch(url, { cache: 'no-store' }); if (!res.ok) throw new Error('HTTP ' + res.status); return await res.json(); }
+        catch (e) { if (i === retries) { const err = new Error((e && e.message) || 'NETWORK_ERROR'); err.code = 'NETWORK_ERROR'; throw err; } await sleep(jitter(baseDelay * Math.pow(2, i))); }
       }
     }
 
     async function pMap(arr, mapper, concurrency = 4, { onEach, onProgress } = {}) {
-      const ret = new Array(arr.length);
-      let idx = 0, done = 0;
+      const ret = new Array(arr.length); let idx = 0, done = 0;
       const workers = Array(Math.min(concurrency, arr.length)).fill(0).map(async () => {
-        while (true) {
-          const i = idx++; if (i >= arr.length) break;
-          let out;
-          try { out = await mapper(arr[i], i); }
-          catch (e) { out = { transient: true, error: (e && e.message) || 'UNKNOWN_ERROR' }; }
-          ret[i] = out; done++;
-          if (onEach) onEach(out, i, done, arr.length);
-          if (onProgress) onProgress(done, arr.length);
+        while (true) { const i = idx++; if (i >= arr.length) break;
+          let out; try { out = await mapper(arr[i], i); } catch (e) { out = { transient: true, error: (e && e.message) || 'UNKNOWN_ERROR' }; }
+          ret[i] = out; done++; onEach && onEach(out, i, done, arr.length); onProgress && onProgress(done, arr.length);
         }
       });
       await Promise.all(workers);
@@ -325,74 +366,40 @@
     const stopNameCache = new Map();
     async function getStopName(stopId) {
       if (stopNameCache.has(stopId)) return stopNameCache.get(stopId);
-      try { const data = await fetchJSON(`${API}/stop/${stopId}`); const name = data?.data?.name_tc || stopId; stopNameCache.set(stopId, name); return name; }
-      catch { return stopId; }
+      try { const data = await fetchJSON(`${API}/stop/${stopId}`); const name = data?.data?.name_tc || stopId; stopNameCache.set(stopId, name); return name; } catch { return stopId; }
     }
 
     function containsAny(text, arr) { if (!text) return false; return arr.some(k => text.includes(k)); }
     function containsJamKeyword(text) { return containsAny(text, ALL_JAM_KEYWORDS); }
-    function severityOf(text) {
-      if (!text) return 0;
-      if (containsAny(text, SEVERE_KEYWORDS)) return 2;
-      if (containsAny(text, WARN_KEYWORDS)) return 1;
-      return 0;
-    }
+    function severityOf(text) { if (!text) return 0; if (containsAny(text, SEVERE_KEYWORDS)) return 2; if (containsAny(text, WARN_KEYWORDS)) return 1; return 0; }
 
-    async function getRouteMeta(route, bound, svc) {
-      try { const j = await fetchJSON(`${API}/route/${route}/${bound}/${svc}`); return j?.data || null; }
-      catch (e) { if ((e && e.message || '').includes('HTTP 404')) return { NA: true }; return null; }
-    }
-    async function getStopsForRoute(route, bound, svc) {
-      try { const j = await fetchJSON(`${API}/route-stop/${route}/${bound}/${svc}`); return j?.data || []; }
-      catch (e) {
-        if ((e && e.message || '').includes('HTTP 404')) { const err = new Error('NA'); err.code = 'NA'; throw err; }
-        const err = new Error((e && e.message) || 'TRANSIENT'); err.code = 'TRANSIENT'; throw err;
-      }
-    }
+    async function getRouteMeta(route, bound, svc) { try { const j = await fetchJSON(`${API}/route/${route}/${bound}/${svc}`); return j?.data || null; } catch (e) { if ((e && e.message || '').includes('HTTP 404')) return { NA: true }; return null; } }
+    async function getStopsForRoute(route, bound, svc) { try { const j = await fetchJSON(`${API}/route-stop/${route}/${bound}/${svc}`); return j?.data || []; } catch (e) { if ((e && e.message || '').includes('HTTP 404')) { const err = new Error('NA'); err.code = 'NA'; throw err; } const err = new Error((e && e.message) || 'TRANSIENT'); err.code = 'TRANSIENT'; throw err; } }
     async function getETAForStopRoute(stopId, route, svc) { const j = await fetchJSON(`${API}/eta/${stopId}/${route}/${svc}`); return j?.data || []; }
 
     // -------- Collect 3 ETAs per affected stop --------
     async function detectJamForCombo({ route, bound, svc }) {
-      const startedAt = Date.now();
-      const dirChar = bound === 'inbound' ? 'I' : 'O';
-
+      const startedAt = Date.now(); const dirChar = bound === 'inbound' ? 'I' : 'O';
       let stops = [];
       try { stops = await getStopsForRoute(route, bound, svc); }
-      catch (e) {
-        if (e && e.code === 'NA') return { route, bound, svc, meta: null, hits: [], maxSeverity: 0, tookMs: Date.now() - startedAt, na: true };
-        return { route, bound, svc, meta: null, hits: [], maxSeverity: 0, tookMs: Date.now() - startedAt, transient: true, error: 'route-stop-transient' };
-      }
-
-      if (!Array.isArray(stops) || stops.length === 0) {
-        return { route, bound, svc, meta: null, hits: [], maxSeverity: 0, tookMs: Date.now() - startedAt, na: true };
-      }
+      catch (e) { if (e && e.code === 'NA') return { route, bound, svc, meta: null, hits: [], maxSeverity: 0, tookMs: Date.now() - startedAt, na: true }; return { route, bound, svc, meta: null, hits: [], maxSeverity: 0, tookMs: Date.now() - startedAt, transient: true, error: 'route-stop-transient' }; }
+      if (!Array.isArray(stops) || stops.length === 0) return { route, bound, svc, meta: null, hits: [], maxSeverity: 0, tookMs: Date.now() - startedAt, na: true };
 
       let etaErrors = 0;
       const perStop = await pMap(stops, async (stop) => {
         try {
           const all = await getETAForStopRoute(stop.stop, route, svc);
-          const list = all
-            .filter(x => x?.eta && x?.dir === dirChar)
-            .sort((a,b)=> new Date(a.eta) - new Date(b.eta));
+          const list = all.filter(x => x?.eta && x?.dir === dirChar).sort((a,b)=> new Date(a.eta) - new Date(b.eta));
           const top3 = list.slice(0, 3).map(x => ({ eta: x.eta, rmk_tc: x.rmk_tc || '' }));
           const hasHit = top3.some(x => x.rmk_tc && containsJamKeyword(x.rmk_tc));
-          if (hasHit) {
-            const sev = top3.reduce((m, e) => Math.max(m, severityOf(e.rmk_tc)), 0);
-            return { stopId: stop.stop, seq: Number(stop.seq), etas: top3, sev };
-          }
+          if (hasHit) { const sev = top3.reduce((m, e) => Math.max(m, severityOf(e.rmk_tc)), 0); return { stopId: stop.stop, seq: Number(stop.seq), etas: top3, sev }; }
           return null;
-        } catch {
-          etaErrors++; return null;
-        }
+        } catch { etaErrors++; return null; }
       }, 4);
 
-      const hits = perStop
-        .filter(Boolean)
-        .sort((a, b) => { if (b.sev !== a.sev) return b.sev - a.sev; return a.seq - b.seq; });
+      const hits = perStop.filter(Boolean).sort((a, b) => { if (b.sev !== a.sev) return b.sev - a.sev; return a.seq - b.seq; });
 
-      let maxSeverity = 0;
-      for (const st of hits) for (const e of st.etas) maxSeverity = Math.max(maxSeverity, severityOf(e.rmk_tc));
-
+      let maxSeverity = 0; for (const st of hits) for (const e of st.etas) maxSeverity = Math.max(maxSeverity, severityOf(e.rmk_tc));
       const meta = await getRouteMeta(route, bound, svc).catch(() => null);
       const etaTransient = etaErrors / stops.length >= 0.8;
 
@@ -423,21 +430,30 @@
 
     // -------- UI state --------
     const resultsEl = $('#results');
-    const summaryTitleEl = $('#summaryTitle');
-    const summaryLinesEl = $('#summaryLines');
 
-    let hideOk = true;     // hide 正常/不適用 routes
-    let mode = 'mobile';   // 'mobile' | 'pidstv'
+    const tvSummary = $('#tvSummary');
+    const tvSummaryTitle = $('#tvSummaryTitle');
+    const tvSummaryLines = $('#tvSummaryLines');
+
+    const mobileSummary = $('#mobileSummary');
+    const mobileSummaryTitle = $('#mobileSummaryTitle');
+    const mobileSummaryLines = $('#mobileSummaryLines');
+
+    const etaPreview = $('#etaPreview');
+    const etaPreviewBody = $('#etaPreviewBody');
+
+    let hideOk = true;       // hide 正常/不適用 sections
+    let showAffSummary = true; // mobile affected summary toggle
+    let scanEnable = false;
+    let scanSource = 'all';  // 'all' | 'input'
+    let mode = 'mobile';     // 'mobile' | 'pidstv'
+    let showEta = false;
 
     const comboStore = new Map(); // key -> { data:o, names: {stopId: name} }
 
     function keyOf(o) { return `${o.route}-${o.bound}-${o.svc}`; }
     function sanitizeId(s) { return s.replace(/[^a-zA-Z0-9_-]/g,'_'); }
-    function subBadgeText(sev, flags) {
-      if (flags?.na) return 'ℹ️ 不適用';
-      if (flags?.transient) return '⏳ 暫時不可用';
-      return sev === 0 ? '✅ 正常' : sev >= 2 ? '⛔ 受阻' : '⚠️ 緩慢/延誤';
-    }
+    function subBadgeText(sev, flags) { if (flags?.na) return 'ℹ️ 不適用'; if (flags?.transient) return '⏳ 暫時不可用'; return sev === 0 ? '✅ 正常' : sev >= 2 ? '⛔ 受阻' : '⚠️ 緩慢/延誤'; }
     function rmkClass(rmk) { const s = severityOf(rmk || ''); return s >= 2 ? 'bad' : s === 1 ? 'warn' : ''; }
 
     function applyHideRule(section, o) {
@@ -490,30 +506,21 @@
 
       if (o.na) {
         rowsEl.innerHTML = `<div class="na">${NA_TEXT}</div>`;
-        applyHideRule(section, o);
-        comboStore.set(key, { data: o, names: {} });
-        updateSummaryBar();
+        afterUpsertStoreAndUpdate(o, key, {});
         return;
       }
       if (o.transient) {
         rowsEl.innerHTML = `<div class="transient">${TRANSIENT_TEXT}</div>`;
-        applyHideRule(section, o);
-        comboStore.set(key, { data: o, names: {} });
-        updateSummaryBar();
+        afterUpsertStoreAndUpdate(o, key, {});
         return;
       }
 
       if ((o.hits?.length || 0) === 0) {
         rowsEl.innerHTML = `<div class="empty">未偵測到包含關鍵字的提示。</div>`;
-        applyHideRule(section, o);
-        comboStore.set(key, { data: o, names: {} });
-        updateSummaryBar();
+        afterUpsertStoreAndUpdate(o, key, {});
       } else {
-        // Resolve stop names and render list
         Promise.all(o.hits.map(h => getStopName(h.stopId))).then(names => {
-          const nameMap = {};
-          names.forEach((nm, idx) => { nameMap[o.hits[idx].stopId] = nm; });
-
+          const nameMap = {}; names.forEach((nm, idx) => { nameMap[o.hits[idx].stopId] = nm; });
           rowsEl.innerHTML = o.hits.map((h, i) => {
             const name = names[i] || h.stopId;
             const etaLis = (h.etas || []).slice(0, 3).map(et => {
@@ -540,100 +547,141 @@
               </div>
             `;
           }).join('');
-
-          comboStore.set(key, { data: o, names: nameMap });
-          applyHideRule(section, o);
-          updateSummaryBar();
+          afterUpsertStoreAndUpdate(o, key, nameMap);
         });
       }
     }
 
-    // -------- Summary bar (TV) --------
-    function updateSummaryBar() {
-      if (mode !== 'pidstv') return; // only in TV mode
+    function afterUpsertStoreAndUpdate(o, key, nameMap) {
+      applyHideRule(document.getElementById(`section-${sanitizeId(key)}`), o);
+      comboStore.set(key, { data: o, names: nameMap });
+      updateTvSummary();
+      updateMobileSummary();
+    }
 
-      // Gather severe, warn, and route-level normals
-      const severeCombos = [];
-      const warnCombos = [];
-      const routeAgg = new Map(); // route -> { worst: -1/0/1/2, hasApplicable: false, hasTransient:false }
-
+    // -------- Summaries --------
+    function aggregateByRoute() {
+      const routeAgg = new Map(); // route -> { worst: -1/0/1/2, hasApplicable: false, hasTransient:false, samples: {severe:[], warn:[]} }
       comboStore.forEach(entry => {
-        const o = entry.data;
-        if (!o) return;
-
-        // Build route aggregation
+        const o = entry.data; if (!o) return;
         if (!o.na) {
-          const agg = routeAgg.get(o.route) || { worst: -1, hasApplicable: false, hasTransient: false };
+          const agg = routeAgg.get(o.route) || { worst: -1, hasApplicable: false, hasTransient: false, severe: [], warn: [] };
           agg.hasApplicable = true;
           if (o.transient) agg.hasTransient = true;
           const sev = o.maxSeverity || 0;
           if (!o.transient) agg.worst = Math.max(agg.worst, sev);
+          if (sev >= 2) {
+            const severeStops = (o.hits || []).filter(st => (st.etas || []).some(e => severityOf(e.rmk_tc) >= 2));
+            const names = severeStops.slice(0, 3).map(st => entry.names?.[st.stopId] || st.stopId);
+            agg.severe.push({ o, names });
+          } else if (sev === 1) {
+            const warnStops = (o.hits || []).filter(st => (st.etas || []).some(e => severityOf(e.rmk_tc) === 1));
+            const names = warnStops.slice(0, 3).map(st => entry.names?.[st.stopId] || st.stopId);
+            agg.warn.push({ o, names });
+          }
           routeAgg.set(o.route, agg);
         }
+      });
+      return routeAgg;
+    }
 
-        // Build combo lists
-        if (o.transient || o.na) return;
-        if ((o.maxSeverity || 0) >= 2) {
-          severeCombos.push({ o, entry });
-        } else if ((o.maxSeverity || 0) === 1) {
-          warnCombos.push({ o, entry });
+    function updateTvSummary() {
+      const isTv = (mode === 'pidstv');
+      tvSummary.style.display = isTv ? 'block' : 'none';
+      if (!isTv) return;
+
+      const routeAgg = aggregateByRoute();
+      const severeLines = [];
+      const warnLines = [];
+      const normalLines = [];
+
+      routeAgg.forEach((agg, route) => {
+        if (agg.worst >= 2) {
+          // Build lines for each severe combo sample
+          const arr = agg.severe.length ? agg.severe : [{ o: { route, bound:'', svc:'' }, names: [] }];
+          arr.forEach(({o, names}) => {
+            const dirLabel = o.bound ? (o.bound === 'outbound' ? '往目的地' : '返回程') : '';
+            const svcLabel = o.svc ? `｜服務類型：${o.svc}` : '';
+            const nameStr = names && names.length ? ` — ${names.join('、')}` : '';
+            severeLines.push(`${route}${dirLabel?('｜'+dirLabel):''}${svcLabel}${nameStr}`);
+          });
+        } else if (agg.worst === 1) {
+          const arr = agg.warn.length ? agg.warn : [{ o: { route, bound:'', svc:'' }, names: [] }];
+          arr.forEach(({o, names}) => {
+            const dirLabel = o.bound ? (o.bound === 'outbound' ? '往目的地' : '返回程') : '';
+            const svcLabel = o.svc ? `｜服務類型：${o.svc}` : '';
+            const nameStr = names && names.length ? ` — ${names.join('、')}` : '';
+            warnLines.push(`${route}${dirLabel?('｜'+dirLabel):''}${svcLabel}${nameStr}`);
+          });
+        } else if (agg.hasApplicable && agg.worst === 0 && !agg.hasTransient) {
+          normalLines.push(`${route} 服務正常`);
         }
       });
 
-      // Decide title and lines
-      if (severeCombos.length > 0) {
-        summaryTitleEl.textContent = '⛔ 行車受阻';
-        summaryTitleEl.classList.remove('ok', 'warn');
-        summaryTitleEl.classList.add('bad');
-
-        const lines = severeCombos.map(({ o, entry }) => {
-          const dirLabel = o.bound === 'outbound' ? '往目的地' : '返回程';
-          const severeStops = (o.hits || []).filter(st => (st.etas || []).some(e => severityOf(e.rmk_tc) >= 2));
-          const names = severeStops.slice(0, 3).map(st => entry.names?.[st.stopId] || st.stopId);
-          return `${o.route}｜${dirLabel}｜服務類型：${o.svc} — ${names.join('、')}`;
-        });
-        summaryLinesEl.innerHTML = lines.map(t => `<div class="line">${t}</div>`).join('');
-
-      } else if (warnCombos.length > 0) {
-        // Show warning state if any warning (no severe)
-        summaryTitleEl.textContent = '⚠️ 可能延誤／行車緩慢';
-        summaryTitleEl.classList.remove('ok', 'bad');
-        summaryTitleEl.classList.add('warn');
-
-        const lines = warnCombos.map(({ o, entry }) => {
-          const dirLabel = o.bound === 'outbound' ? '往目的地' : '返回程';
-          // use first few warning stops
-          const warnStops = (o.hits || []).filter(st => (st.etas || []).some(e => severityOf(e.rmk_tc) === 1));
-          const names = warnStops.slice(0, 3).map(st => entry.names?.[st.stopId] || st.stopId);
-          return `${o.route}｜${dirLabel}｜服務類型：${o.svc} — ${names.join('、')}`;
-        });
-        summaryLinesEl.innerHTML = lines.length
-          ? lines.map(t => `<div class="line">${t}</div>`).join('')
-          : `<div class="line">偵測到延誤／緩慢，但未能取得站點詳情。</div>`;
-
+      // Title state
+      if (severeLines.length > 0) {
+        tvSummaryTitle.textContent = '⛔ 行車受阻';
+        tvSummaryTitle.className = 'title bad';
+      } else if (warnLines.length > 0) {
+        tvSummaryTitle.textContent = '⚠️ 可能延誤／行車緩慢';
+        tvSummaryTitle.className = 'title warn';
       } else {
-        // No severe, no warn => ONLY now consider as "正常"
-        summaryTitleEl.textContent = '✅ 服務正常';
-        summaryTitleEl.classList.remove('bad', 'warn');
-        summaryTitleEl.classList.add('ok');
-
-        // List "route number 服務正常" for truly normal routes
-        const normalRoutes = [];
-        routeAgg.forEach((agg, route) => {
-          // Truly normal when has applicable combos, worst severity == 0, and not transient
-          if (agg.hasApplicable && agg.worst === 0 && !agg.hasTransient) {
-            normalRoutes.push(route);
-          }
-        });
-        normalRoutes.sort((a,b)=>a.localeCompare(b,'zh-HK',{numeric:true}));
-        if (normalRoutes.length === 0) {
-          summaryLinesEl.innerHTML = `<div class="line">目前未偵測到「行車受阻」的路線。</div>`;
-        } else {
-          summaryLinesEl.innerHTML = normalRoutes
-            .map(r => `<div class="line">${r} 服務正常</div>`)
-            .join('');
-        }
+        tvSummaryTitle.textContent = '✅ 服務正常';
+        tvSummaryTitle.className = 'title ok';
       }
+
+      // Lines: show severe, warn, and ALWAYS also normal (fix)
+      const parts = [];
+      if (severeLines.length) {
+        parts.push(`<div class="section-label">⛔ 受阻</div>`);
+        parts.push(...severeLines.sort(naturalCompare).map(t => `<div class="line">${t}</div>`));
+      }
+      if (warnLines.length) {
+        parts.push(`<div class="section-label">⚠️ 緩慢／延誤</div>`);
+        parts.push(...warnLines.sort(naturalCompare).map(t => `<div class="line">${t}</div>`));
+      }
+      if (normalLines.length) {
+        parts.push(`<div class="section-label">✅ 正常</div>`);
+        parts.push(...normalLines.sort(naturalCompare).map(t => `<div class="line">${t}</div>`));
+      }
+      if (!parts.length) {
+        parts.push(`<div class="line">目前未偵測到「行車受阻」的路線。</div>`);
+      }
+      tvSummaryLines.innerHTML = parts.join('');
+    }
+
+    function updateMobileSummary() {
+      // Optional affected summary on mobile (severe + warn). Default on; controlled by showAffSummary
+      if (mode === 'pidstv') { mobileSummary.style.display = 'none'; return; }
+      if (!showAffSummary) { mobileSummary.style.display = 'none'; return; }
+      const routeAgg = aggregateByRoute();
+      const severe = []; const warn = [];
+      routeAgg.forEach((agg, route) => {
+        if (agg.worst >= 2) severe.push(route);
+        else if (agg.worst === 1) warn.push(route);
+      });
+      if (severe.length > 0) {
+        mobileSummaryTitle.textContent = '⛔ 行車受阻';
+        mobileSummaryTitle.className = 'title bad';
+      } else if (warn.length > 0) {
+        mobileSummaryTitle.textContent = '⚠️ 可能延誤／行車緩慢';
+        mobileSummaryTitle.className = 'title warn';
+      } else {
+        mobileSummaryTitle.textContent = '✅ 服務正常';
+        mobileSummaryTitle.className = 'title ok';
+      }
+      const lines = [];
+      if (severe.length) {
+        lines.push(`<div class="section-label">⛔ 受阻</div>`);
+        lines.push(...severe.sort(naturalCompare).map(r => `<div class="line">${r}</div>`));
+      }
+      if (warn.length) {
+        lines.push(`<div class="section-label">⚠️ 緩慢／延誤</div>`);
+        lines.push(...warn.sort(naturalCompare).map(r => `<div class="line">${r}</div>`));
+      }
+      if (!lines.length) lines.push(`<div class="line">目前未偵測到「行車受阻」的路線。</div>`);
+      mobileSummaryLines.innerHTML = lines.join('');
+      mobileSummary.style.display = 'block';
     }
 
     // -------- Progress + badge meta --------
@@ -648,19 +696,12 @@
         <span>上次更新：${nowStr()}</span>
         ${typeof tookMs === 'number' ? `<span>耗時：${tookMs}ms</span>` : ''}
       `;
-
       const badge = $('#statusBadge');
       const applicable = Math.max(0, total - naCombos);
       const mostlyTransient = applicable > 0 && transientCombos / applicable >= 0.8;
-
       if (!navigator.onLine || mostlyTransient) { badge.className = 'badge bad'; badge.textContent = `❌ ${OFFLINE_TEXT}`; return; }
-      if (hitCombos > 0) {
-        if (overall >= 2) { badge.className = 'badge bad'; badge.textContent = `⛔ ${BAD_TEXT}`; }
-        else { badge.className = 'badge warn'; badge.textContent = `⚠️ ${WARN_TEXT}`; }
-        return;
-      }
-      badge.className = 'badge ok';
-      badge.textContent = `✅ ${OK_TEXT}`;
+      if (hitCombos > 0) { if (overall >= 2) { badge.className = 'badge bad'; badge.textContent = `⛔ ${BAD_TEXT}`; } else { badge.className = 'badge warn'; badge.textContent = `⚠️ ${WARN_TEXT}`; } return; }
+      badge.className = 'badge ok'; badge.textContent = `✅ ${OK_TEXT}`;
     }
 
     // -------- Multi detection with incremental rendering --------
@@ -670,7 +711,7 @@
     let usingAllRoutes = false;
     let currentRunId = 0;
 
-    function setFooterUpdated() { $('#footer-info').textContent = `最後更新：${nowStr()} · 版本：12`; }
+    function setFooterUpdated() { $('#footer-info').textContent = `最後更新：${nowStr()} · 版本：13`; }
 
     function setActive(el, active) { if (!el) return; el.classList.toggle('active', !!active); }
     function getDirSelection() {
@@ -679,38 +720,310 @@
       if (active.includes('outbound') && active.includes('inbound')) return 'both';
       return active[0] || 'outbound';
     }
-    function getSvcSelection() {
-      let active = [...$('#svcChips').querySelectorAll('.chip.active')].map(c => c.dataset.value);
-      if (active.includes('all')) return ['all'];
-      if (active.length === 0) active = ['1'];
-      return active;
-    }
+    function getSvcSelection() { let active = [...$('#svcChips').querySelectorAll('.chip.active')].map(c => c.dataset.value); if (active.includes('all')) return ['all']; if (active.length === 0) active = ['1']; return active; }
+    function getModeSelection() { const a = $('#modeChips .chip.active')?.dataset?.value; return a || 'mobile'; }
+
     function setMode(m) {
       mode = m === 'pidstv' ? 'pidstv' : 'mobile';
       document.body.classList.toggle('pidstv', mode === 'pidstv');
+      tvSummary.style.display = mode === 'pidstv' ? 'block' : 'none';
       if (mode === 'pidstv') {
-        hideOk = true;
-        setActive($('#filterChips .chip[data-value="hideok"]'), true);
+        hideOk = true; setActive($('#filterChips .chip[data-value="hideok"]'), true);
         document.querySelectorAll('.section').forEach(sec => {
-          const key = sec.getAttribute('data-key');
-          const entry = comboStore.get(key);
-          if (entry) applyHideRule(sec, entry.data);
+          const key = sec.getAttribute('data-key'); const entry = comboStore.get(key); if (entry) applyHideRule(sec, entry.data);
         });
-        updateSummaryBar();
+        updateTvSummary();
+      } else {
+        updateMobileSummary();
       }
     }
-    function setFromParams() {
-      // Defaults
+
+    // -------- Route scan config --------
+    function parseCsv(str) { return (str || '').split(',').map(s => s.trim().toUpperCase()).filter(Boolean); }
+    function getScanConfig() {
+      return {
+        enable: scanEnable,
+        source: scanSource, // 'all' or 'input'
+        prefixes: parseCsv($('#scanPrefixes').value),
+        ends: parseCsv($('#scanEnds').value),
+        rangeFrom: ($('#scanFrom').value || '').toUpperCase(),
+        rangeTo: ($('#scanTo').value || '').toUpperCase()
+      };
+    }
+    function matchScan(code, cfg) {
+      const c = (code || '').toUpperCase();
+      // prefixes (starts with any)
+      if (cfg.prefixes.length > 0) {
+        if (!cfg.prefixes.some(p => c.startsWith(p))) return false;
+      }
+      // ends with any in ends
+      if (cfg.ends.length > 0) {
+        if (!cfg.ends.some(p => c.endsWith(p))) return false;
+      }
+      // range inclusive
+      if (cfg.rangeFrom && cfg.rangeTo) {
+        if (naturalCompare(c, cfg.rangeFrom) < 0) return false;
+        if (naturalCompare(c, cfg.rangeTo) > 0) return false;
+      }
+      return true;
+    }
+
+    async function fetchAllRouteCodes(limit = 1000) {
+      const j = await fetchJSON(`${API}/route`);
+      const list = (j?.data || []).map(x => (x.route || '').toUpperCase()).filter(Boolean);
+      const uniq = [...new Set(list)].sort(naturalCompare);
+      return uniq.slice(0, limit);
+    }
+
+    // -------- Gather routes (with scan support) --------
+    async function gatherRoutes() {
+      const inputVal = $('#routes').value.trim().toUpperCase();
+      const cfg = getScanConfig();
+
+      let baseRoutes = [];
+      if (cfg.enable && cfg.source === 'all') {
+        baseRoutes = await fetchAllRouteCodes(1000);
+      } else if (inputVal === 'ALL') {
+        usingAllRoutes = true;
+        baseRoutes = await fetchAllRouteCodes(1000);
+      } else {
+        usingAllRoutes = false;
+        baseRoutes = inputVal ? inputVal.split(/[\s,]+/).map(x=>x.trim()).filter(Boolean) : [];
+      }
+
+      // Apply scan filter if enabled
+      let finalRoutes = baseRoutes;
+      if (cfg.enable) {
+        finalRoutes = baseRoutes.filter(code => matchScan(code, cfg));
+      }
+
+      // Deduplicate + cap
+      finalRoutes = [...new Set(finalRoutes)].slice(0, 1000);
+      return finalRoutes;
+    }
+
+    // -------- ETA Preview --------
+    async function renderEtaPreview() {
+      if (!showEta) { etaPreview.style.display = 'none'; return; }
+      const route = ($('#etaRoute').value || '').trim().toUpperCase();
+      const stop = ($('#etaStop').value || '').trim().toUpperCase();
+      const svc = ($('#etaSvc').value || '1').trim();
+      const bound = ($('#etaBound').value || 'outbound');
+      if (!route || !stop) { etaPreview.style.display = 'block'; etaPreviewBody.innerHTML = `<div class="line">請輸入路線與站點 ID。</div>`; return; }
+
+      try {
+        const dirChar = bound === 'inbound' ? 'I' : 'O';
+        const data = await fetchJSON(`${API}/eta/${stop}/${route}/${svc}`);
+        const list = (data?.data || []).filter(x => x?.eta && x?.dir === dirChar).sort((a,b)=> new Date(a.eta) - new Date(b.eta)).slice(0,3);
+        if (!list.length) {
+          etaPreview.style.display = 'block';
+          etaPreviewBody.innerHTML = `<div class="line">沒有 ETA 可顯示。</div>`;
+          return;
+        }
+        const rows = await (async () => {
+          const stopName = await getStopName(stop);
+          return [
+            `<div class="section-label">路線：${route}｜站點：${stopName}（${stop}）｜${bound}｜服務類型：${svc}</div>`,
+            ...list.map(e => {
+              const { min, time } = toMinAndTime(e.eta);
+              const klass = rmkClass(e.rmk_tc || '');
+              const rmkHtml = e.rmk_tc ? `<span class="eta-rmk ${klass}" style="margin-left:8px;">${e.rmk_tc}</span>` : '';
+              return `<div class="line"><b>${min} 分</b>（${time}）${rmkHtml}</div>`;
+            })
+          ];
+        })();
+        etaPreviewBody.innerHTML = rows.join('');
+        etaPreview.style.display = 'block';
+      } catch (e) {
+        etaPreview.style.display = 'block';
+        etaPreviewBody.innerHTML = `<div class="line" style="color:#b31c1c;">ETA 取得失敗：${(e && e.message) ? e.message : e}</div>`;
+      }
+    }
+
+    // -------- Run detection --------
+    function setBusy(busy, { auto = false } = {}) {
+      $('#checkBtn').disabled = busy && !auto;
+      $('#refreshBtn').disabled = busy && !auto;
+      $('#routes').disabled = busy && !auto;
+      $('#allRoutesBtn').disabled = busy && !auto;
+      $('#statusArea').style.display = 'block';
+      $('#statusBadge').textContent = busy ? (auto ? '更新中…' : '分析中…') : $('#statusBadge').textContent;
+    }
+
+    async function detectJamMulti({ routes, dirSel, svcSel, runId }) {
+      const bounds = dirSel === 'both' ? ['outbound','inbound'] : [dirSel];
+      const svcs = svcSel.includes('all') ? ['1','2','A'] : svcSel;
+      const tasks = [];
+      for (const r of routes) for (const b of bounds) for (const s of svcs) tasks.push({ route: r, bound: b, svc: s });
+
+      let completed = 0, hitCombos = 0, naCombos = 0, transientCombos = 0, overall = 0;
+      updateProgressMeta({ total: tasks.length, completed, hitCombos, naCombos, transientCombos, overall });
+
+      const startedAt = Date.now();
+      await pMap(tasks, detectJamForCombo, 4, {
+        onEach: (out) => {
+          if (runId !== currentRunId) return;
+          upsertSection(out, runId);
+          completed++;
+          if (out.na) naCombos++;
+          else if (out.transient) transientCombos++;
+          else if ((out.hits?.length || 0) > 0) hitCombos++;
+          overall = Math.max(overall, out.maxSeverity || 0);
+          updateProgressMeta({ total: tasks.length, completed, hitCombos, naCombos, transientCombos, overall });
+        }
+      });
+
+      const tookMs = Date.now() - startedAt;
+      // Remove stale sections
+      [...resultsElRef.children].forEach(sec => { if (sec.getAttribute && sec.getAttribute('data-run-id') !== String(runId)) resultsElRef.removeChild(sec); });
+      updateProgressMeta({ total: tasks.length, completed, hitCombos, naCombos, transientCombos, overall, tookMs });
+      return { overall, tookMs };
+    }
+
+    async function runDetect(force = false, { auto = false } = {}) {
+      const dirSel = getDirSelection();
+      const svcSel = getSvcSelection();
+      const routes = await gatherRoutes();
+      if (routes.length === 0) { alert('請輸入至少一個路線編號，或啟用掃描設定。'); return; }
+
+      const paramsToSet = {
+        route: ($('#routes').value.trim().toUpperCase() === 'ALL' || usingAllRoutes) ? 'ALL' : routes.join(','),
+        mode, bound: dirSel, serviceType: svcSel.join(','),
+        hideok: hideOk ? '1' : '0',
+        affsum: showAffSummary ? '1' : '0',
+        scan: scanEnable ? '1' : '0',
+        scanSrc: scanSource,
+        scanPrefixes: $('#scanPrefixes').value.trim(),
+        scanEnds: $('#scanEnds').value.trim(),
+        scanFrom: $('#scanFrom').value.trim(),
+        scanTo: $('#scanTo').value.trim(),
+        eta: showEta ? '1' : '0',
+        etaRoute: $('#etaRoute').value.trim(),
+        etaStop: $('#etaStop').value.trim(),
+        etaSvc: $('#etaSvc').value,
+        etaBound: $('#etaBound').value
+      };
+
+      const key = JSON.stringify(paramsToSet);
+      if (!force && key === lastQueryKey) { /* no-op */ } else { safeSetParamsAll(paramsToSet); }
+      lastQueryKey = key;
+
+      currentRunId++; const runId = currentRunId;
+      setBusy(true, { auto });
+      try {
+        await detectJamMulti({ routes, dirSel, svcSel, runId });
+        await renderEtaPreview();
+        setFooterUpdated();
+      } catch (e) {
+        $('#statusArea').style.display = 'block';
+        $('#statusBadge').className = 'badge bad';
+        $('#statusBadge').textContent = `❌ ${OFFLINE_TEXT}`;
+        const msg = (e && e.message) ? e.message : String(e || '未知錯誤');
+        $('#metaText').innerHTML = `<span style="color:#b31c1c;">錯誤：${msg}</span>`;
+      } finally { setBusy(false, { auto }); }
+    }
+
+    function startAutoRefresh() { if (autoTimer) clearInterval(autoTimer); autoTimer = setInterval(() => runDetect(true, { auto: true }), 30000); }
+
+    // -------- Events --------
+    $('#checkBtn').addEventListener('click', () => { runDetect(); startAutoRefresh(); });
+    $('#refreshBtn').addEventListener('click', () => runDetect(true));
+    $('#shareBtn').addEventListener('click', async () => { // share current URL
+      try {
+        if (navigator.share) await navigator.share({ title: 'route number updates', url: window.location.href });
+        else if (navigator.clipboard) { await navigator.clipboard.writeText(window.location.href); alert('已複製分享連結到剪貼簿'); }
+        else { prompt('複製以下連結：', window.location.href); }
+      } catch {}
+    });
+    $('#allRoutesBtn').addEventListener('click', async () => {
+      if (!confirm('此操作會抓取全港所有九巴路線並以「兩方向」分析，可能非常耗時並消耗流量。是否繼續？')) return;
+      $('#routes').value = 'ALL';
+      [...$('#dirChips').children].forEach(c => c.classList.remove('active'));
+      setActive($('#dirChips .chip[data-value="both"]'), true);
+      await runDetect(true);
+      startAutoRefresh();
+    });
+
+    // Chips: mode
+    $('#modeChips').addEventListener('click', (e) => { const chip = e.target.closest('.chip'); if (!chip) return; [...$('#modeChips').children].forEach(c => c.classList.remove('active')); chip.classList.add('active'); setMode(chip.dataset.value); setParams('mode', mode); updateTvSummary(); updateMobileSummary(); });
+
+    // Chips: direction
+    $('#dirChips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip'); if (!chip) return;
+      const val = chip.dataset.value;
+      if (val === 'both') { [...$('#dirChips').children].forEach(c => setActive(c, c.dataset.value === 'both')); }
+      else {
+        const was = chip.classList.contains('active');
+        if (was && $('#dirChips').querySelectorAll('.chip.active').length === 1) return;
+        chip.classList.toggle('active', !was);
+        $('#dirChips .chip[data-value="both"]').classList.remove('active');
+        if (!$('#dirChips').querySelectorAll('.chip.active').length) $('#dirChips .chip[data-value="outbound"]').classList.add('active');
+      }
+    });
+
+    // Chips: service
+    $('#svcChips').addEventListener('click', (e) => { const chip = e.target.closest('.chip'); if (!chip) return; const val = chip.dataset.value;
+      if (val === 'all') { [...$('#svcChips').children].forEach(c => setActive(c, c.dataset.value === 'all')); }
+      else { const was = chip.classList.contains('active'); setActive(chip, !was); $('#svcChips .chip[data-value="all"]').classList.remove('active'); if (!$('#svcChips').querySelectorAll('.chip.active').length) setActive(chip, true); }
+    });
+
+    // Chips: display options
+    $('#filterChips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip'); if (!chip) return;
+      const val = chip.dataset.value;
+      if (val === 'hideok') {
+        hideOk = !chip.classList.contains('active'); setActive(chip, hideOk);
+        document.querySelectorAll('.section').forEach(sec => { const key = sec.getAttribute('data-key'); const entry = comboStore.get(key); if (entry) applyHideRule(sec, entry.data); });
+        setParams('hideok', hideOk ? '1' : '0');
+      } else if (val === 'affsum') {
+        showAffSummary = !chip.classList.contains('active'); setActive(chip, showAffSummary);
+        setParams('affsum', showAffSummary ? '1' : '0'); updateMobileSummary();
+      }
+    });
+
+    // Chips: scan
+    $('#scanChips').addEventListener('click', (e) => { const chip = e.target.closest('.chip'); if (!chip) return; if (chip.dataset.value === 'enable') { scanEnable = !chip.classList.contains('active'); setActive(chip, scanEnable); setParams('scan', scanEnable ? '1' : '0'); } });
+    $('#scanSourceChips').addEventListener('click', (e) => { const chip = e.target.closest('.chip'); if (!chip) return; [...$('#scanSourceChips').children].forEach(c=>c.classList.remove('active')); chip.classList.add('active'); scanSource = chip.dataset.value || 'all'; setParams('scanSrc', scanSource); });
+
+    // ETA toggle
+    $('#etaToggleChips').addEventListener('click', (e) => { const chip = e.target.closest('.chip'); if (!chip) return; if (chip.dataset.value === 'eta') { showEta = !chip.classList.contains('active'); setActive(chip, showEta); setParams('eta', showEta ? '1' : '0'); renderEtaPreview(); } });
+    ['etaRoute','etaStop','etaSvc','etaBound'].forEach(id => { const el = document.getElementById(id); el.addEventListener('change', ()=>{ if (showEta) renderEtaPreview(); }); el.addEventListener('keyup', ()=>{ if (showEta) renderEtaPreview(); }); });
+
+    // TV floating bus: switch to mobile
+    $('#busSwitch').addEventListener('click', () => { setMode('mobile'); [...$('#modeChips').children].forEach(c => c.classList.remove('active')); $('#modeChips .chip[data-value="mobile"]').classList.add('active'); setParams('mode', 'mobile'); updateMobileSummary(); });
+
+    // -------- Init from URL --------
+    (function init() {
+      // defaults
       setActive($('#dirChips .chip[data-value="outbound"]'), true);
       setActive($('#svcChips .chip[data-value="1"]'), true);
       setActive($('#modeChips .chip[data-value="mobile"]'), true);
       setActive($('#filterChips .chip[data-value="hideok"]'), true);
+      setActive($('#filterChips .chip[data-value="affsum"]'), true);
+      setActive($('#scanSourceChips .chip[data-value="all"]'), true);
 
+      // read params
       const routeParam = (getParam('route') || '').trim();
       const modeParam = (getParam('mode') || 'mobile').toLowerCase();
       const boundParam = (getParam('bound') || 'outbound').toLowerCase();
       const svcParam = (getParam('serviceType') || '1');
-      const hideokParam = getParam('hideok');
+
+      const hideokParam = getParam('hideok'); hideOk = hideokParam === null ? true : hideokParam === '1'; setActive($('#filterChips .chip[data-value="hideok"]'), hideOk);
+      const affsumParam = getParam('affsum'); showAffSummary = affsumParam === null ? true : affsumParam === '1'; setActive($('#filterChips .chip[data-value="affsum"]'), showAffSummary);
+
+      const scanParam = getParam('scan'); scanEnable = scanParam === '1'; setActive($('#scanChips .chip[data-value="enable"]'), scanEnable);
+      const scanSrcParam = (getParam('scanSrc') || 'all'); scanSource = (scanSrcParam === 'input') ? 'input' : 'all';
+      [...$('#scanSourceChips').children].forEach(c=>c.classList.remove('active')); setActive($('#scanSourceChips .chip[data-value="'+scanSource+'"]'), true);
+      $('#scanPrefixes').value = getParam('scanPrefixes','');
+      $('#scanEnds').value = getParam('scanEnds','');
+      $('#scanFrom').value = getParam('scanFrom','');
+      $('#scanTo').value = getParam('scanTo','');
+
+      const etaParam = getParam('eta'); showEta = etaParam === '1'; setActive($('#etaToggleChips .chip[data-value="eta"]'), showEta);
+      $('#etaRoute').value = getParam('etaRoute','');
+      $('#etaStop').value = getParam('etaStop','');
+      $('#etaSvc').value = getParam('etaSvc','1');
+      $('#etaBound').value = getParam('etaBound','outbound');
 
       $('#routes').value = routeParam;
 
@@ -734,211 +1047,7 @@
         if (![...$('#svcChips').querySelectorAll('.chip.active')].length) setActive($('#svcChips .chip[data-value="1"]'), true);
       }
 
-      // hide ok/NA
-      hideOk = hideokParam === null ? true : hideokParam === '1';
-      setActive($('#filterChips .chip[data-value="hideok"]'), hideOk);
-    }
-
-    function normalizeRoutes(input) {
-      const parts = input.split(/[\s,]+/).map(x => x.trim().toUpperCase()).filter(Boolean);
-      const uniq = [...new Set(parts)].slice(0, 1000); return uniq;
-    }
-
-    async function gatherRoutes() {
-      const value = $('#routes').value.trim().toUpperCase();
-      if (value === 'ALL') {
-        usingAllRoutes = true;
-        const j = await fetchJSON(`${API}/route`);
-        const list = (j?.data || []).map(x => (x.route || '').toUpperCase()).filter(Boolean);
-        return [...new Set(list)].slice(0, 1000);
-      }
-      usingAllRoutes = false;
-      return normalizeRoutes(value);
-    }
-    function allMode() { return $('#routes').value.trim().toUpperCase() === 'ALL'; }
-
-    function setBusy(busy, { auto = false } = {}) {
-      $('#checkBtn').disabled = busy && !auto;
-      $('#refreshBtn').disabled = busy && !auto;
-      $('#routes').disabled = busy && !auto;
-      $('#allRoutesBtn').disabled = busy && !auto;
-      $('#statusArea').style.display = 'block';
-      $('#statusBadge').textContent = busy ? (auto ? '更新中…' : '分析中…') : $('#statusBadge').textContent;
-    }
-
-    async function detectJamMulti({ routes, dirSel, svcSel, runId }) {
-      const bounds = dirSel === 'both' ? ['outbound','inbound'] : [dirSel];
-      const svcs = svcSel.includes('all') ? ['1','2','A'] : svcSel;
-      const tasks = [];
-      for (const r of routes) for (const b of bounds) for (const s of svcs) tasks.push({ route: r, bound: b, svc: s });
-
-      let completed = 0, hitCombos = 0, naCombos = 0, transientCombos = 0, overall = 0;
-      updateProgressMeta({ total: tasks.length, completed, hitCombos, naCombos, transientCombos, overall });
-
-      const startedAt = Date.now();
-      await pMap(
-        tasks,
-        detectJamForCombo,
-        4,
-        {
-          onEach: (out) => {
-            if (runId !== currentRunId) return;
-            upsertSection(out, runId);
-            completed++;
-            if (out.na) naCombos++;
-            else if (out.transient) transientCombos++;
-            else if ((out.hits?.length || 0) > 0) hitCombos++;
-            overall = Math.max(overall, out.maxSeverity || 0);
-            updateProgressMeta({ total: tasks.length, completed, hitCombos, naCombos, transientCombos, overall });
-          }
-        }
-      );
-
-      const tookMs = Date.now() - startedAt;
-
-      // Remove stale sections from previous runs
-      [...resultsElRef.children].forEach(sec => {
-        if (sec.getAttribute && sec.getAttribute('data-run-id') !== String(runId)) {
-          resultsElRef.removeChild(sec);
-        }
-      });
-
-      updateProgressMeta({ total: tasks.length, completed, hitCombos, naCombos, transientCombos, overall, tookMs });
-      return { overall, tookMs };
-    }
-
-    async function runDetect(force = false, { auto = false } = {}) {
-      const dirSel = getDirSelection();
-      const svcSel = getSvcSelection();
-      const routes = await gatherRoutes();
-
-      if (routes.length === 0) { alert('請輸入至少一個路線編號（例如：276A 或 276A,269C，或輸入 ALL）'); return; }
-
-      const key = JSON.stringify({ routesKey: usingAllRoutes ? 'ALL' : routes.join(','), mode, dirSel, svcSel, hideOk });
-      if (!force && key === lastQueryKey) { /* no-op */ }
-      else { safeSetParamsMulti(routes, mode, dirSel, svcSel, hideOk); }
-      lastQueryKey = key;
-
-      currentRunId++; const runId = currentRunId;
-
-      setBusy(true, { auto });
-      try {
-        await detectJamMulti({ routes, dirSel, svcSel, runId });
-        setFooterUpdated();
-      } catch (e) {
-        $('#statusArea').style.display = 'block';
-        $('#statusBadge').className = 'badge bad';
-        $('#statusBadge').textContent = `❌ ${OFFLINE_TEXT}`;
-        const msg = (e && e.message) ? e.message : String(e || '未知錯誤');
-        $('#metaText').innerHTML = `<span style="color:#b31c1c;">錯誤：${msg}</span>`;
-      } finally { setBusy(false, { auto }); }
-    }
-
-    function startAutoRefresh() {
-      if (autoTimer) clearInterval(autoTimer);
-      autoTimer = setInterval(() => runDetect(true, { auto: true }), 30000);
-    }
-
-    // -------- Events --------
-    $('#checkBtn').addEventListener('click', () => { runDetect(); startAutoRefresh(); });
-    $('#refreshBtn').addEventListener('click', () => runDetect(true));
-    $('#shareBtn').addEventListener('click', async () => {
-      const dirSel = getDirSelection(); const svcSel = getSvcSelection();
-      const routesVal = $('#routes').value.trim().toUpperCase();
-      const routes = routesVal === 'ALL' ? ['ALL'] : normalizeRoutes(routesVal);
-      const tooLong = routes.join(',').length > 200 || routesVal === 'ALL';
-      const url = new URL(window.location.href);
-      url.searchParams.set('route', tooLong ? 'ALL' : routes.join(','));
-      url.searchParams.set('mode', mode);
-      url.searchParams.set('bound', dirSel);
-      url.searchParams.set('serviceType', svcSel.join(','));
-      url.searchParams.set('hideok', hideOk ? '1' : '0');
-      const shareUrl = url.toString();
-      try {
-        if (navigator.share) await navigator.share({ title: 'KMB Bus Service Update', url: shareUrl });
-        else if (navigator.clipboard) { await navigator.clipboard.writeText(shareUrl); alert('已複製分享連結到剪貼簿'); }
-        else { prompt('複製以下連結：', shareUrl); }
-      } catch {}
-    });
-    $('#allRoutesBtn').addEventListener('click', async () => {
-      if (!confirm('此操作會抓取全港所有九巴路線並以「兩方向」分析，可能非常耗時並消耗流量。是否繼續？')) return;
-      $('#routes').value = 'ALL';
-      // force both directions
-      [...$('#dirChips').children].forEach(c => c.classList.remove('active'));
-      const bothEl = $('#dirChips').querySelector('.chip[data-value="both"]');
-      if (bothEl) bothEl.classList.add('active');
-      await runDetect(true);
-      startAutoRefresh();
-    });
-
-    // Mode chips
-    $('#modeChips').addEventListener('click', (e) => {
-      const chip = e.target.closest('.chip'); if (!chip) return;
-      [...$('#modeChips').children].forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      setMode(chip.dataset.value);
-      setParams('mode', mode);
-      updateSummaryBar();
-    });
-
-    // Direction chips
-    $('#dirChips').addEventListener('click', (e) => {
-      const chip = e.target.closest('.chip'); if (!chip) return;
-      const val = chip.dataset.value;
-      if (val === 'both') {
-        [...$('#dirChips').children].forEach(c => c.classList.toggle('active', c.dataset.value === 'both'));
-      } else {
-        const was = chip.classList.contains('active');
-        if (was && $('#dirChips').querySelectorAll('.chip.active').length === 1) return;
-        chip.classList.toggle('active', !was);
-        $('#dirChips .chip[data-value="both"]').classList.remove('active');
-        if (!$('#dirChips').querySelectorAll('.chip.active').length) $('#dirChips .chip[data-value="outbound"]').classList.add('active');
-      }
-    });
-
-    // Service chips
-    $('#svcChips').addEventListener('click', (e) => {
-      const chip = e.target.closest('.chip'); if (!chip) return;
-      const val = chip.dataset.value;
-      if (val === 'all') {
-        [...$('#svcChips').children].forEach(c => c.classList.toggle('active', c.dataset.value === 'all'));
-      } else {
-        const was = chip.classList.contains('active');
-        chip.classList.toggle('active', !was);
-        $('#svcChips .chip[data-value="all"]').classList.remove('active');
-        if (!$('#svcChips').querySelectorAll('.chip.active')) setActive(chip, true);
-      }
-    });
-
-    // Filter chips
-    $('#filterChips').addEventListener('click', (e) => {
-      const chip = e.target.closest('.chip'); if (!chip) return;
-      if (chip.dataset.value === 'hideok') {
-        hideOk = !chip.classList.contains('active');
-        chip.classList.toggle('active', hideOk);
-        document.querySelectorAll('.section').forEach(sec => {
-          const key = sec.getAttribute('data-key');
-          const entry = comboStore.get(key);
-          if (entry) applyHideRule(sec, entry.data);
-        });
-        setParams('hideok', hideOk ? '1' : '0');
-      }
-    });
-
-    // TV floating bus: switch to mobile
-    $('#busSwitch').addEventListener('click', () => {
-      setMode('mobile');
-      // Reflect in chips and URL
-      [...$('#modeChips').children].forEach(c => c.classList.remove('active'));
-      $('#modeChips .chip[data-value="mobile"]').classList.add('active');
-      setParams('mode', 'mobile');
-      updateSummaryBar();
-    });
-
-    // -------- Init --------
-    (function init() {
-      setFromParams();
-      const initial = (getParam('route') || '').trim().toUpperCase();
+      const initial = routeParam.toUpperCase();
       if (initial) {
         if (initial === 'ALL') $('#routes').value = 'ALL';
         runDetect(false);
