@@ -7,12 +7,19 @@
     <link rel="apple-touch-icon" href="icon.png">
     <meta name="apple-mobile-web-app-title" content="My App">
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; background-color: #f8f9fa; }
+
+
         .train-schedule { max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 5px; padding: 15px; background-color: #fff; }
-        .train { border-bottom: 1px solid #ddd; padding: 2px 0; font-size: 1.6em; }
+        
+        .train { border-bottom: 1px solid #ddd; padding: 2px 0; font-size: 1.5em; }
+        
         .train:last-child { border-bottom: none; }
+       
         .train-info { display: flex; justify-content: space-between; }
+        
         .time { font-weight: bold; color: #467200; }
+        
         .destination { color: #030303; font-weight: bolder; }
         .station-name { text-align: center; font-size: 1.2em; margin-bottom: 10px; color: #333; }
         /* Setup UI */
@@ -54,7 +61,9 @@
         // Defaults: language=tc
         const params = new URLSearchParams(window.location.search);
         const routeId = params.get('routeId') || '33';
-        const stopId = params.get('stopId') || '165';
+
+        // const stopId = params.get('stopId') || '165'; //chestwood station
+        const stopId = params.get('stopId') || '152'; //shenzhen bay station 
         const language = params.get('language') || 'tc';
         const setupMode = params.get('setup') === 'true';
 
@@ -74,7 +83,7 @@
             // '舊詞': '新詞'
             // '深圳灣口岸巴士總站': '深圳灣口岸'
             '嘉湖山莊翠湖居': '翠湖輕鐵站',
-            '深圳灣口岸': '深圳灣'
+            '深圳灣口岸': '深圳'
         };
         function sanitizeText(text) {
             if (!text) return '';
@@ -128,7 +137,9 @@
             if (!raw) return routeLabelFallback(routeId);
             const parts = raw.split('>');
             const rhs = (parts[1] || raw).trim();
-            const out = language === 'en' ? `To ${rhs}` : `往${rhs}`;
+//            const out = language === 'en' ? `To ${rhs}` : `往${rhs}`;
+            const out = language === 'en' ? `${rhs}` : `${rhs}`;
+
             return sanitizeText(out);
         }
 
@@ -167,7 +178,7 @@
                 if (!list.length) {
                     const empty = document.createElement('div');
                     empty.className = 'station-name';
-                    empty.textContent = '暫無抵站時間';
+                    empty.textContent = '暫無抵站時間；建議提早出門。';
                     scheduleDiv.appendChild(empty);
                     return;
                 }
@@ -195,7 +206,7 @@
                     trainDiv.innerHTML = `
                         <div class="train-info">
                             <div class="destination">${titleRoute} ${dest}</div>
-                            <div class="time">${displayMins}${absTime ? ` · ${absTime}` : ''}</div>
+                            <div class="time">${displayMins}${absTime ? `  ${absTime}` : ''}</div>
                         </div>
                     `;
 
@@ -305,11 +316,11 @@
             h = h % 12; h = h ? h : 12;
             document.getElementById('time').textContent = `${h}:${m}:${s} ${ampm}`;
         }
-        setInterval(updateTime, 3000);
+        setInterval(updateTime, 1000);
         updateTime();
 
         render();
-        setInterval(render, 3000); // Refresh every 3 seconds
+        setInterval(render, 1000); // Refresh every 1 seconds
 
         // Initialize setup UI (hidden unless &setup=true)
         initSetupUI();
