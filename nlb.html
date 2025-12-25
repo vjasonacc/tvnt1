@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
+    <title id="station-title">NLB Bus Update</title>
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="apple-mobile-web-app-title" content="My App">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; }
+        .train-schedule { max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 5px; padding: 15px; background-color: #fff; }
+        .train { border-bottom: 1px solid #ddd; padding: 2px 0; font-size: 1.6em; }
+        .train:last-child { border-bottom: none; }
+        .train-info { display: flex; justify-content: space-between; }
+        .time { font-weight: bold; color: #467200; }
+        .destination { color: #030303; font-weight: bolder; }
+        .station-name { text-align: center; font-size: 1.2em; margin-bottom: 10px; color: #333; }
+        /* Setup UI */
+        .setup-panel { display: none; max-width: 600px; margin: 12px auto; padding: 12px; background:#fff; border:1px solid #ddd; border-radius:6px; }
+        .setup-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+        .setup-row label { min-width: 90px; font-weight: 600; }
+        .setup-row select, .setup-row input { flex:1; padding:6px; }
+        .setup-row button { padding:6px 10px; }
+        .setup-help { font-size: 0.9em; color:#555; margin-top:6px; }
+    </style>
+</head>
+<body>
+    <div class="train-schedule" id="train-schedule"></div>
+    <div id="time" style="text-align: center; margin-top: 1%;">Loading...</div>
+
+    <!-- Hidden setup UI (show when &setup=true) -->
+    <div id="setupPanel" class="setup-panel">
+        <div class="setup-row">
+            <label for="routeSelect">路線</label>
+            <select id="routeSelect">
+                <option value="">載入中…</option>
+            </select>
+        </div>
+        <div class="setup-row">
+            <label for="stopSelect">車站</label>
+            <select id="stopSelect" disabled>
+                <option value="">請先選擇路線</option>
+            </select>
+        </div>
+        <div class="setup-row">
+            <label for="genUrl">URL</label>
+            <input id="genUrl" type="text" readonly>
+            <button id="copyBtn">複製</button>
+        </div>
+        <div class="setup-help">提示：產生的 URL 會包含路線代碼（例如 38）與路線名稱（例如 B2），以及所選車站。</div>
+    </div>
+
+    <script>
+        // Defaults: language=tc
+        const params = new URLSearchParams(window.location.search);
+        const routeId = params.get('routeId') || '33';
+        const stopId = params.get('stopId') || '165';
+        const language = params.get('language') || 'tc';
+        const setupMode = params.get('setup') === 'true';
+
+        const API_BASE = 'https://rt.data.gov.hk/v2/transport/nlb';
+        const ETA_URL = `${API_BASE}/stop.php?action=estimatedArrivals&routeId=${encodeURIComponent(routeId)}&stopId=${encodeURIComponent(stopId)}&language=${encodeURIComponent(language)}`;
+        const STOP_LIST_URL = (rid) => `${API_BASE}/stop.php?action=list&routeId=${encodeURIComponent(rid)}`;
+        const ROUTE_LIST_URL = `${API_BASE}/route.php?action=list`;
+
+        const scheduleDiv = document.getElementById('train-schedule');
+
+        // Keyword filters: remove or replace occurrences in displayed texts
+        const KEYWORDS_REMOVE = [
+            // add words to strip entirely
+            // '嘉湖山莊'
+        ];
+        const KEYWORDS_REPLACE = {
+            // '舊詞': '新詞'
+            // '深圳灣口岸巴士總站': '深圳灣口岸'
+            '嘉湖山莊翠湖居': '翠湖輕鐵站',
+            '深圳灣口岸': '深圳灣'
+        };
+        function sanitizeText(text) {
+            if (!text) return '';
+            let out = String(text);
+            for (const [from, to] of Object.entries(KEYWORDS_REPLACE)) {
+                if (!from) continue;
+                const reFrom = new RegExp(from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                out = out.replace(reFrom, to ?? '');
+            }
+            for (const kw of KEYWORDS_REMOVE) {
+                if (!kw) continue;
+                const re = new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                out = out.replace(re, '');
+            }
+            return out.trim();
+        }
+
+        function routeLabelFallback(rid) {
+            return String(rid) === '33' ? 'B2P' : `Route ${rid}`;
+        }
+
+        async function fetchJSON(url) {
+            const res = await fetch(url, { cache: 'no-store' });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        }
+
+        function toMinutesDiff(ts) {
+            const now = Date.now();
+            const t = new Date(ts).getTime();
+            const mins = Math.max(0, Math.round((t - now) / 60000));
+            return mins === 0 ? '即將抵達' : `${mins}分鐘`; // show 分鐘
+        }
+
+        function formatAbsTime(ts) {
+            const d = new Date(ts);
+            let h = d.getHours();
+            const m = d.getMinutes().toString().padStart(2, '0');
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}:${m} ${ampm}`;
+        }
+
+        // Derive destination from routeName_* (RHS of '>')
+        function deriveDestFromRoute(routeObj) {
+            if (!routeObj) return routeLabelFallback(routeId);
+            const nameC = routeObj.routeName_c || routeObj.routeNameC;
+            const nameS = routeObj.routeName_s || routeObj.routeNameS;
+            const nameE = routeObj.routeName_e || routeObj.routeNameE;
+            let raw = (language === 'tc' ? nameC : language === 'sc' ? nameS : nameE) || nameC || nameE || '';
+            if (!raw) return routeLabelFallback(routeId);
+            const parts = raw.split('>');
+            const rhs = (parts[1] || raw).trim();
+            const out = language === 'en' ? `To ${rhs}` : `往${rhs}`;
+            return sanitizeText(out);
+        }
+
+        async function render() {
+            try {
+                // Route list (use routeNo for display, e.g. show "B2" for routeId=38)
+                const routesPayload = await fetchJSON(ROUTE_LIST_URL);
+                const routesList = Array.isArray(routesPayload) ? routesPayload : (routesPayload?.routes || routesPayload?.data || []);
+                const routeObj = Array.isArray(routesList) ? routesList.find(r => String(r.routeId) === String(routeId)) : null;
+
+                const titleRoute = sanitizeText(routeObj?.routeNo || routeLabelFallback(routeId));
+                const destFromRoute = deriveDestFromRoute(routeObj);
+
+                // Stop list for stop name (Traditional Chinese stopName_c next to route name)
+                const stopsPayload = await fetchJSON(STOP_LIST_URL(routeId));
+                const stopsList = Array.isArray(stopsPayload) ? stopsPayload : (stopsPayload?.stops || stopsPayload?.data || stopsPayload?.routeStops || []);
+                const stop = Array.isArray(stopsList) ? stopsList.find(s => String(s.stopId) === String(stopId)) : null;
+                const stopNameCRaw = stop ? (stop.stopName_c || stop.stopNameC || stop.stopName || stop.nameC || '') : '';
+                const stopNameC = sanitizeText(stopNameCRaw);
+
+                // Title: {routeNo} - {stopName_c}
+                const pageTitle = stopNameC ? `${titleRoute} - ${stopNameC}` : titleRoute;
+
+                // ETA list
+                const payload = await fetchJSON(ETA_URL);
+                const list = Array.isArray(payload) ? payload : (payload?.estimatedArrivals || []);
+
+                scheduleDiv.innerHTML = '';
+                document.getElementById('station-title').textContent = pageTitle;
+
+                const stationNameDiv = document.createElement('div');
+                stationNameDiv.className = 'station-name';
+                stationNameDiv.textContent = pageTitle;
+                scheduleDiv.appendChild(stationNameDiv);
+
+                if (!list.length) {
+                    const empty = document.createElement('div');
+                    empty.className = 'station-name';
+                    empty.textContent = '暫無抵站時間';
+                    scheduleDiv.appendChild(empty);
+                    return;
+                }
+
+                list.forEach(item => {
+                    const trainDiv = document.createElement('div');
+                    trainDiv.className = 'train';
+
+                    const ts = item.estimateTime || item.arrivalTime || item.estimatedArrivalTime || item.etaTime;
+                    const displayMins = ts ? toMinutesDiff(ts) : (item.isScheduled ? '班次預定' : '—');
+                    const absTime = ts ? formatAbsTime(ts) : '';
+
+                    let dest = destFromRoute;
+                    if (item.destination) {
+                        dest =
+                            language === 'tc' ? (item.destination.tc || dest)
+                          : language === 'sc' ? (item.destination.sc || dest)
+                          : (item.destination.en || dest);
+                        dest = sanitizeText(dest);
+                    } else {
+                        dest = sanitizeText(dest);
+                    }
+
+                    // Destination line should include route code, e.g. "B2P 往深圳灣口岸"
+                    trainDiv.innerHTML = `
+                        <div class="train-info">
+                            <div class="destination">${titleRoute} ${dest}</div>
+                            <div class="time">${displayMins}${absTime ? ` · ${absTime}` : ''}</div>
+                        </div>
+                    `;
+
+                    scheduleDiv.appendChild(trainDiv);
+                });
+            } catch (err) {
+                console.error('NLB render error:', err);
+                scheduleDiv.innerHTML = '<div class="station-name">載入失敗，請稍後再試。</div>';
+            }
+        }
+
+        // Setup UI: only show when &setup=true
+        async function initSetupUI() {
+            const panel = document.getElementById('setupPanel');
+            if (!setupMode) {
+                panel.style.display = 'none';
+                return;
+            }
+            panel.style.display = 'block';
+
+            const routeSelect = document.getElementById('routeSelect');
+            const stopSelect = document.getElementById('stopSelect');
+            const genUrlInput = document.getElementById('genUrl');
+            const copyBtn = document.getElementById('copyBtn');
+
+            try {
+                const routesPayload = await fetchJSON(ROUTE_LIST_URL);
+                const routesList = Array.isArray(routesPayload) ? routesPayload : (routesPayload?.routes || routesPayload?.data || []);
+                routesList.sort((a,b) => String(a.routeNo).localeCompare(String(b.routeNo), 'en', { numeric: true }));
+
+                routeSelect.innerHTML = '<option value="">請選擇路線</option>';
+                routesList.forEach(r => {
+                    const rid = r.routeId;
+                    const routeNo = r.routeNo || routeLabelFallback(rid);
+                    const opt = document.createElement('option');
+                    opt.value = String(rid);
+                    opt.textContent = `${sanitizeText(routeNo)} (${rid})`;
+                    routeSelect.appendChild(opt);
+                });
+
+                routeSelect.addEventListener('change', async () => {
+                    stopSelect.disabled = true;
+                    stopSelect.innerHTML = '<option value="">載入中…</option>';
+                    genUrlInput.value = '';
+
+                    const selectedRid = routeSelect.value;
+                    if (!selectedRid) {
+                        stopSelect.innerHTML = '<option value="">請先選擇路線</option>';
+                        return;
+                    }
+
+                    try {
+                        const stopsPayload = await fetchJSON(STOP_LIST_URL(selectedRid));
+                        const stopsList = Array.isArray(stopsPayload) ? stopsPayload : (stopsPayload?.stops || stopsPayload?.data || stopsPayload?.routeStops || []);
+                        stopSelect.innerHTML = '<option value="">請選擇車站</option>';
+                        stopsList.forEach(s => {
+                            const sid = s.stopId;
+                            const nameC = sanitizeText(s.stopName_c || s.stopNameC || s.stopName || s.nameC || '');
+                            const nameE = sanitizeText(s.stopName_e || s.stopNameE || s.nameE || '');
+                            const opt = document.createElement('option');
+                            opt.value = String(sid);
+                            opt.textContent = nameC ? `${nameC} (${nameE || sid})` : (nameE || `Stop ${sid}`);
+                            stopSelect.appendChild(opt);
+                        });
+                        stopSelect.disabled = false;
+                    } catch (e) {
+                        stopSelect.innerHTML = '<option value="">載入失敗</option>';
+                    }
+                });
+
+                stopSelect.addEventListener('change', () => {
+                    const selectedRid = routeSelect.value;
+                    const selectedSid = stopSelect.value;
+                    if (!selectedRid || !selectedSid) {
+                        genUrlInput.value = '';
+                        return;
+                    }
+                    const url = `${location.pathname}?routeId=${encodeURIComponent(selectedRid)}&stopId=${encodeURIComponent(selectedSid)}&language=tc`;
+                    genUrlInput.value = url;
+                });
+
+                copyBtn.addEventListener('click', async () => {
+                    if (!genUrlInput.value) return;
+                    try {
+                        await navigator.clipboard.writeText(genUrlInput.value);
+                        copyBtn.textContent = '已複製';
+                        setTimeout(() => copyBtn.textContent = '複製', 1500);
+                    } catch {
+                        genUrlInput.select();
+                        document.execCommand('copy');
+                        copyBtn.textContent = '已複製';
+                        setTimeout(() => copyBtn.textContent = '複製', 1500);
+                    }
+                });
+            } catch (e) {
+                panel.innerHTML = '<div class="setup-help">設定介面載入失敗，請稍後再試。</div>';
+            }
+        }
+
+        // Update clock every 3 seconds without reloading
+        function updateTime() {
+            const now = new Date();
+            let h = now.getHours();
+            const m = now.getMinutes().toString().padStart(2, '0');
+            const s = now.getSeconds().toString().padStart(2, '0');
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12; h = h ? h : 12;
+            document.getElementById('time').textContent = `${h}:${m}:${s} ${ampm}`;
+        }
+        setInterval(updateTime, 3000);
+        updateTime();
+
+        render();
+        setInterval(render, 3000); // Refresh every 3 seconds
+
+        // Initialize setup UI (hidden unless &setup=true)
+        initSetupUI();
+    </script>
+</body>
+</html>
