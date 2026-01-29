@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="station-title">LRT v2</title>
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="apple-mobile-web-app-title" content="My App">
+    <!-- <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .train-schedule {
+            max-width: 600px;
+            margin: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: #fff;
+        }
+        .train {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+            font-size: 1.6em;
+        }
+        .train:last-child {
+            border-bottom: none;
+        }
+        .train-info {
+            display: flex;
+            justify-content: space-between;
+        }
+        .time {
+            font-weight: bold;
+            color: #467200;
+        }
+        .destination {
+            color: #030303;
+            font-weight: bolder;
+        }
+        .station-name {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+    </style> -->
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; background-color: #f8f9fa; }
+
+
+        .train-schedule { max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 5px; padding: 15px; background-color: #fff; }
+        
+        .train { border-bottom: 1px solid #ddd; padding: 2px 0; font-size: 1.5em; }
+        
+        .train:last-child { border-bottom: none; }
+       
+        .train-info { display: flex; justify-content: space-between; }
+        
+        .time { font-weight: bold; color: #467200; }
+        
+        .destination { color: #030303; font-weight: bolder; }
+        .station-name { text-align: center; font-size: 1.2em; margin-bottom: 10px; color: #333; }
+        /* Setup UI */
+        .setup-panel { display: none; max-width: 600px; margin: 12px auto; padding: 12px; background:#fff; border:1px solid #ddd; border-radius:6px; }
+        .setup-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+        .setup-row label { min-width: 90px; font-weight: 600; }
+        .setup-row select, .setup-row input { flex:1; padding:6px; }
+        .setup-row button { padding:6px 10px; }
+        .setup-help { font-size: 0.9em; color:#555; margin-top:6px; }
+    </style>
+</head>
+<body>
+    <div class="train-schedule" id="train-schedule">
+        <!-- The station name and train schedule will be populated here dynamically -->
+    </div>
+<div id="time" style="text-align: center; margin-top: 1%;">Loading...</div>
+    <script>
+        const stationNames = {
+            1: "屯門碼頭總站",
+            10: "美樂站",
+            15: "蝴蝶站",
+            20: "輕鐵車廠站",
+            30: "龍門站",
+            40: "青山村站",
+            50: "青雲站",
+            60: "建安站",
+            70: "河田站",
+            75: "蔡意橋站",
+            80: "澤豐站",
+            90: "屯門醫院站",
+            100: "兆康站",
+            110: "麒麟站",
+            120: "青松站",
+            130: "建生站",
+            140: "田景站",
+            150: "良景站",
+            160: "新圍站",
+            170: "石排站",
+            180: "山景 (北)站",
+            190: "山景 (南)站",
+            200: "鳴琴站",
+            212: "大興 (北)站",
+            220: "大興 (南)站",
+            230: "銀圍站",
+            240: "兆禧站",
+            250: "屯門泳池站",
+            260: "豐景園站",
+            265: "兆麟站",
+            270: "安定站",
+            275: "友愛總站",
+            280: "市中心站",
+            295: "屯門站",
+            300: "杯渡站",
+            310: "何福堂站",
+            320: "新墟站",
+            330: "景峰站",
+            340: "鳳地站",
+            350: "藍地站",
+            360: "泥圍站",
+            370: "鍾屋村站",
+            380: "洪水橋站",
+            390: "塘坊村站",
+            400: "屏山站",
+            425: "坑尾村站",
+            430: "天水圍西鐵站",
+            435: "天慈站",
+            445: "天耀站",
+            448: "樂湖站",
+            450: "天湖站",
+            455: "銀座站",
+            460: "天瑞站",
+            468: "頌富輕鐵站",
+            480: "天富站",
+            490: "翠湖輕鐵站",
+            500: "天榮站",
+            510: "天悅站",
+            520: "天秀站",
+            530: "濕地公園站",
+            540: "天恒站",
+            550: "天逸總站",
+            560: "水邊圍站",
+            570: "豐年路站",
+            580: "康樂路站",
+            590: "大棠路站",
+            600: "元朗總站",
+            920: "三聖總站"
+        };
+
+        async function fetchTrainSchedule(stationId, platformId) {
+            const scheduleDiv = document.getElementById('train-schedule');
+
+            try {
+// gov api            // const response = await fetch(`https://rt.data.gov.hk/v1/transport/mtr/lrt/getSchedule?station_id=${stationId}`);
+                const response = await fetch(`https://rt.data.gov.hk/v1/transport/mtr/lrt/getSchedule?station_id=${stationId}`);
+
+                // const response = await fetch(`api.txt`); //my local server api
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Use station name from the mapping
+                const stationName = stationNames[stationId] || `StationID: ${stationId}`;
+                document.getElementById('station-title').textContent = `${stationName} - Ver250314`;
+
+                // Update station name
+                const stationNameDiv = document.createElement('div');
+                stationNameDiv.className = 'station-name';
+                stationNameDiv.textContent = stationName;
+
+                // Append station name to the schedule if not already present
+                if (!scheduleDiv.querySelector('.station-name')) {
+                    scheduleDiv.appendChild(stationNameDiv);
+                }
+
+                if (data.status === 1) {
+                    const currentTime = new Date();
+                    const platformData = data.platform_list.find(platform => platform.platform_id === parseInt(platformId));
+
+                    // Clear previous train data
+                    scheduleDiv.innerHTML = ''; // Clear only the train list, keep the station name
+                    scheduleDiv.appendChild(stationNameDiv); // Re-add the station name
+
+                    if (platformData) {
+                        platformData.route_list.forEach(route => {
+                            // Skip 751P routes without time data
+                            if (route.route_no === '751P' && (!route.time_ch || route.time_ch.trim() === '')) {
+                                return; // Skip this route
+                            }
+
+                            const trainDiv = document.createElement('div');
+                            trainDiv.className = 'train';
+
+                            // Calculate arrival time
+                            let arrivalMessage = '';
+                            let formattedArrivalTime = '';
+                            if (route.time_ch === '即將抵達') {
+                                arrivalMessage = '即將抵達';
+                            } else if (route.time_ch === '-') {
+                                arrivalMessage = '⚠️已經到達';
+                            } else if (route.time_ch === '正在離開') {
+                                arrivalMessage = '⚠️正在離開';
+                            } else {
+                                // Replace "分鐘" with "分"
+                                arrivalMessage = route.time_ch.replace(/分鐘/g, '分鐘');
+                                const arrivalTime = new Date(currentTime.getTime() + parseInt(route.time_en) * 60 * 1000);
+                                const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+                                // Format the time without AM/PM
+                                formattedArrivalTime = arrivalTime.toLocaleString('en-US', options).replace(/ (AM|PM)/, '');
+                            }
+
+                            // Filter destination names
+                            let displayDestination = route.dest_ch;
+                            if (displayDestination.includes('碼頭')) {
+                                displayDestination = '碼頭';
+                            } else if (displayDestination.includes('天水圍循環綫')) {
+                                displayDestination = '循環';
+                            }
+
+                            // Shorten route numbers
+                            let shortRouteNo = route.route_no;
+                            if (shortRouteNo === '751P') {
+                                shortRouteNo = '751P';
+                            } else if (shortRouteNo === '761P') {
+                                shortRouteNo = '761';
+                            }
+
+                            const trainLengthIndicator = route.train_length === 1 ? '單卡' : route.train_length === 2 ? '拖卡' : '';
+                            const displayTime = trainLengthIndicator ? ` ${arrivalMessage}` : arrivalMessage;
+
+                            trainDiv.innerHTML = `
+                                <div class="train-info">
+                                    <div class="destination">${shortRouteNo} ${displayDestination}</div>
+                                    <div class="time">${displayTime} ${formattedArrivalTime} ${trainLengthIndicator}</div>
+                                </div>
+                            `;
+                            scheduleDiv.appendChild(trainDiv);
+                        });
+                    } else {
+                        scheduleDiv.innerHTML = '<div class="station-name">No trains available for the selected platform.</div>';
+                    }
+                } else {
+                    scheduleDiv.innerHTML = '<div class="station-name">please refresh the page, ! Unable to fetch train schedule.</div>';
+                }
+            } catch (error) {
+                console.error('Error fetching train schedule:', error);
+                scheduleDiv.innerHTML = '<div class="station-name">系統暫時未能提供資料, 請稍後再試</div>';
+            }
+        }
+
+        // Get station ID and platform ID from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const stationId = urlParams.get('id');
+        const platformId = urlParams.get('plat');
+
+        // Ensure the station ID and platform ID are valid numbers
+        if (!isNaN(stationId) && stationId !== '' && !isNaN(platformId) && platformId !== '') {
+            // Fetch the train schedule immediately and then every 2 seconds
+            fetchTrainSchedule(stationId, platformId);
+            setInterval(() => fetchTrainSchedule(stationId, platformId), 2000); // 2000 ms = 2 seconds
+        } else {
+            document.getElementById('train-schedule').innerHTML = '<div class="station-name">Invalid station or platform ID.</div>';
+        }
+    </script>
+    
+    
+
+
+
+
+<script>
+    function updateTime() {
+        const now = new Date();
+        let hours = now.getHours();
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        
+        const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
+        document.getElementById('time').textContent = timeString;
+    }
+
+    setInterval(updateTime, 1000);
+    updateTime(); // Initial call to display time immediately
+</script>
+
+</body>
+</html>
+</body>
+</html>
