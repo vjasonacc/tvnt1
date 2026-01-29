@@ -2,7 +2,7 @@
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
-    <title>MTR PIDS Bus Split-Screen</title>
+    <title>Bus PIDS Bus Split-Screen</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       body {
@@ -53,11 +53,11 @@
         font-size: 14px;
       }
       body.minipids .header .weather {
-        font-size: 12px;
+        font-size: 15px;
         gap: 6px;
       }
       body.minipids .header .clock {
-        font-size: 14px;
+        font-size: 15px;
       }
       body.minipids .eta-row {
         padding: 8px 0 8px 12px;
@@ -66,21 +66,21 @@
       }
       body.minipids .eta-route {
         flex: 0 0 50px;
-        margin-right: 12px;
+        margin-right: 16px;
       }
       body.minipids .eta-route-number {
-        font-size: 16px;
+        font-size: 19px;
       }
       body.minipids .eta-route-station {
-        font-size: 8px;
+        font-size: 13px;
       }
       body.minipids .eta-dest {
         flex: 1.5 1 0;
-        font-size: 15px;
+        font-size: 19px;
         letter-spacing: 0.5px;
       }
       body.minipids .eta-times {
-        flex: 0 0 240px;
+        flex: 0 0 24px;
         gap: 6px;
         margin-right: 12px;
       }
@@ -95,11 +95,11 @@
         font-size: 10px;
       }
       body.minipids .eta-actual-time {
-        font-size: 9px;
+        font-size: 14px;
         margin-top: 1px;
       }
       body.minipids .eta-remark {
-        font-size: 8px;
+        font-size: 12px;
         padding: 1px 4px;
         margin-top: 2px;
       }
@@ -247,10 +247,8 @@
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(name) || fallback;
     }
-    const topStop = getQueryParam('top_id', 'A00D00FC2F4F8400'); // default
-// B10F5697E4DA810B is kmb station 頌棋閣 (TN271) 269c ok
-      // A00D00FC2F4F8400 is for kmb station 276a 
-    const bottomStop = getQueryParam('bottom_id', 'B10F5697E4DA810B'); // default
+    const topStop = getQueryParam('top_id', 'B10F5697E4DA810B'); // default
+    const bottomStop = getQueryParam('bottom_id', 'F97A667725CDEB82'); // default
     const onlyShowRoute = getQueryParam('onlyshowroute', null);
     const hideRoute = getQueryParam('hideroute', null); // hide route
     const showStopName = getQueryParam('showstopname', 'on') === 'on'; //// default show station name
