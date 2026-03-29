@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>WalkWise HKBU · 25MS + 25M</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #f2f2f7;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --text-primary: #000000;
+            --text-secondary: #8e8e93;
+            --border-color: rgba(60, 60, 67, 0.18);
+            --primary-color: #007aff;
+            --green: #34c759;
+            --orange: #ff9500;
+            --red: #ff3b30;
+            --card-radius: 16px;
+            --blur-amount: 20px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #000000;
+                --card-bg: rgba(28, 28, 30, 0.7);
+                --text-primary: #ffffff;
+                --text-secondary: #ebebf5;
+                --border-color: rgba(84, 84, 88, 0.65);
+                --primary-color: #0a84ff;
+                --green: #30d158;
+                --orange: #ff9f0a;
+                --red: #ff453a;
+            }
+        }
+
+        body.dark-mode {
+            --bg-color: #000000;
+            --card-bg: rgba(28, 28, 30, 0.7);
+            --text-primary: #ffffff;
+            --text-secondary: #ebebf5;
+            --border-color: rgba(84, 84, 88, 0.65);
+            --primary-color: #0a84ff;
+            --green: #30d158;
+            --orange: #ff9f0a;
+            --red: #ff453a;
+        }
+
+        body.light-mode {
+            --bg-color: #f2f2f7;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --text-primary: #000000;
+            --text-secondary: #8e8e93;
+            --border-color: rgba(60, 60, 67, 0.18);
+            --primary-color: #007aff;
+            --green: #34c759;
+            --orange: #ff9500;
+            --red: #ff3b30;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #app {
+            position: relative;
+            height: 100%;
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            background-color: var(--bg-color);
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        header {
+            padding: 60px 20px 20px;
+            background-color: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        #weather-widget {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        main {
+            padding: 0 20px 100px;
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .view {
+            display: none;
+            height: 100%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            border-radius: var(--card-radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 30px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e9e9ea;
+            transition: .4s;
+        }
+
+        body.dark-mode .slider { background-color: #39393d; }
+        @media (prefers-color-scheme: dark) {
+            .slider { background-color: #39393d; }
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider {
+            background-color: var(--green);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .slider.round {
+            border-radius: 30px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Text Utilities */
+        .text-center { text-align: center; }
+        .text-secondary { color: var(--text-secondary); }
+        .text-primary { color: var(--text-primary); }
+        .text-danger { color: var(--red); }
+        .text-green { color: var(--green); }
+        .text-orange { color: var(--orange); }
+        .text-sm { font-size: 13px; }
+        .mt-2 { margin-top: 8px; }
+        .mt-4 { margin-top: 16px; }
+        .font-bold { font-weight: bold; }
+
+        /* Decision Card */
+        .decision-card h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin: 10px 0;
+            letter-spacing: -1px;
+        }
+
+        /* Arrivals - new compact format */
+        .route-group {
+            margin-bottom: 16px;
+        }
+        .route-group h3 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        .arrival-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            gap: 6px;
+        }
+        .arrival-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .arrival-route {
+            font-weight: 500;
+            min-width: 55px;
+        }
+        .arrival-time-info {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 8px;
+            flex: 2;
+            justify-content: flex-end;
+        }
+        .arrival-minutes {
+            font-weight: 600;
+        }
+        .arrival-minutes.soon {
+            color: var(--red);
+        }
+        .arrival-timestamp {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-feature-settings: 'tnum';
+        }
+        .arrival-remarks {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 4px;
+        }
+        /* Queue Visual */
+        .queue-display {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 10px;
+        }
+        .queue-display h1 {
+            font-size: 40px;
+            font-weight: 700;
+        }
+        .queue-visual {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .person-icon {
+            width: 12px;
+            height: 24px;
+            background-color: var(--primary-color);
+            border-radius: 6px;
+            opacity: 0.8;
+        }
+
+        /* Skeletons */
+        .skeleton::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            transform: translateX(-100%);
+            background-image: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0,
+                rgba(255, 255, 255, 0.2) 20%,
+                rgba(255, 255, 255, 0.5) 60%,
+                rgba(255, 255, 255, 0)
+            );
+            animation: shimmer 2s infinite;
+        }
+        body.dark-mode .skeleton::after {
+            background-image: linear-gradient(
+                90deg,
+                rgba(0, 0, 0, 0) 0,
+                rgba(255, 255, 255, 0.05) 20%,
+                rgba(255, 255, 255, 0.1) 60%,
+                rgba(0, 0, 0, 0)
+            );
+        }
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+
+        /* Buttons */
+        .ios-button {
+            background-color: var(--card-bg);
+            color: var(--primary-color);
+            border: none;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 17px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.1s, opacity 0.1s;
+        }
+        .ios-button:active {
+            transform: scale(0.97);
+            opacity: 0.8;
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 83px;
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding-top: 10px;
+            padding-bottom: 25px;
+            z-index: 100;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 500;
+            gap: 4px;
+        }
+        .tab-item.active {
+            color: var(--primary-color);
+        }
+        .tab-item i {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Route Segments */
+        .route-card {
+            margin-bottom: 16px;
+        }
+        .route-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .route-segments {
+            display: flex;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            gap: 2px;
+        }
+        .segment {
+            flex: 1;
+            background-color: var(--green);
+        }
+        .segment.slow { background-color: var(--orange); }
+        .segment.jam { background-color: var(--red); }
+
+        /* Walk Progress */
+        .circular-progress {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+        }
+        .circular-progress svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        .circular-progress circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+        .circular-progress .bg {
+            stroke: var(--border-color);
+        }
+        .circular-progress .progress {
+            stroke: var(--green);
+            transition: stroke-dashoffset 1s ease-in-out;
+        }
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .progress-text span {
+            font-size: 32px;
+            font-weight: 700;
+        }
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        .stat h3 {
+            font-size: 24px;
+            margin: 4px 0;
+        }
+        .stat p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Progress Bar */
+        .progress-bar-container {
+            height: 12px;
+            background-color: var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        .progress-bar-container .fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            transition: width 0.5s ease;
+        }
+
+        /* Notification */
+        .notification-banner {
+            position: absolute;
+            top: 20px;
+            left: 10px;
+            right: 10px;
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--blur-amount));
+            -webkit-backdrop-filter: blur(var(--blur-amount));
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transform: translateY(-150%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .notification-banner.show {
+            transform: translateY(0);
+        }
+        .notif-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .shop-list {
+            list-style: none;
+        }
+        .shop-list li {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .shop-list li:not(:last-child) {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 16px 0 8px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <!-- Tab 1: Home -->
+    <div id="view-home" class="view active">
+        <header>
+            <div class="header-content">
+                <h1>WalkWise HKBU</h1>
+                <div id="weather-widget">22°C ☀️ <span id="clock">12:00</span></div>
+            </div>
+        </header>
+        <main>
+            <!-- Recommendation Card -->
+            <div class="card decision-card" id="decision-card">
+                <h2 class="text-center" style="font-size:14px; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary)">Recommendation</h2>
+                <h1 id="recommendation-text" class="text-center">LOADING</h1>
+                <p id="recommendation-sub" class="text-center text-secondary">Analyzing traffic...</p>
+            </div>
+
+            <!-- Next Arrivals Card (both routes) -->
+            <div class="card data-card skeleton" id="arrival-card">
+                <div class="card-header">
+                    <h2>Next Arrivals</h2>
+                    <i data-lucide="bus"></i>
+                </div>
+                <div id="arrival-times"></div>
+            </div>
+
+            <!-- Queue Sensor Card -->
+            <div class="card data-card skeleton" id="queue-card">
+                <div class="card-header">
+                    <h2>Queue Sensor (Beta)</h2>
+                    <i data-lucide="users"></i>
+                </div>
+                <div class="queue-display">
+                    <h1 id="queue-count">-</h1>
+                    <p class="text-secondary" style="margin-left:8px;">people waiting</p>
+                </div>
+                <div class="queue-visual" id="queue-visual"></div>
+            </div>
+
+            <!-- Schedule Card (bottom) -->
+            <div class="card smart-time-saver">
+                <div class="card-header">
+                    <h2>Schedule</h2>
+                    <label class="toggle">
+                        <input type="checkbox" id="schedule-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <p id="schedule-status" class="text-secondary">Busy Day - Time is precious!</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Tab 2: Routes -->
+    <div id="view-routes" class="view">
+        <header>
+            <h1>Traffic Routes</h1>
+        </header>
+        <main>
+            <div id="routes-list"></div>
+            <button class="ios-button mt-4" id="add-route-btn">
+                <i data-lucide="plus"></i> Add Route
+            </button>
+        </main>
+    </div>
+
+    <!-- Tab 3: Walk & Earn -->
+    <div id="view-walk" class="view">
+        <header>
+            <h1>Walk & Earn</h1>
+        </header>
+        <main>
+            <div class="card walk-stats">
+                <div class="circular-progress">
+                    <svg viewBox="0 0 100 100">
+                        <circle class="bg" cx="50" cy="50" r="45"></circle>
+                        <circle class="progress" id="walk-progress-circle" cx="50" cy="50" r="45" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+                    </svg>
+                    <div class="progress-text">
+                        <span id="walk-count">0</span>/10
+                        <small>Trips</small>
+                    </div>
+                </div>
+                <div class="stats-row">
+                    <div class="stat">
+                        <i data-lucide="footprints" class="text-green"></i>
+                        <h3 id="total-steps">0</h3>
+                        <p>Steps</p>
+                    </div>
+                    <div class="stat">
+                        <i data-lucide="flame" class="text-orange"></i>
+                        <h3 id="total-kcal">0</h3>
+                        <p>kcal</p>
+                    </div>
+                </div>
+                <button id="simulate-walk-btn" class="ios-button mt-4" style="width: 100%;">
+                    <i data-lucide="play"></i> Simulate Walk (+1 Trip)
+                </button>
+            </div>
+
+            <div class="card reward-card">
+                <h2>Current Reward</h2>
+                <p>5% off at HKBU Campus Shops</p>
+                <div class="progress-bar-container">
+                    <div class="fill" id="reward-fill" style="width: 0%"></div>
+                </div>
+                <p class="text-sm text-secondary mt-2">Walk <span id="walks-left">10</span> more times to unlock</p>
+                <div id="qr-code-container" style="display: none; text-align: center; margin-top: 15px;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=HKBU-REWARD-2026" alt="QR Code" class="qr-code" style="border-radius:12px;" />
+                    <p class="text-green mt-2 font-bold">Reward Unlocked!</p>
+                </div>
+            </div>
+
+            <h3 class="section-title">Eligible Locations</h3>
+            <ul class="shop-list card" style="padding:0;">
+                <li><div><strong>Pacific Coffee</strong><br><span class="text-secondary text-sm">AAB 3/F</span></div><i data-lucide="coffee"></i></li>
+                <li><div><strong>Renfrew Canteen</strong><br><span class="text-secondary text-sm">Renfrew 2/F</span></div><i data-lucide="utensils"></i></li>
+            </ul>
+        </main>
+    </div>
+
+    <!-- Tab 4: Settings -->
+    <div id="view-settings" class="view">
+        <header>
+            <h1>Settings</h1>
+        </header>
+        <main>
+            <div class="card settings-group" style="padding:0;">
+                <div class="settings-item" style="padding:16px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>Dark Mode</span>
+                    <label class="toggle"><input type="checkbox" id="dark-mode-toggle"><span class="slider round"></span></label>
+                </div>
+                <div style="height:1px; background:var(--border-color); margin-left:16px;"></div>
+                <div class="settings-item" style="padding:16px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>Push Notifications</span>
+                    <label class="toggle"><input type="checkbox" id="notif-toggle" checked><span class="slider round"></span></label>
+                </div>
+            </div>
+            <div class="card settings-group mt-4" style="padding:0;">
+                <div class="settings-item text-danger" id="reset-data" style="padding:16px; text-align:center; cursor:pointer;">
+                    <span>Reset All Data</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Banner -->
+    <div id="notification-banner" class="notification-banner">
+        <div class="notif-content">
+            <i data-lucide="bell" class="notif-icon" style="color:#007aff;"></i>
+            <div style="flex:1;">
+                <strong style="font-size:15px;">Minibus Alert</strong>
+                <p id="notif-text" style="font-size:13px; margin-top:2px;">Heavy traffic on Junction Road</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <nav class="tab-bar">
+        <a href="#" class="tab-item active" data-target="view-home"><i data-lucide="home"></i><span>Home</span></a>
+        <a href="#" class="tab-item" data-target="view-routes"><i data-lucide="map"></i><span>Routes</span></a>
+        <a href="#" class="tab-item" data-target="view-walk"><i data-lucide="activity"></i><span>Walk</span></a>
+        <a href="#" class="tab-item" data-target="view-settings"><i data-lucide="settings"></i><span>Settings</span></a>
+    </nav>
+</div>
+
+<script>
+    // ==================== CONFIGURATION ====================
+    const STOP_25MS_URL = 'https://data.etagmb.gov.hk/eta/stop/20014158';
+    const ROUTE_25MS_ID = 2006112;
+    const ROUTE_25MS_NAME = '25MS';
+    const STOP_25M_URL = 'https://data.etagmb.gov.hk/eta/stop/20014487';
+    const ROUTE_25M_ID = 2006079;
+    const ROUTE_25M_NAME = '25M';
+
+    // State
+    let route25MSList = [];      // each item: { diff, timestamp, remarks_tc, remarks_en }
+    let route25MList = [];
+    let lastUpdated = null;
+    let queueLength = Math.floor(Math.random() * 3) + 7;
+    let walkCount = 0;
+    let discountClaimed = false;
+    let bookmarkedRoutes = [];
+    let googleApiKey = "";
+    let freeTodayOverride = false;
+    let lastTrafficStatus = { jammed: false, delayMin: 0, description: "Moderate traffic" };
+
+    // DOM elements
+    const clockEl = document.getElementById('clock');
+    const scheduleToggle = document.getElementById('schedule-toggle');
+    const scheduleStatus = document.getElementById('schedule-status');
+    const recommendationText = document.getElementById('recommendation-text');
+    const recommendationSub = document.getElementById('recommendation-sub');
+    const arrivalTimesDiv = document.getElementById('arrival-times');
+    const queueCountSpan = document.getElementById('queue-count');
+    const queueVisualDiv = document.getElementById('queue-visual');
+    const walkCountSpan = document.getElementById('walk-count');
+    const totalStepsSpan = document.getElementById('total-steps');
+    const totalKcalSpan = document.getElementById('total-kcal');
+    const rewardFillDiv = document.getElementById('reward-fill');
+    const walksLeftSpan = document.getElementById('walks-left');
+    const qrContainer = document.getElementById('qr-code-container');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const notifToggle = document.getElementById('notif-toggle');
+    const resetBtn = document.getElementById('reset-data');
+    const simulateWalkBtn = document.getElementById('simulate-walk-btn');
+    const addRouteBtn = document.getElementById('add-route-btn');
+
+    // ==================== STORAGE ====================
+    function saveToLocal() {
+        localStorage.setItem('walkwise_walkCount', walkCount);
+        localStorage.setItem('walkwise_discountClaimed', discountClaimed);
+        localStorage.setItem('walkwise_bookmarks', JSON.stringify(bookmarkedRoutes));
+        localStorage.setItem('walkwise_queueFake', queueLength);
+        localStorage.setItem('walkwise_googleApiKey', googleApiKey);
+        localStorage.setItem('walkwise_freeToday', freeTodayOverride);
+    }
+    function loadFromLocal() {
+        walkCount = parseInt(localStorage.getItem('walkwise_walkCount')) || 0;
+        discountClaimed = localStorage.getItem('walkwise_discountClaimed') === 'true';
+        bookmarkedRoutes = JSON.parse(localStorage.getItem('walkwise_bookmarks') || '[]');
+        queueLength = parseInt(localStorage.getItem('walkwise_queueFake')) || Math.floor(Math.random() * 3) + 7;
+        googleApiKey = localStorage.getItem('walkwise_googleApiKey') || "";
+        freeTodayOverride = localStorage.getItem('walkwise_freeToday') === 'true';
+        if (scheduleToggle) scheduleToggle.checked = freeTodayOverride;
+        updateScheduleText();
+    }
+
+    // ==================== API FETCHERS ====================
+    async function fetchRouteData(url, routeId, cacheArray) {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+            const routeData = json.data?.find(r => r.route_id === routeId);
+            if (routeData && routeData.eta) {
+                const newList = routeData.eta.map(eta => ({
+                    diff: eta.diff,
+                    timestamp: eta.timestamp,
+                    remarks_tc: eta.remarks_tc,
+                    remarks_en: eta.remarks_en
+                }));
+                newList.sort((a,b) => a.diff - b.diff);
+                cacheArray.length = 0;
+                cacheArray.push(...newList);
+                return true;
+            }
+        } catch (err) {
+            console.warn(`Fetch error for route ${routeId}, keeping previous data`, err);
+        }
+        return false;
+    }
+
+    async function fetchAllArrivals() {
+        await Promise.allSettled([
+            fetchRouteData(STOP_25MS_URL, ROUTE_25MS_ID, route25MSList),
+            fetchRouteData(STOP_25M_URL, ROUTE_25M_ID, route25MList)
+        ]);
+        lastUpdated = new Date();
+    }
+
+    function formatDiff(diff) {
+        if (diff === 0) return "Due";
+        if (diff === 1) return "1 min";
+        return `${diff} mins`;
+    }
+
+    function formatTimestamp(timestampStr) {
+        if (!timestampStr) return '';
+        try {
+            const date = new Date(timestampStr);
+            if (isNaN(date.getTime())) return '';
+            return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+        } catch(e) { return ''; }
+    }
+
+    function getRemarksText(eta) {
+        const parts = [];
+        if (eta.remarks_tc) parts.push(eta.remarks_tc);
+        if (eta.remarks_en && eta.remarks_en !== eta.remarks_tc) parts.push(eta.remarks_en);
+        return parts.join(', ');
+    }
+
+    // ==================== TRAFFIC ====================
+    const MAIN_ORIGIN = "Hong Kong Baptist University, Kowloon Tong";
+    const MAIN_DEST = "Kowloon Tong MTR Station";
+    async function fetchTrafficStatus(origin, destination, useApiKey = true) {
+        if (useApiKey && googleApiKey && googleApiKey.length > 20) {
+            try {
+                const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&departure_time=now&traffic_model=best_guess&key=${googleApiKey}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.status === "OK" && data.routes[0]?.legs[0]) {
+                    const leg = data.routes[0].legs[0];
+                    const durationInTraffic = leg.duration_in_traffic?.value || leg.duration.value;
+                    const durationNormal = leg.duration.value;
+                    const delayMin = Math.round((durationInTraffic - durationNormal) / 60);
+                    const jammed = delayMin > 2;
+                    const description = jammed ? `Heavy traffic (+${delayMin} min)` : (delayMin > 0 ? "Light congestion" : "Smooth flow");
+                    return { jammed, delayMin: Math.max(0, delayMin), description };
+                }
+            } catch(e) { console.warn("Google API error", e); }
+        }
+        const hour = new Date().getHours();
+        const isRush = (hour >= 8 && hour <= 10) || (hour >= 17 && hour <= 19);
+        const jammed = isRush ? Math.random() > 0.3 : Math.random() > 0.7;
+        const delayMin = jammed ? (isRush ? 3 + Math.floor(Math.random() * 6) : 1 + Math.floor(Math.random() * 3)) : 0;
+        const description = jammed ? `🚧 Traffic jam (+${delayMin} min)` : "✅ Clear traffic";
+        return { jammed, delayMin, description };
+    }
+    async function updateTrafficForMainRoute() {
+        lastTrafficStatus = await fetchTrafficStatus(MAIN_ORIGIN, MAIN_DEST, true);
+    }
+
+    // ==================== DECISION ENGINE ====================
+    function getWalkWaitDecision() {
+        const nextEta = route25MSList.length > 0 ? route25MSList[0].diff : null;
+        const etaWait = (nextEta !== null) ? nextEta : 8;
+        const trafficJammed = lastTrafficStatus.jammed;
+        const queue = queueLength;
+        let shouldWalk = (trafficJammed || queue >= 7 || etaWait > 6);
+        let reason = "";
+        if (freeTodayOverride) {
+            shouldWalk = true;
+            reason = "You have free time today – walking is a healthy choice!";
+        } else {
+            if (trafficJammed && queue >= 7) reason = `Traffic jam + queue (${queue}) → walking saves time.`;
+            else if (trafficJammed) reason = `Heavy traffic: walking might be faster.`;
+            else if (queue >= 8) reason = `Long queue (${queue}) — consider walking.`;
+            else if (etaWait > 5) reason = `Next 25MS in ${etaWait} min, walking is a good option.`;
+            else reason = `Light traffic & short queue — you can wait.`;
+        }
+        return { shouldWalk, reason, etaWait };
+    }
+
+    // ==================== WALK REWARDS ====================
+    function updateWalkUI() {
+        walkCountSpan.innerText = walkCount;
+        const totalSteps = walkCount * 1250;
+        const totalKcal = walkCount * 45;
+        totalStepsSpan.innerText = totalSteps;
+        totalKcalSpan.innerText = totalKcal;
+        const progress = Math.min(walkCount / 10, 1);
+        const percent = progress * 100;
+        rewardFillDiv.style.width = `${percent}%`;
+        const remaining = Math.max(0, 10 - walkCount);
+        walksLeftSpan.innerText = remaining;
+        if (walkCount >= 10 && !discountClaimed) {
+            discountClaimed = true;
+            qrContainer.style.display = 'block';
+            saveToLocal();
+            showNotification("Reward unlocked! 5% off at HKBU shops.");
+        } else if (walkCount < 10) {
+            qrContainer.style.display = 'none';
+        }
+        const circumference = 2 * Math.PI * 45;
+        const offset = circumference * (1 - progress);
+        const circle = document.getElementById('walk-progress-circle');
+        if (circle) circle.style.strokeDashoffset = offset;
+    }
+    function simulateWalk() {
+        walkCount++;
+        if (walkCount > 10) walkCount = 10;
+        saveToLocal();
+        updateWalkUI();
+        showNotification("Walk recorded! You're getting healthier.");
+    }
+
+    // ==================== BOOKMARKS ====================
+    function renderBookmarks() {
+        const container = document.getElementById('routes-list');
+        if (!container) return;
+        if (bookmarkedRoutes.length === 0) {
+            container.innerHTML = '<div class="card"><p>No bookmarked routes yet. Tap + to add.</p></div>';
+            return;
+        }
+        let html = '';
+        for (let br of bookmarkedRoutes) {
+            const traffic = br.lastTraffic || { jammed: false, description: "Not checked" };
+            const jamClass = traffic.jammed ? 'jam' : 'slow';
+            html += `
+                <div class="card route-card" data-id="${br.id}">
+                    <div class="route-header">
+                        <strong>${escapeHtml(br.name)}</strong>
+                        <span class="text-sm">${traffic.description}</span>
+                    </div>
+                    <div class="route-segments"><div class="segment ${jamClass}" style="flex:1"></div></div>
+                    <div class="text-sm text-secondary mt-2">${escapeHtml(br.origin)} → ${escapeHtml(br.destination)}</div>
+                    <div class="flex-between mt-2">
+                        <button class="ios-button refresh-bookmark" data-id="${br.id}" style="padding:6px 12px;">⟳ Refresh</button>
+                        <button class="ios-button delete-bookmark" data-id="${br.id}" style="background:#ff3b3020; color:var(--red); padding:6px 12px;">Delete</button>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        document.querySelectorAll('.refresh-bookmark').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = parseInt(btn.dataset.id);
+                const bookmark = bookmarkedRoutes.find(b => b.id == id);
+                if (bookmark) {
+                    bookmark.lastTraffic = await fetchTrafficStatus(bookmark.origin, bookmark.destination, true);
+                    saveToLocal();
+                    renderBookmarks();
+                }
+            });
+        });
+        document.querySelectorAll('.delete-bookmark').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = parseInt(btn.dataset.id);
+                bookmarkedRoutes = bookmarkedRoutes.filter(b => b.id != id);
+                saveToLocal();
+                renderBookmarks();
+            });
+        });
+    }
+    function addBookmark() {
+        const name = prompt("Route name", "My Route");
+        if (!name) return;
+        const origin = prompt("Origin address", "HKBU");
+        const dest = prompt("Destination", "Kowloon Tong");
+        if (origin && dest) {
+            const id = Date.now() + Math.random();
+            bookmarkedRoutes.push({ id, name, origin, destination: dest, lastTraffic: null });
+            saveToLocal();
+            renderBookmarks();
+            showNotification(`Route "${name}" added.`);
+        }
+    }
+
+    // ==================== UI UPDATE (NEW FORMAT) ====================
+    function updateScheduleText() {
+        scheduleStatus.innerText = freeTodayOverride ? "Free Today - Walk to stay healthy!" : "Busy Day - Time is precious!";
+    }
+
+    function renderArrivalsForRoute(routeName, etaList) {
+        if (!etaList.length) return '';
+        let html = `<div class="route-group"><h3>${routeName}</h3>`;
+        for (let eta of etaList.slice(0, 3)) {
+            const minutes = formatDiff(eta.diff);
+            const timeStr = formatTimestamp(eta.timestamp);
+            const remarks = getRemarksText(eta);
+            const minutesClass = eta.diff <= 1 ? 'soon' : '';
+            html += `
+                <div class="arrival-row">
+                    <span class="arrival-route">${routeName}</span>
+                    <div class="arrival-time-info">
+                        <span class="arrival-minutes ${minutesClass}">${minutes}</span>
+                        ${timeStr ? `<span class="arrival-timestamp">${timeStr}</span>` : ''}
+                        ${remarks ? `<span class="arrival-remarks">${escapeHtml(remarks)}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        html += `</div>`;
+        return html;
+    }
+
+    function updateHomeUI() {
+        let arrivalsHtml = renderArrivalsForRoute(ROUTE_25MS_NAME, route25MSList);
+        arrivalsHtml += renderArrivalsForRoute(ROUTE_25M_NAME, route25MList);
+        arrivalTimesDiv.innerHTML = arrivalsHtml || '';
+
+        queueCountSpan.innerText = queueLength;
+        let queueIcons = '';
+        for (let i = 0; i < queueLength; i++) queueIcons += '<div class="person-icon"></div>';
+        queueVisualDiv.innerHTML = queueIcons;
+
+        const decision = getWalkWaitDecision();
+        recommendationText.innerText = decision.shouldWalk ? 'WALK' : 'WAIT';
+        recommendationSub.innerText = decision.reason;
+    }
+
+    function showNotification(msg) {
+        const banner = document.getElementById('notification-banner');
+        const notifText = document.getElementById('notif-text');
+        if (!banner || !notifText) return;
+        notifText.innerText = msg;
+        banner.classList.add('show');
+        setTimeout(() => banner.classList.remove('show'), 3000);
+    }
+
+    // ==================== CLOCK ====================
+    function updateClock() {
+        const now = new Date();
+        clockEl.innerText = now.toLocaleTimeString([], { hour: '2-digit', minute:'2-digit', hour12: false });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ==================== DARK MODE ====================
+    function applyDarkMode(enabled) {
+        if (enabled) {
+            document.body.classList.add('dark-mode');
+            document.body.classList.remove('light-mode');
+        } else {
+            document.body.classList.add('light-mode');
+            document.body.classList.remove('dark-mode');
+        }
+        localStorage.setItem('walkwise_darkMode', enabled);
+    }
+    function initDarkMode() {
+        const stored = localStorage.getItem('walkwise_darkMode');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const enable = stored !== null ? stored === 'true' : prefersDark;
+        if (darkModeToggle) darkModeToggle.checked = enable;
+        applyDarkMode(enable);
+        darkModeToggle.addEventListener('change', (e) => applyDarkMode(e.target.checked));
+    }
+
+    // ==================== NOTIFICATIONS ====================
+    function initNotifications() {
+        const notifState = localStorage.getItem('walkwise_notifications') !== 'false';
+        if (notifToggle) notifToggle.checked = notifState;
+        notifToggle.addEventListener('change', (e) => {
+            localStorage.setItem('walkwise_notifications', e.target.checked);
+            if (e.target.checked) showNotification("Notifications enabled");
+        });
+    }
+
+    // ==================== RESET ====================
+    function resetAllData() {
+        if (confirm("Reset all walks, bookmarks and settings?")) {
+            walkCount = 0;
+            discountClaimed = false;
+            bookmarkedRoutes = [];
+            queueLength = Math.floor(Math.random() * 3) + 7;
+            freeTodayOverride = false;
+            if (scheduleToggle) scheduleToggle.checked = false;
+            updateScheduleText();
+            saveToLocal();
+            updateWalkUI();
+            renderBookmarks();
+            updateHomeUI();
+            showNotification("All data reset.");
+        }
+    }
+
+    // ==================== AUTO REFRESH ====================
+    let refreshInterval = null;
+    async function refreshData() {
+        await fetchAllArrivals();
+        await updateTrafficForMainRoute();
+        if (Math.random() < 0.3) {
+            queueLength = Math.floor(Math.random() * 3) + 7;
+            saveToLocal();
+        }
+        updateHomeUI();
+    }
+
+    // ==================== TABS ====================
+    function initTabs() {
+        const tabs = document.querySelectorAll('.tab-item');
+        const views = document.querySelectorAll('.view');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = tab.getAttribute('data-target');
+                views.forEach(view => view.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                if (targetId === 'view-routes') renderBookmarks();
+                if (targetId === 'view-walk') updateWalkUI();
+                lucide.createIcons();
+            });
+        });
+    }
+
+    // ==================== INIT ====================
+    async function init() {
+        loadFromLocal();
+        await fetchAllArrivals();
+        await updateTrafficForMainRoute();
+        updateHomeUI();
+        updateWalkUI();
+        renderBookmarks();
+        initDarkMode();
+        initNotifications();
+        initTabs();
+        scheduleToggle.addEventListener('change', (e) => {
+            freeTodayOverride = e.target.checked;
+            saveToLocal();
+            updateScheduleText();
+            updateHomeUI();
+        });
+        simulateWalkBtn.addEventListener('click', simulateWalk);
+        addRouteBtn.addEventListener('click', addBookmark);
+        resetBtn.addEventListener('click', resetAllData);
+        lucide.createIcons();
+        refreshInterval = setInterval(refreshData, 5000);
+    }
+
+    function escapeHtml(str) { return String(str).replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    init();
+</script>
+</body>
+</html>
