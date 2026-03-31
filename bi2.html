@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HK Country Park - Rainfall/Sunshine vs Visitors (2010-2025)</title>
-    <!-- LOAD PLUGINS FIRST (NO DELAY) - CRITICAL FIX -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Load Chart.js and Data Labels FIRST (only external CDNs for rendering) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <style>
         * {
@@ -16,24 +16,24 @@
         }
         body {
             background: #f0f2f5;
-            padding: 2rem;
+            padding: 1.5rem;
             max-width: 1800px;
             margin: 0 auto;
             color: #1f2937;
         }
         header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
             padding-bottom: 1rem;
             border-bottom: 3px solid #2563eb;
         }
         h1 {
-            font-size: 2.2rem;
+            font-size: 2rem;
             color: #1f2937;
             margin-bottom: 0.5rem;
         }
         h2 {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 500;
             color: #4b5563;
         }
@@ -42,6 +42,7 @@
             grid-template-columns: 280px 1fr;
             gap: 1.5rem;
         }
+        /* Slicer Panel */
         .slicers {
             background: #ffffff;
             padding: 1.5rem;
@@ -49,10 +50,10 @@
             box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
             height: fit-content;
             position: sticky;
-            top: 2rem;
+            top: 1.5rem;
         }
         .slicer {
-            margin-bottom: 2rem;
+            margin-bottom: 1.8rem;
         }
         .slicer h3 {
             color: #2563eb;
@@ -78,9 +79,8 @@
             cursor: pointer;
             color: #374151;
             font-size: 0.95rem;
-            padding: 0.3rem 0;
+            padding: 0.3rem 0.5rem;
             border-radius: 4px;
-            padding-left: 0.5rem;
         }
         .slicer label:hover {
             background: #f3f4f6;
@@ -103,6 +103,7 @@
             font-weight: 600;
             color: #2563eb;
         }
+        /* Charts Grid */
         .charts {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -127,10 +128,11 @@
         }
         .chart-container {
             flex: 1;
-            min-height: 320px;
+            min-height: 300px;
             width: 100%;
             position: relative;
         }
+        /* Matrix Table */
         .matrix-table {
             grid-column: 1 / -1;
             overflow-x: auto;
@@ -161,6 +163,7 @@
         .matrix-table tr:hover {
             background: #f3f4f6;
         }
+        /* Insights Section */
         .insights {
             grid-column: 1 / -1;
             background: #ffffff;
@@ -189,33 +192,45 @@
             font-style: normal;
             font-weight: 500;
         }
+        /* Responsive Design */
         @media (max-width: 1200px) {
             .charts {
                 grid-template-columns: 1fr;
-                .chart-container { min-height: 280px; }
+            }
+            .chart-container {
+                min-height: 280px;
             }
         }
         @media (max-width: 768px) {
-            .dashboard { grid-template-columns: 1fr; }
-            .slicers { position: static; margin-bottom: 1.5rem; }
-            body { padding: 1rem; }
-            h1 { font-size: 1.8rem; }
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .slicers {
+                position: static;
+                margin-bottom: 1.5rem;
+            }
+            body {
+                padding: 1rem;
+            }
+            h1 {
+                font-size: 1.7rem;
+            }
         }
     </style>
 </head>
 <body>
     <header>
         <h1>Hong Kong Country Park Visitor Analysis (2010-2025)</h1>
-        <h2>Impact of Annual Rainfall & Sunshine Hours on Visitor Numbers | Full Dataset</h2>
+        <h2>Impact of Annual Rainfall & Sunshine Hours | CSV Data Embedded</h2>
     </header>
 
     <div class="dashboard">
-        <!-- Slicers -->
+        <!-- Interactive Slicers -->
         <div class="slicers">
             <div class="slicer">
                 <h3>Year Filter</h3>
                 <input type="range" id="yearSlider" class="year-slider" min="2010" max="2025" step="1" value="2010">
-                <div class="year-display" id="yearLabel">Selected: 2010 | 16 Years Total</div>
+                <div class="year-display" id="yearLabel">Selected: 2010 | 16 Years Displayed</div>
                 <label><input type="checkbox" class="yearCheck" value="all" checked id="allYearsCheck"> Show All Years (2010-2025)</label>
             </div>
             <div class="slicer">
@@ -240,35 +255,47 @@
             </div>
         </div>
 
-        <!-- Charts & Table -->
+        <!-- Charts & Data Table -->
         <div class="charts">
+            <!-- 1. Dual-Axis Line Chart: Visitors vs Rainfall -->
             <div class="chart-card">
-                <h3>Annual Visitors (M) vs Total Rainfall (mm) | 2010-2025</h3>
+                <h3>Annual Visitors (M) vs Total Rainfall (mm)</h3>
                 <div class="chart-container"><canvas id="lineChart"></canvas></div>
             </div>
+            <!-- 2. Scatter Plot: Rainfall vs Visitors (Color by Sunshine) -->
             <div class="chart-card">
-                <h3>Rainfall (mm) vs Visitors (M) | Color-Coded by Sunshine</h3>
+                <h3>Rainfall (mm) vs Visitors (M) | Sunshine Category</h3>
                 <div class="chart-container"><canvas id="scatterPlot"></canvas></div>
             </div>
+            <!-- 3. Column Chart: Avg Visitors by Rainfall Category -->
             <div class="chart-card">
                 <h3>Average Visitors (M) by Rainfall Category</h3>
                 <div class="chart-container"><canvas id="rainColChart"></canvas></div>
             </div>
+            <!-- 4. Column Chart: Avg Visitors by Sunshine Category -->
             <div class="chart-card">
                 <h3>Average Visitors (M) by Sunshine Category</h3>
                 <div class="chart-container"><canvas id="sunColChart"></canvas></div>
             </div>
+            <!-- 5. Full Data Matrix Table -->
             <div class="chart-card matrix-table">
                 <h3>Complete Annual Data Summary (2010-2025)</h3>
                 <table id="dataMatrix">
                     <thead>
                         <tr>
-                            <th>Year</th><th>Visitors (M)</th><th>Rainfall (mm)</th><th>Sunshine (h)</th><th>Rainfall Cat</th><th>Sunshine Cat</th><th>Visitor Cat</th>
+                            <th>Year</th>
+                            <th>Visitors (M)</th>
+                            <th>Rainfall (mm)</th>
+                            <th>Sunshine (h)</th>
+                            <th>Rainfall Cat</th>
+                            <th>Sunshine Cat</th>
+                            <th>Visitor Cat</th>
                         </tr>
                     </thead>
                     <tbody id="matrixBody"></tbody>
                 </table>
             </div>
+            <!-- Key Insights -->
             <div class="insights">
                 <h3>Key Data Insights & Management Conclusions</h3>
                 <p><strong>Rainfall Impact (Strong Inverse Correlation)</strong>: Dry years average <em>13.3M visitors</em> (highest), Very Wet years average <em>12.1M visitors</em> (lowest) – a <em>9.9% drop</em> (1.2M fewer visitors) with increased rainfall.</p>
@@ -281,56 +308,91 @@
     </div>
 
     <script>
-        // FULL RAW DATA (2010-2025) - NO MISSING VALUES
-        const rawData = [
-            {year:2010,vis:13.2,rain:2371.7,sun:1709.3,rainCat:"Wet",sunCat:"Moderate",visCat:"High"},
-            {year:2011,vis:13.4,rain:1487.2,sun:1978.5,rainCat:"Dry",sunCat:"Sunny",visCat:"High"},
-            {year:2012,vis:12.9,rain:1924.7,sun:1551.2,rainCat:"Normal",sunCat:"Cloudy",visCat:"Medium"},
-            {year:2013,vis:11.4,rain:2847.3,sun:1769.6,rainCat:"Very Wet",sunCat:"Moderate",visCat:"Low"},
-            {year:2014,vis:11.2,rain:2638.3,sun:1903.3,rainCat:"Wet",sunCat:"Sunny",visCat:"Low"},
-            {year:2015,vis:13.2,rain:1874.5,sun:1769.6,rainCat:"Dry",sunCat:"Moderate",visCat:"High"},
-            {year:2016,vis:13.0,rain:3026.8,sun:1567.8,rainCat:"Very Wet",sunCat:"Cloudy",visCat:"High"},
-            {year:2017,vis:13.0,rain:2572.1,sun:1873.3,rainCat:"Wet",sunCat:"Sunny",visCat:"High"},
-            {year:2018,vis:12.3,rain:2162.9,sun:1875.0,rainCat:"Normal",sunCat:"Sunny",visCat:"Medium"},
-            {year:2019,vis:11.2,rain:2396.2,sun:1902.9,rainCat:"Wet",sunCat:"Sunny",visCat:"Low"},
-            {year:2020,vis:12.0,rain:2395.0,sun:2013.5,rainCat:"Wet",sunCat:"Very Sunny",visCat:"Medium"},
-            {year:2021,vis:12.4,rain:2307.1,sun:2179.9,rainCat:"Wet",sunCat:"Very Sunny",visCat:"Medium"},
-            {year:2022,vis:12.1,rain:2205.4,sun:1995.2,rainCat:"Normal",sunCat:"Sunny",visCat:"Medium"},
-            {year:2023,vis:12.7,rain:2774.5,sun:1865.5,rainCat:"Very Wet",sunCat:"Sunny",visCat:"Medium"},
-            {year:2024,vis:11.4,rain:2309.7,sun:1814.1,rainCat:"Wet",sunCat:"Sunny",visCat:"Low"},
-            {year:2025,vis:11.3,rain:2558.7,sun:1992.4,rainCat:"Wet",sunCat:"Sunny",visCat:"Low"}
-        ];
+        // ==============================================
+        // EMBEDDED CSV DATA (ALL 2010-2025 DATA - NO EXTERNAL FILES)
+        // ==============================================
+        const csvData = `year,vis,rain,sun,rainCat,sunCat,visCat
+2010,13.2,2371.7,1709.3,Wet,Moderate,High
+2011,13.4,1487.2,1978.5,Dry,Sunny,High
+2012,12.9,1924.7,1551.2,Normal,Cloudy,Medium
+2013,11.4,2847.3,1769.6,Very Wet,Moderate,Low
+2014,11.2,2638.3,1903.3,Wet,Sunny,Low
+2015,13.2,1874.5,1769.6,Dry,Moderate,High
+2016,13.0,3026.8,1567.8,Very Wet,Cloudy,High
+2017,13.0,2572.1,1873.3,Wet,Sunny,High
+2018,12.3,2162.9,1875.0,Normal,Sunny,Medium
+2019,11.2,2396.2,1902.9,Wet,Sunny,Low
+2020,12.0,2395.0,2013.5,Wet,Very Sunny,Medium
+2021,12.4,2307.1,2179.9,Wet,Very Sunny,Medium
+2022,12.1,2205.4,1995.2,Normal,Sunny,Medium
+2023,12.7,2774.5,1865.5,Very Wet,Sunny,Medium
+2024,11.4,2309.7,1814.1,Wet,Sunny,Low
+2025,11.3,2558.7,1992.4,Wet,Sunny,Low`;
 
+        // ==============================================
+        // CSV TO JSON PARSER (BUILT-IN - NO EXTERNAL LIBRARIES)
+        // ==============================================
+        function csvToJson(csv) {
+            const lines = csv.trim().split('\n');
+            const headers = lines[0].split(',');
+            return lines.slice(1).map(line => {
+                const values = line.split(',');
+                return headers.reduce((obj, header, index) => {
+                    // Parse numeric values (year, vis, rain, sun)
+                    const val = values[index];
+                    if (['year', 'vis', 'rain', 'sun'].includes(header)) {
+                        obj[header] = parseFloat(val);
+                    } else {
+                        obj[header] = val;
+                    }
+                    return obj;
+                }, {});
+            });
+        }
+
+        // Parse CSV to JSON (raw data ready for use)
+        const rawData = csvToJson(csvData);
         let filteredData = [...rawData];
-        // Color Maps
+
+        // ==============================================
+        // GLOBAL CONFIG (Colors, Order)
+        // ==============================================
         const sunColorMap = { Cloudy: '#6b7280', Moderate: '#3b82f6', Sunny: '#f59e0b', Very Sunny: '#d97706' };
         const rainColorMap = { Dry: '#10b981', Normal: '#3b82f6', Wet: '#f59e0b', Very Wet: '#ef4444' };
         const visColorMap = { Low: '#ef4444', Medium: '#f59e0b', High: '#10b981' };
         const rainOrder = ['Dry', 'Normal', 'Wet', 'Very Wet'];
         const sunOrder = ['Cloudy', 'Moderate', 'Sunny', 'Very Sunny'];
 
-        // Update Year Label + Data Count
+        // ==============================================
+        // UI Update Helpers
+        // ==============================================
         function updateYearLabel(val) {
             const allYears = document.getElementById('allYearsCheck').checked;
-            const display = allYears ? 'All Years (2010-2025)' : `Selected: ${val}`;
-            document.getElementById('yearLabel').textContent = `${display} | ${filteredData.length} Years Displayed`;
+            const displayText = allYears ? 'All Years (2010-2025)' : `Selected: ${val}`;
+            document.getElementById('yearLabel').textContent = `${displayText} | ${filteredData.length} Years Displayed`;
         }
 
-        // Core Filter Function
+        // ==============================================
+        // Core Filter Function (Real-Time Updates)
+        // ==============================================
         function filterData() {
             const yearVal = parseInt(document.getElementById('yearSlider').value);
             const allYears = document.getElementById('allYearsCheck').checked;
-            const selectedRain = Array.from(document.querySelectorAll('.rainCat:checked')).map(c => c.value);
-            const selectedSun = Array.from(document.querySelectorAll('.sunCat:checked')).map(c => c.value);
-            const selectedVis = Array.from(document.querySelectorAll('.visCat:checked')).map(c => c.value);
+            const selectedRainCats = Array.from(document.querySelectorAll('.rainCat:checked')).map(c => c.value);
+            const selectedSunCats = Array.from(document.querySelectorAll('.sunCat:checked')).map(c => c.value);
+            const selectedVisCats = Array.from(document.querySelectorAll('.visCat:checked')).map(c => c.value);
 
+            // Filter data based on slicer selections
             filteredData = rawData.filter(d => {
                 const yearMatch = allYears || d.year === yearVal;
-                return yearMatch && selectedRain.includes(d.rainCat) && selectedSun.includes(d.sunCat) && selectedVis.includes(d.visCat);
+                const rainMatch = selectedRainCats.includes(d.rainCat);
+                const sunMatch = selectedSunCats.includes(d.sunCat);
+                const visMatch = selectedVisCats.includes(d.visCat);
+                return yearMatch && rainMatch && sunMatch && visMatch;
             });
 
+            // Update UI and redraw all charts/table
             updateYearLabel(yearVal);
-            // Redraw all visuals
             renderLineChart();
             renderScatterPlot();
             renderRainColChart();
@@ -338,11 +400,14 @@
             renderMatrixTable();
         }
 
-        // 1. Line Chart (Visitors + Rainfall)
+        // ==============================================
+        // Chart Render Functions (NO BLANK DATA - FIXED)
+        // ==============================================
+        // 1. Line Chart (Visitors vs Rainfall - Dual Axis)
         let lineChart;
         function renderLineChart() {
             const ctx = document.getElementById('lineChart').getContext('2d');
-            if (lineChart) lineChart.destroy();
+            if (lineChart) lineChart.destroy(); // Clear old chart
 
             const years = filteredData.map(d => d.year);
             const visitors = filteredData.map(d => d.vis);
@@ -383,33 +448,46 @@
                     plugins: {
                         legend: { position: 'top' },
                         tooltip: { mode: 'index', intersect: false },
-                        datalabels: { 
+                        datalabels: {
                             display: true,
                             color: (ctx) => ctx.dataset.yAxisID === 'y' ? '#2563eb' : '#ef4444',
                             font: { weight: '600', size: 9 }
                         }
                     },
                     scales: {
-                        x: { title: { text: 'Year', display: true, font: { weight: 600 } }, grid: { display: false } },
-                        y: { title: { text: 'Visitors (M)', display: true, color: '#2563eb' }, min: 10, max: 14, ticks: { stepSize: 0.5 } },
-                        y1: { title: { text: 'Rainfall (mm)', display: true, color: '#ef4444' }, position: 'right', min: 1000, max: 3500, ticks: { stepSize: 500 }, grid: { drawOnChartArea: false } }
+                        x: { 
+                            title: { text: 'Year', display: true, font: { weight: 600 } },
+                            grid: { display: false }
+                        },
+                        y: { 
+                            title: { text: 'Visitors (M)', display: true, color: '#2563eb' },
+                            min: 10, max: 14, ticks: { stepSize: 0.5 }
+                        },
+                        y1: { 
+                            title: { text: 'Rainfall (mm)', display: true, color: '#ef4444' },
+                            position: 'right', min: 1000, max: 3500, ticks: { stepSize: 500 },
+                            grid: { drawOnChartArea: false }
+                        }
                     }
                 },
                 plugins: [ChartDataLabels]
             });
         }
 
-        // 2. Scatter Plot
+        // 2. Scatter Plot (Rainfall vs Visitors)
         let scatterPlot;
         function renderScatterPlot() {
             const ctx = document.getElementById('scatterPlot').getContext('2d');
             if (scatterPlot) scatterPlot.destroy();
 
+            // Create dataset for each sunshine category
             const datasets = [...new Set(filteredData.map(d => d.sunCat))].map(cat => ({
                 label: cat,
-                data: filteredData.filter(d => d.sunCat === cat).map(d => ({x: d.rain, y: d.vis, year: d.year})),
+                data: filteredData.filter(d => d.sunCat === cat).map(d => ({
+                    x: d.rain, y: d.vis, year: d.year
+                })),
                 backgroundColor: sunColorMap[cat],
-                borderColor: '#fff',
+                borderColor: '#ffffff',
                 borderWidth: 2,
                 pointRadius: 7,
                 pointHoverRadius: 9
@@ -425,37 +503,51 @@
                         legend: { position: 'top' },
                         tooltip: {
                             callbacks: {
-                                label: (ctx) => [`Year: ${ctx.raw.year}`, `Visitors: ${ctx.raw.y}M`, `Rainfall: ${ctx.raw.x.toFixed(1)}mm`]
+                                label: (ctx) => [
+                                    `Year: ${ctx.raw.year}`,
+                                    `Visitors: ${ctx.raw.y}M`,
+                                    `Rainfall: ${ctx.raw.x.toFixed(1)}mm`
+                                ]
                             }
                         },
                         datalabels: {
                             display: true,
-                            color: '#fff',
-                            font: { weight: 600, size: 8 },
+                            color: '#ffffff',
+                            font: { weight: '600', size: 8 },
                             formatter: (val) => val.year
                         }
                     },
                     scales: {
-                        x: { title: { text: 'Rainfall (mm)', display: true, font: { weight: 600 } }, min: 1000, max: 3500, ticks: { stepSize: 500 } },
-                        y: { title: { text: 'Visitors (M)', display: true, font: { weight: 600 } }, min: 10, max: 14, ticks: { stepSize: 0.5 } }
+                        x: { 
+                            title: { text: 'Total Rainfall (mm)', display: true, font: { weight: 600 } },
+                            min: 1000, max: 3500, ticks: { stepSize: 500 }
+                        },
+                        y: { 
+                            title: { text: 'Visitors (Million)', display: true, font: { weight: 600 } },
+                            min: 10, max: 14, ticks: { stepSize: 0.5 }
+                        }
                     }
                 },
                 plugins: [ChartDataLabels]
             });
         }
 
-        // 3. Rainfall Column Chart
+        // 3. Column Chart - Avg Visitors by Rainfall Category
         let rainColChart;
         function renderRainColChart() {
             const ctx = document.getElementById('rainColChart').getContext('2d');
             if (rainColChart) rainColChart.destroy();
 
+            // Calculate average visitors for each rainfall category
             const chartData = rainOrder.map(cat => {
-                const vals = filteredData.filter(d => d.rainCat === cat).map(d => d.vis);
-                return vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2) : 0;
+                const values = filteredData.filter(d => d.rainCat === cat).map(d => d.vis);
+                return values.length ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : 0;
             });
+
+            // Add year count to labels (e.g., Dry (2yrs))
             const labels = rainOrder.map(cat => {
-;
+                const count = filteredData.filter(d => d.rainCat === cat).length;
+                return `${cat} (${count}yrs)`;
             });
 
             rainColChart = new Chart(ctx, {
@@ -463,10 +555,10 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Avg Visitors (M)',
+                        label: 'Average Visitors (Million)',
                         data: chartData,
                         backgroundColor: rainOrder.map(c => rainColorMap[c]),
-                        borderColor: '#fff',
+                        borderColor: '#ffffff',
                         borderWidth: 1
                     }]
                 },
@@ -478,30 +570,36 @@
                         tooltip: { callbacks: { label: (ctx) => `Avg: ${ctx.raw}M` } },
                         datalabels: {
                             display: true,
-                            color: '#fff',
-                            font: { weight: 600, size: 10 },
+                            color: '#ffffff',
+                            font: { weight: '600', size: 10 },
                             formatter: (val) => `${val}M`
                         }
                     },
                     scales: {
                         x: { grid: { display: false } },
-                        y: { title: { text: 'Avg Visitors (M)', display: true }, min: 0, max: 14, ticks: { stepSize: 2 } }
+                        y: { 
+                            title: { text: 'Avg Visitors (M)', display: true },
+                            min: 0, max: 14, ticks: { stepSize: 2 }
+                        }
                     }
                 },
                 plugins: [ChartDataLabels]
             });
         }
 
-        // 4. Sunshine Column Chart
+        // 4. Column Chart - Avg Visitors by Sunshine Category
         let sunColChart;
         function renderSunColChart() {
             const ctx = document.getElementById('sunColChart').getContext('2d');
             if (sunColChart) sunColChart.destroy();
 
+            // Calculate average visitors for each sunshine category
             const chartData = sunOrder.map(cat => {
-                const vals = filteredData.filter(d => d.sunCat === cat).map(d => d.vis);
-                return vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2) : 0;
+                const values = filteredData.filter(d => d.sunCat === cat).map(d => d.vis);
+                return values.length ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : 0;
             });
+
+            // Add year count to labels
             const labels = sunOrder.map(cat => {
                 const count = filteredData.filter(d => d.sunCat === cat).length;
                 return `${cat} (${count}yrs)`;
@@ -512,10 +610,10 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Avg Visitors (M)',
+                        label: 'Average Visitors (Million)',
                         data: chartData,
                         backgroundColor: sunOrder.map(c => sunColorMap[c]),
-                        borderColor: '#fff',
+                        borderColor: '#ffffff',
                         borderWidth: 1
                     }]
                 },
@@ -527,26 +625,31 @@
                         tooltip: { callbacks: { label: (ctx) => `Avg: ${ctx.raw}M` } },
                         datalabels: {
                             display: true,
-                            color: '#fff',
-                            font: { weight: 600, size: 10 },
+                            color: '#ffffff',
+                            font: { weight: '600', size: 10 },
                             formatter: (val) => `${val}M`
                         }
                     },
                     scales: {
                         x: { grid: { display: false } },
-                        y: { title: { text: 'Avg Visitors (M)', display: true }, min: 0, max: 14, ticks: { stepSize: 2 } }
+                        y: { 
+                            title: { text: 'Avg Visitors (M)', display: true },
+                            min: 0, max: 14, ticks: { stepSize: 2 }
+                        }
                     }
                 },
                 plugins: [ChartDataLabels]
             });
         }
 
-        // 5. Matrix Table (Full Data)
+        // ==============================================
+        // Matrix Table (FULL RAW DATA - NO MISSING ROWS)
+        // ==============================================
         function renderMatrixTable() {
             const tbody = document.getElementById('matrixBody');
-            tbody.innerHTML = '';
+            tbody.innerHTML = ''; // Clear old data
 
-            // Render all filtered rows
+            // Render all filtered data rows
             filteredData.forEach(d => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -561,25 +664,38 @@
                 tbody.appendChild(tr);
             });
 
-            // Add 16-year average if all data is shown
+            // Add 16-Year Average row if ALL data is displayed
             if (filteredData.length === 16) {
-                const avgVis = (filteredData.reduce((a,b)=>a+b.vis,0)/16).toFixed(2);
-                const avgRain = (filteredData.reduce((a,b)=>a+b.rain,0)/16).toFixed(1);
-                const avgSun = (filteredData.reduce((a,b)=>a+b.sun,0)/16).toFixed(1);
+                const avgVis = (filteredData.reduce((a, b) => a + b.vis, 0) / 16).toFixed(2);
+                const avgRain = (filteredData.reduce((a, b) => a + b.rain, 0) / 16).toFixed(1);
+                const avgSun = (filteredData.reduce((a, b) => a + b.sun, 0) / 16).toFixed(1);
+                
                 const avgTr = document.createElement('tr');
                 avgTr.style.background = '#2563eb10';
                 avgTr.style.fontWeight = 600;
-                avgTr.innerHTML = `<td>16-Yr Avg</td><td>${avgVis}M</td><td>${avgRain}mm</td><td>${avgSun}h</td><td>--</td><td>--</td><td>--</td>`;
+                avgTr.innerHTML = `
+                    <td>16-Yr Avg</td>
+                    <td>${avgVis}M</td>
+                    <td>${avgRain}mm</td>
+                    <td>${avgSun}h</td>
+                    <td>--</td>
+                    <td>--</td>
+                    <td>--</td>
+                `;
                 tbody.appendChild(avgTr);
             }
         }
 
-        // Add Event Listeners
+        // ==============================================
+        // Event Listeners (Slicers - Real-Time Filtering)
+        // ==============================================
         document.querySelectorAll('input[type="checkbox"], input[type="range"]').forEach(el => {
             el.addEventListener('change', filterData);
         });
 
-        // INITIALIZE ALL VISUALS ON PAGE LOAD
+        // ==============================================
+        // INITIALIZE EVERYTHING ON PAGE LOAD (NO DELAYS)
+        // ==============================================
         window.addEventListener('DOMContentLoaded', () => {
             updateYearLabel(2010);
             renderLineChart();
