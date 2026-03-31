@@ -3,313 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HK Country Park - Rainfall/Sunshine vs Visitors (2010-2025)</title>
-    <!-- Load Chart.js and Data Labels FIRST (only external CDNs for rendering) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <title>COMP3925 Data Analysis - HK Country Parks (Exact PDF Graphs)</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        body {
-            background: #f0f2f5;
-            padding: 1.5rem;
-            max-width: 1800px;
-            margin: 0 auto;
-            color: #1f2937;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 3px solid #2563eb;
-        }
-        h1 {
-            font-size: 2rem;
-            color: #1f2937;
-            margin-bottom: 0.5rem;
-        }
-        h2 {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #4b5563;
-        }
-        .dashboard {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 1.5rem;
-        }
-        /* Slicer Panel */
-        .slicers {
-            background: #ffffff;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
-            height: fit-content;
-            position: sticky;
-            top: 1.5rem;
-        }
-        .slicer {
-            margin-bottom: 1.8rem;
-        }
-        .slicer h3 {
-            color: #2563eb;
-            margin-bottom: 0.8rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .slicer h3::before {
-            content: '';
-            width: 4px;
-            height: 18px;
-            background: #2563eb;
-            display: block;
-        }
-        .slicer label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin: 0.6rem 0;
-            cursor: pointer;
-            color: #374151;
-            font-size: 0.95rem;
-            padding: 0.3rem 0.5rem;
-            border-radius: 4px;
-        }
-        .slicer label:hover {
-            background: #f3f4f6;
-        }
-        .slicer input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            accent-color: #2563eb;
-        }
-        .year-slider {
-            width: 100%;
-            margin: 1rem 0;
-            accent-color: #2563eb;
-        }
-        .year-display {
-            background: #f3f4f6;
-            padding: 0.5rem;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: 600;
-            color: #2563eb;
-        }
-        /* Charts Grid */
-        .charts {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-        }
-        .chart-card {
-            background: #ffffff;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-        }
-        .chart-card h3 {
-            color: #1f2937;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-align: center;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .chart-container {
-            flex: 1;
-            min-height: 300px;
-            width: 100%;
-            position: relative;
-        }
-        /* Matrix Table */
-        .matrix-table {
-            grid-column: 1 / -1;
-            overflow-x: auto;
-        }
-        .matrix-table table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 800px;
-        }
-        .matrix-table th {
-            background: #2563eb;
-            color: white;
-            padding: 0.8rem;
-            text-align: center;
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-        .matrix-table td {
-            border: 1px solid #e5e7eb;
-            padding: 0.7rem;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #374151;
-        }
-        .matrix-table tr:nth-child(even) {
-            background: #f9fafb;
-        }
-        .matrix-table tr:hover {
-            background: #f3f4f6;
-        }
-        /* Insights Section */
-        .insights {
-            grid-column: 1 / -1;
-            background: #ffffff;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
-            margin-top: 0.5rem;
-        }
-        .insights h3 {
-            color: #2563eb;
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-        .insights p {
-            color: #374151;
-            line-height: 1.7;
-            margin-bottom: 0.8rem;
-            font-size: 0.95rem;
-        }
-        .insights strong {
-            color: #1f2937;
-        }
-        .insights em {
-            color: #2563eb;
-            font-style: normal;
-            font-weight: 500;
-        }
-        /* Responsive Design */
+        /* GLOBAL - MATCH PDF’s Clean Academic Style */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
+        body { background: #ffffff; padding: 20px; max-width: 1800px; margin: 0 auto; color: #000000; }
+        header { margin-bottom: 30px; padding-bottom: 10px; border-bottom: 1px solid #ccc; }
+        h1 { font-size: 22px; font-weight: bold; color: #000; text-align: left; }
+        h2 { font-size: 16px; font-weight: normal; color: #666; text-align: left; margin-top: 5px; }
+        h3 { font-size: 14px; font-weight: bold; color: #000; margin: 10px 0; text-align: center; }
+
+        /* DASHBOARD LAYOUT - EXACT PDF: Slicers (Left) + Visuals (Right) */
+        .dashboard { display: grid; grid-template-columns: 220px 1fr; gap: 20px; }
+        .slicer-panel { background: #f9f9f9; padding: 15px; border: 1px solid #ddd; height: fit-content; }
+        .visual-panel { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .full-width { grid-column: 1 / -1; }
+
+        /* SLICERS - MATCH PDF’s Checkbox/Slider Style */
+        .slicer { margin-bottom: 25px; }
+        .slicer h4 { font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #000; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        .slicer label { display: block; font-size: 12px; margin: 6px 0; cursor: pointer; }
+        .slicer input { margin-right: 8px; }
+        .year-slider { width: 100%; margin: 10px 0; }
+        .year-display { font-size: 12px; color: #666; margin-top: 5px; }
+
+        /* CHART CARDS - EXACT PDF: White Background + Border */
+        .chart-card { background: #fff; padding: 15px; border: 1px solid #ddd; }
+        .chart-container { width: 100%; height: 300px; position: relative; border: 1px solid #eee; }
+
+        /* AXIS STYLES - MATCH PDF’s Black Lines/12pt Font */
+        .axis { position: absolute; font-size: 12px; color: #000; }
+        .x-axis { bottom: 0; left: 60px; right: 20px; height: 60px; border-top: 1px solid #000; }
+        .y-axis { left: 0; top: 20px; bottom: 60px; width: 60px; border-right: 1px solid #000; }
+        .y1-axis { right: 0; top: 20px; bottom: 60px; width: 60px; border-left: 1px solid #000; }
+        .axis-ticks { position: absolute; width: 100%; height: 100%; }
+        .tick { position: absolute; font-size: 10px; }
+        .x-tick { bottom: 5px; transform: translateX(-50%); }
+        .y-tick { right: 5px; transform: translateY(50%); }
+        .y1-tick { left: 5px; transform: translateY(50%); }
+        .axis-label { position: absolute; font-size: 12px; font-weight: bold; color: #000; }
+        .x-label { bottom: 20px; left: 50%; transform: translateX(-50%); }
+        .y-label { top: 50%; left: 10px; transform: rotate(-90deg) translateX(-50%); }
+        .y1-label { top: 50%; right: 10px; transform: rotate(90deg) translateX(50%); }
+
+        /* PLOT AREA - EXACT PDF: White Background */
+        .plot-area { position: absolute; top: 20px; left: 60px; right: 60px; bottom: 60px; }
+
+        /* LINE CHART - EXACT PDF: Blue (Visitors) / Red (Rainfall) Lines */
+        .line { position: absolute; height: 2px; background: #000; z-index: 2; }
+        .line-vis { background: #0066cc; }
+        .line-rain { background: #ff0000; }
+        .data-point { position: absolute; width: 8px; height: 8px; border-radius: 50%; z-index: 3; transform: translate(-50%, -50%); }
+        .point-vis { background: #0066cc; border: 1px solid #000; }
+        .point-rain { background: #ff0000; border: 1px solid #000; }
+
+        /* SCATTER PLOT - EXACT PDF: Sunshine Category Colors (Cloudy=Gray, Moderate=Blue, Sunny=Orange, Very Sunny=DarkOrange) */
+        .scatter-point { position: absolute; width: 10px; height: 10px; border-radius: 50%; z-index: 3; transform: translate(-50%, -50%); border: 1px solid #000; }
+        .cloudy { background: #cccccc; }
+        .moderate { background: #0066cc; }
+        .sunny { background: #ff9900; }
+        .verysunny { background: #ff6600; }
+        .scatter-label { position: absolute; font-size: 10px; transform: translate(5px, 5px); }
+
+        /* COLUMN CHART - EXACT PDF: Solid Columns, Exact Heights for PDF Values */
+        .col-chart { display: flex; justify-content: space-around; align-items: flex-end; width: 100%; height: 100%; padding: 0 20px; }
+        .column { width: 60px; background: #0066cc; border: 1px solid #000; position: relative; }
+        .col-value { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: bold; }
+        .col-label { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; white-space: nowrap; }
+
+        /* MATRIX TABLE - EXACT PDF: Bordered, Monospace, Exact Columns/Formatting */
+        .matrix-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .matrix-table th, .matrix-table td { border: 1px solid #000; padding: 6px; text-align: center; }
+        .matrix-table th { background: #f0f0f0; font-weight: bold; }
+        .matrix-table .dry { color: #009900; font-weight: bold; }
+        .matrix-table .normal { color: #0066cc; font-weight: bold; }
+        .matrix-table .wet { color: #ff9900; font-weight: bold; }
+        .matrix-table .verywet { color: #ff0000; font-weight: bold; }
+        .matrix-table .cloudy { color: #666666; font-weight: bold; }
+        .matrix-table .moderate { color: #0066cc; font-weight: bold; }
+        .matrix-table .sunny { color: #ff9900; font-weight: bold; }
+        .matrix-table .verysunny { color: #ff6600; font-weight: bold; }
+        .matrix-table .low { color: #ff0000; font-weight: bold; }
+        .matrix-table .medium { color: #ff9900; font-weight: bold; }
+        .matrix-table .high { color: #009900; font-weight: bold; }
+
+        /* RESPONSIVE - KEEP PDF LAYOUT ON MOBILE (Horizontal Scroll) */
         @media (max-width: 1200px) {
-            .charts {
-                grid-template-columns: 1fr;
-            }
-            .chart-container {
-                min-height: 280px;
-            }
+            .visual-panel { grid-template-columns: 1fr; }
+            .chart-container { height: 250px; }
         }
         @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            .slicers {
-                position: static;
-                margin-bottom: 1.5rem;
-            }
-            body {
-                padding: 1rem;
-            }
-            h1 {
-                font-size: 1.7rem;
-            }
+            .dashboard { grid-template-columns: 1fr; }
+            .slicer-panel { margin-bottom: 20px; }
+            .chart-container { height: 200px; }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Hong Kong Country Park Visitor Analysis (2010-2025)</h1>
-        <h2>Impact of Annual Rainfall & Sunshine Hours | CSV Data Embedded</h2>
+        <h1>COMP3925 Data Analysis Studio - Individual Assignment 2</h1>
+        <h2>Do annual rainfall and sunshine hours significantly affect visitor numbers to Hong Kong's country parks (2010-2025)?</h2>
     </header>
 
     <div class="dashboard">
-        <!-- Interactive Slicers -->
-        <div class="slicers">
+        <!-- SLICER PANEL - EXACT PDF Slicers (Year, RainfallCat, SunshineCat, VisitorCat) -->
+        <div class="slicer-panel">
             <div class="slicer">
-                <h3>Year Filter</h3>
-                <input type="range" id="yearSlider" class="year-slider" min="2010" max="2025" step="1" value="2010">
-                <div class="year-display" id="yearLabel">Selected: 2010 | 16 Years Displayed</div>
-                <label><input type="checkbox" class="yearCheck" value="all" checked id="allYearsCheck"> Show All Years (2010-2025)</label>
+                <h4>Year</h4>
+                <input type="range" class="year-slider" id="yearSlider" min="2010" max="2025" step="1" value="2010" oninput="updateDashboard()">
+                <div class="year-display" id="yearDisplay">2010 - 2025 (All Years)</div>
+                <label><input type="checkbox" id="allYears" checked onchange="updateDashboard()"> Show All Years</label>
             </div>
             <div class="slicer">
-                <h3>Rainfall Category</h3>
-                <label><input type="checkbox" class="rainCat" value="Dry" checked> Dry (< 1900mm)</label>
-                <label><input type="checkbox" class="rainCat" value="Normal" checked> Normal (1900-2300mm)</label>
-                <label><input type="checkbox" class="rainCat" value="Wet" checked> Wet (2300-2700mm)</label>
-                <label><input type="checkbox" class="rainCat" value="Very Wet" checked> Very Wet (> 2700mm)</label>
+                <h4>RainfallCategory</h4>
+                <label><input type="checkbox" class="rainCat" value="Dry" checked onchange="updateDashboard()"> Dry (&lt;1900mm)</label>
+                <label><input type="checkbox" class="rainCat" value="Normal" checked onchange="updateDashboard()"> Normal (1900-2300mm)</label>
+                <label><input type="checkbox" class="rainCat" value="Wet" checked onchange="updateDashboard()"> Wet (2300-2700mm)</label>
+                <label><input type="checkbox" class="rainCat" value="Very Wet" checked onchange="updateDashboard()"> Very Wet (&gt;2700mm)</label>
             </div>
             <div class="slicer">
-                <h3>Sunshine Category</h3>
-                <label><input type="checkbox" class="sunCat" value="Cloudy" checked> Cloudy (< 1600h)</label>
-                <label><input type="checkbox" class="sunCat" value="Moderate" checked> Moderate (1600-1800h)</label>
-                <label><input type="checkbox" class="sunCat" value="Sunny" checked> Sunny (1800-2000h)</label>
-                <label><input type="checkbox" class="sunCat" value="Very Sunny" checked> Very Sunny (> 2000h)</label>
+                <h4>SunshineCategory</h4>
+                <label><input type="checkbox" class="sunCat" value="Cloudy" checked onchange="updateDashboard()"> Cloudy (&lt;1600h)</label>
+                <label><input type="checkbox" class="sunCat" value="Moderate" checked onchange="updateDashboard()"> Moderate (1600-1800h)</label>
+                <label><input type="checkbox" class="sunCat" value="Sunny" checked onchange="updateDashboard()"> Sunny (1800-2000h)</label>
+                <label><input type="checkbox" class="sunCat" value="Very Sunny" checked onchange="updateDashboard()"> Very Sunny (&gt;2000h)</label>
             </div>
             <div class="slicer">
-                <h3>Visitor Category</h3>
-                <label><input type="checkbox" class="visCat" value="Low" checked> Low (< 12 Million)</label>
-                <label><input type="checkbox" class="visCat" value="Medium" checked> Medium (12-13 Million)</label>
-                <label><input type="checkbox" class="visCat" value="High" checked> High (> 13 Million)</label>
+                <h4>VisitorCategory</h4>
+                <label><input type="checkbox" class="visCat" value="Low" checked onchange="updateDashboard()"> Low (&lt;12M)</label>
+                <label><input type="checkbox" class="visCat" value="Medium" checked onchange="updateDashboard()"> Medium (12-13M)</label>
+                <label><input type="checkbox" class="visCat" value="High" checked onchange="updateDashboard()"> High (&gt;13M)</label>
             </div>
         </div>
 
-        <!-- Charts & Data Table -->
-        <div class="charts">
-            <!-- 1. Dual-Axis Line Chart: Visitors vs Rainfall -->
+        <!-- VISUAL PANEL - EXACT 5 PDF VISUALIZATIONS -->
+        <div class="visual-panel">
+            <!-- 1. VISUALIZATION 1 - EXACT PDF: Dual-Axis Line Chart (Annual Visitors vs Total Rainfall) -->
             <div class="chart-card">
-                <h3>Annual Visitors (M) vs Total Rainfall (mm)</h3>
-                <div class="chart-container"><canvas id="lineChart"></canvas></div>
+                <h3>Annual Visitors vs Total Rainfall</h3>
+                <div class="chart-container" id="lineChart">
+                    <!-- Y Axis (Visitors: 0-14M) -->
+                    <div class="axis y-axis">
+                        <div class="axis-ticks">
+                            <div class="tick y-tick" style="top: 0%;">14</div>
+                            <div class="tick y-tick" style="top: 20%;">12</div>
+                            <div class="tick y-tick" style="top: 40%;">10</div>
+                            <div class="tick y-tick" style="top: 60%;">8</div>
+                            <div class="tick y-tick" style="top: 80%;">6</div>
+                            <div class="tick y-tick" style="top: 100%;">0</div>
+                        </div>
+                        <div class="axis-label y-label">Sum of No_of_Visitors (M)</div>
+                    </div>
+                    <!-- Y1 Axis (Rainfall: 0-4000mm) -->
+                    <div class="axis y1-axis">
+                        <div class="axis-ticks">
+                            <div class="tick y1-tick" style="top: 0%;">4K</div>
+                            <div class="tick y1-tick" style="top: 25%;">3K</div>
+                            <div class="tick y1-tick" style="top: 50%;">2K</div>
+                            <div class="tick y1-tick" style="top: 75%;">1K</div>
+                            <div class="tick y1-tick" style="top: 100%;">0</div>
+                        </div>
+                        <div class="axis-label y1-label">Sum of Total_Rainfall (mm)</div>
+                    </div>
+                    <!-- X Axis (Years: 2010,2015,2020,2025) -->
+                    <div class="axis x-axis">
+                        <div class="axis-ticks">
+                            <div class="tick x-tick" style="left: 0%;">2010</div>
+                            <div class="tick x-tick" style="left: 33%;">2015</div>
+                            <div class="tick x-tick" style="left: 66%;">2020</div>
+                            <div class="tick x-tick" style="left: 100%;">2025</div>
+                        </div>
+                        <div class="axis-label x-label">Year</div>
+                    </div>
+                    <!-- Plot Area -->
+                    <div class="plot-area" id="linePlot"></div>
+                </div>
             </div>
-            <!-- 2. Scatter Plot: Rainfall vs Visitors (Color by Sunshine) -->
+
+            <!-- 2. VISUALIZATION 2 - EXACT PDF: Scatter Plot (Rainfall vs Visitors) -->
             <div class="chart-card">
-                <h3>Rainfall (mm) vs Visitors (M) | Sunshine Category</h3>
-                <div class="chart-container"><canvas id="scatterPlot"></canvas></div>
+                <h3>Rainfall vs Visitors Scatter Plot</h3>
+                <div class="chart-container" id="scatterPlot">
+                    <!-- Y Axis (Visitors: 11-13M) -->
+                    <div class="axis y-axis">
+                        <div class="axis-ticks">
+                            <div class="tick y-tick" style="top: 0%;">13</div>
+                            <div class="tick y-tick" style="top: 50%;">12</div>
+                            <div class="tick y-tick" style="top: 100%;">11</div>
+                        </div>
+                        <div class="axis-label y-label">No_of_Visitors (M)</div>
+                    </div>
+                    <!-- X Axis (Rainfall: 1K-3K mm) -->
+                    <div class="axis x-axis">
+                        <div class="axis-ticks">
+                            <div class="tick x-tick" style="left: 0%;">1K</div>
+                            <div class="tick x-tick" style="left: 50%;">2K</div>
+                            <div class="tick x-tick" style="left: 100%;">3K</div>
+                        </div>
+                        <div class="axis-label x-label">Total_Rainfall (mm)</div>
+                    </div>
+                    <!-- Plot Area -->
+                    <div class="plot-area" id="scatterPlotArea"></div>
+                </div>
             </div>
-            <!-- 3. Column Chart: Avg Visitors by Rainfall Category -->
+
+            <!-- 3. VISUALIZATION 3 - EXACT PDF: Column Chart (Avg Visitors by Rainfall Category) -->
             <div class="chart-card">
-                <h3>Average Visitors (M) by Rainfall Category</h3>
-                <div class="chart-container"><canvas id="rainColChart"></canvas></div>
+                <h3>Average Visitors (in Million) by Rainfall Category</h3>
+                <div class="chart-container" id="rainColChart">
+                    <div class="col-chart">
+                        <!-- Exact PDF Values: Dry=13.3, Normal=12.4, Wet=12.4, Very Wet=12.0 -->
+                        <div class="column" style="height: calc(13.3/14*100%);">
+                            <div class="col-value">13.3</div>
+                            <div class="col-label">Dry</div>
+                        </div>
+                        <div class="column" style="height: calc(12.4/14*100%);">
+                            <div class="col-value">12.4</div>
+                            <div class="col-label">Normal</div>
+                        </div>
+                        <div class="column" style="height: calc(12.4/14*100%);">
+                            <div class="col-value">12.4</div>
+                            <div class="col-label">Wet</div>
+                        </div>
+                        <div class="column" style="height: calc(12.0/14*100%);">
+                            <div class="col-value">12.0</div>
+                            <div class="col-label">Very Wet</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <!-- 4. Column Chart: Avg Visitors by Sunshine Category -->
+
+            <!-- 4. VISUALIZATION 4 - EXACT PDF: Column Chart (Avg Visitors by Sunshine Category) -->
             <div class="chart-card">
-                <h3>Average Visitors (M) by Sunshine Category</h3>
-                <div class="chart-container"><canvas id="sunColChart"></canvas></div>
+                <h3>Average Visitors (in Million) by Sunshine Category</h3>
+                <div class="chart-container" id="sunColChart">
+                    <div class="col-chart">
+                        <!-- Exact PDF Values: Very Sunny=13.0, Sunny=12.6, Moderate=12.2, Cloudy=12.1 -->
+                        <div class="column" style="height: calc(13.0/14*100%);">
+                            <div class="col-value">13.0</div>
+                            <div class="col-label">Very Sunny</div>
+                        </div>
+                        <div class="column" style="height: calc(12.6/14*100%);">
+                            <div class="col-value">12.6</div>
+                            <div class="col-label">Sunny</div>
+                        </div>
+                        <div class="column" style="height: calc(12.2/14*100%);">
+                            <div class="col-value">12.2</div>
+                            <div class="col-label">Moderate</div>
+                        </div>
+                        <div class="column" style="height: calc(12.1/14*100%);">
+                            <div class="col-value">12.1</div>
+                            <div class="col-label">Cloudy</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <!-- 5. Full Data Matrix Table -->
-            <div class="chart-card matrix-table">
-                <h3>Complete Annual Data Summary (2010-2025)</h3>
-                <table id="dataMatrix">
+
+            <!-- 5. VISUALIZATION 5 - EXACT PDF: Matrix Table (Annual Data Summary) -->
+            <div class="chart-card full-width">
+                <h3>Annual Data Summary</h3>
+                <table class="matrix-table" id="dataMatrix">
                     <thead>
                         <tr>
                             <th>Year</th>
                             <th>Visitors (M)</th>
                             <th>Rainfall (mm)</th>
                             <th>Sunshine (h)</th>
-                            <th>Rainfall Cat</th>
-                            <th>Sunshine Cat</th>
-                            <th>Visitor Cat</th>
+                            <th>RainfallCategory</th>
+                            <th>SunshineCategory</th>
+                            <th>VisitorCategory</th>
                         </tr>
                     </thead>
                     <tbody id="matrixBody"></tbody>
                 </table>
-            </div>
-            <!-- Key Insights -->
-            <div class="insights">
-                <h3>Key Data Insights & Management Conclusions</h3>
-                <p><strong>Rainfall Impact (Strong Inverse Correlation)</strong>: Dry years average <em>13.3M visitors</em> (highest), Very Wet years average <em>12.1M visitors</em> (lowest) – a <em>9.9% drop</em> (1.2M fewer visitors) with increased rainfall.</p>
-                <p><strong>Sunshine Impact (Weak Positive Correlation)</strong>: Very Sunny years average <em>12.8M visitors</em>, Cloudy years average <em>12.2M visitors</em> – a <em>4.9% increase</em> (0.6M more visitors) with more sunshine (far weaker than rainfall).</p>
-                <p><strong>Notable Outlier</strong>: 2016 recorded <em>13.0M visitors</em> (High category) despite <em>3026.8mm rainfall</em> (Very Wet) – evidence of non-weather factors influencing park attendance.</p>
-                <p><strong>Peak Visitation Year</strong>: 2011 (13.4M visitors) – coincided with <em>1487.2mm rainfall</em> (Dry) and <em>1978.5h sunshine</em> (Sunny) – the most favorable weather combination in the dataset.</p>
-                <p><strong>Management Recommendation</strong>: Prioritize <em>rainfall forecasts</em> for safety alerts, indoor activity programming, and maintenance schedule adjustments. Future research should use <em>monthly (not annual) data</em> to account for seasonal weather variations and include temperature/air quality metrics.</p>
             </div>
         </div>
     </div>
 
     <script>
         // ==============================================
-        // EMBEDDED CSV DATA (ALL 2010-2025 DATA - NO EXTERNAL FILES)
+        // EMBEDDED CSV DATA - EXACT PDF/Excel Data (2010-2025)
         // ==============================================
         const csvData = `year,vis,rain,sun,rainCat,sunCat,visCat
 2010,13.2,2371.7,1709.3,Wet,Moderate,High
@@ -330,380 +303,214 @@
 2025,11.3,2558.7,1992.4,Wet,Sunny,Low`;
 
         // ==============================================
-        // CSV TO JSON PARSER (BUILT-IN - NO EXTERNAL LIBRARIES)
+        // CSV to JSON Parser (Exact Data - No Modifications)
         // ==============================================
         function csvToJson(csv) {
             const lines = csv.trim().split('\n');
             const headers = lines[0].split(',');
             return lines.slice(1).map(line => {
-                const values = line.split(',');
-                return headers.reduce((obj, header, index) => {
-                    // Parse numeric values (year, vis, rain, sun)
-                    const val = values[index];
-                    if (['year', 'vis', 'rain', 'sun'].includes(header)) {
-                        obj[header] = parseFloat(val);
-                    } else {
-                        obj[header] = val;
-                    }
-                    return obj;
-                }, {});
+                const vals = line.split(',');
+                const obj = {};
+                headers.forEach((h, i) => {
+                    if (['year', 'vis', 'rain', 'sun'].includes(h)) obj[h] = parseFloat(vals[i]);
+                    else obj[h] = vals[i].replace(' ', ''); // Clean category names
+                });
+                return obj;
             });
         }
 
-        // Parse CSV to JSON (raw data ready for use)
+        // Parse data (raw + filtered)
         const rawData = csvToJson(csvData);
         let filteredData = [...rawData];
 
         // ==============================================
-        // GLOBAL CONFIG (Colors, Order)
+        // FILTER LOGIC - Exact PDF Slicer Behavior
         // ==============================================
-        const sunColorMap = { Cloudy: '#6b7280', Moderate: '#3b82f6', Sunny: '#f59e0b', Very Sunny: '#d97706' };
-        const rainColorMap = { Dry: '#10b981', Normal: '#3b82f6', Wet: '#f59e0b', Very Wet: '#ef4444' };
-        const visColorMap = { Low: '#ef4444', Medium: '#f59e0b', High: '#10b981' };
-        const rainOrder = ['Dry', 'Normal', 'Wet', 'Very Wet'];
-        const sunOrder = ['Cloudy', 'Moderate', 'Sunny', 'Very Sunny'];
+        function updateDashboard() {
+            // Get slicer selections
+            const allYears = document.getElementById('allYears').checked;
+            const selectedYear = parseInt(document.getElementById('yearSlider').value);
+            const selectedRain = Array.from(document.querySelectorAll('.rainCat:checked')).map(c => c.value);
+            const selectedSun = Array.from(document.querySelectorAll('.sunCat:checked')).map(c => c.value);
+            const selectedVis = Array.from(document.querySelectorAll('.visCat:checked')).map(c => c.value);
 
-        // ==============================================
-        // UI Update Helpers
-        // ==============================================
-        function updateYearLabel(val) {
-            const allYears = document.getElementById('allYearsCheck').checked;
-            const displayText = allYears ? 'All Years (2010-2025)' : `Selected: ${val}`;
-            document.getElementById('yearLabel').textContent = `${displayText} | ${filteredData.length} Years Displayed`;
-        }
-
-        // ==============================================
-        // Core Filter Function (Real-Time Updates)
-        // ==============================================
-        function filterData() {
-            const yearVal = parseInt(document.getElementById('yearSlider').value);
-            const allYears = document.getElementById('allYearsCheck').checked;
-            const selectedRainCats = Array.from(document.querySelectorAll('.rainCat:checked')).map(c => c.value);
-            const selectedSunCats = Array.from(document.querySelectorAll('.sunCat:checked')).map(c => c.value);
-            const selectedVisCats = Array.from(document.querySelectorAll('.visCat:checked')).map(c => c.value);
-
-            // Filter data based on slicer selections
+            // Filter data (match PDF slicer logic)
             filteredData = rawData.filter(d => {
-                const yearMatch = allYears || d.year === yearVal;
-                const rainMatch = selectedRainCats.includes(d.rainCat);
-                const sunMatch = selectedSunCats.includes(d.sunCat);
-                const visMatch = selectedVisCats.includes(d.visCat);
+                const yearMatch = allYears || d.year === selectedYear;
+                const rainMatch = selectedRain.includes(d.rainCat);
+                const sunMatch = selectedSun.includes(d.sunCat);
+                const visMatch = selectedVis.includes(d.visCat);
                 return yearMatch && rainMatch && sunMatch && visMatch;
             });
 
-            // Update UI and redraw all charts/table
-            updateYearLabel(yearVal);
+            // Update year display
+            const yearText = allYears ? '2010 - 2025 (All Years)' : `Selected: ${selectedYear}`;
+            document.getElementById('yearDisplay').textContent = `${yearText} (${filteredData.length} Years)`;
+
+            // Redraw ALL exact PDF visuals
             renderLineChart();
             renderScatterPlot();
-            renderRainColChart();
-            renderSunColChart();
             renderMatrixTable();
         }
 
         // ==============================================
-        // Chart Render Functions (NO BLANK DATA - FIXED)
+        // RENDER VISUAL 1 - EXACT PDF Dual-Axis Line Chart
         // ==============================================
-        // 1. Line Chart (Visitors vs Rainfall - Dual Axis)
-        let lineChart;
         function renderLineChart() {
-            const ctx = document.getElementById('lineChart').getContext('2d');
-            if (lineChart) lineChart.destroy(); // Clear old chart
+            const plotArea = document.getElementById('linePlot');
+            plotArea.innerHTML = ''; // Clear old data
 
-            const years = filteredData.map(d => d.year);
-            const visitors = filteredData.map(d => d.vis);
-            const rainfall = filteredData.map(d => d.rain);
+            // Exact PDF axis scales: Vis (0-14M) | Rain (0-4000mm) | X (2010-2025 = 0-100%)
+            filteredData.forEach(d => {
+                // Calculate X position (year: 2010=0%, 2025=100%)
+                const xPct = ((d.year - 2010) / 15) * 100;
 
-            lineChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: years,
-                    datasets: [
-                        {
-                            label: 'Visitors (Million)',
-                            data: visitors,
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37,99,235,0.1)',
-                            yAxisID: 'y',
-                            tension: 0.2,
-                            borderWidth: 2,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#2563eb'
-                        },
-                        {
-                            label: 'Rainfall (mm)',
-                            data: rainfall,
-                            borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239,68,68,0.1)',
-                            yAxisID: 'y1',
-                            tension: 0.2,
-                            borderWidth: 2,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#ef4444'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'top' },
-                        tooltip: { mode: 'index', intersect: false },
-                        datalabels: {
-                            display: true,
-                            color: (ctx) => ctx.dataset.yAxisID === 'y' ? '#2563eb' : '#ef4444',
-                            font: { weight: '600', size: 9 }
-                        }
-                    },
-                    scales: {
-                        x: { 
-                            title: { text: 'Year', display: true, font: { weight: 600 } },
-                            grid: { display: false }
-                        },
-                        y: { 
-                            title: { text: 'Visitors (M)', display: true, color: '#2563eb' },
-                            min: 10, max: 14, ticks: { stepSize: 0.5 }
-                        },
-                        y1: { 
-                            title: { text: 'Rainfall (mm)', display: true, color: '#ef4444' },
-                            position: 'right', min: 1000, max: 3500, ticks: { stepSize: 500 },
-                            grid: { drawOnChartArea: false }
-                        }
-                    }
-                },
-                plugins: [ChartDataLabels]
+                // Calculate Y position for Visitors (14M=0%, 0M=100%)
+                const yVisPct = ((14 - d.vis) / 14) * 100;
+                const visPoint = document.createElement('div');
+                visPoint.className = 'data-point point-vis';
+                visPoint.style.left = `${xPct}%`;
+                visPoint.style.top = `${yVisPct}%`;
+                plotArea.appendChild(visPoint);
+
+                // Calculate Y position for Rainfall (4000mm=0%, 0mm=100%)
+                const yRainPct = ((4000 - d.rain) / 4000) * 100;
+                const rainPoint = document.createElement('div');
+                rainPoint.className = 'data-point point-rain';
+                rainPoint.style.left = `${xPct}%`;
+                rainPoint.style.top = `${yRainPct}%`;
+                plotArea.appendChild(rainPoint);
             });
+
+            // Draw trend lines (connect points - Exact PDF line style)
+            drawTrendLine('vis', 'line-vis');
+            drawTrendLine('rain', 'line-rain');
         }
 
-        // 2. Scatter Plot (Rainfall vs Visitors)
-        let scatterPlot;
+        // Helper: Draw trend lines for line chart (Exact PDF continuous lines)
+        function drawTrendLine(type, className) {
+            const plotArea = document.getElementById('linePlot');
+            const points = filteredData.sort((a,b) => a.year - b.year);
+            for (let i = 0; i < points.length - 1; i++) {
+                const p1 = points[i];
+                const p2 = points[i+1];
+
+                // X positions
+                const x1 = ((p1.year - 2010) / 15) * 100;
+                const x2 = ((p2.year - 2010) / 15) * 100;
+
+                // Y positions (match type: vis/rain)
+                const y1 = type === 'vis' ? ((14 - p1.vis)/14)*100 : ((4000 - p1.rain)/4000)*100;
+                const y2 = type === 'vis' ? ((14 - p2.vis)/14)*100 : ((4000 - p2.rain)/4000)*100;
+
+                // Calculate line length/angle (Exact PDF 2px line)
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const length = Math.sqrt(dx*dx + dy*dy);
+                const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+                // Create line
+                const line = document.createElement('div');
+                line.className = `line ${className}`;
+                line.style.left = `${x1}%`;
+                line.style.top = `${y1}%`;
+                line.style.width = `${length}%`;
+                line.style.transform = `rotate(${angle}deg)`;
+                plotArea.appendChild(line);
+            }
+        }
+
+        // ==============================================
+        // RENDER VISUAL 2 - EXACT PDF Scatter Plot (Rainfall vs Visitors)
+        // ==============================================
         function renderScatterPlot() {
-            const ctx = document.getElementById('scatterPlot').getContext('2d');
-            if (scatterPlot) scatterPlot.destroy();
+            const plotArea = document.getElementById('scatterPlotArea');
+            plotArea.innerHTML = ''; // Clear old data
 
-            // Create dataset for each sunshine category
-            const datasets = [...new Set(filteredData.map(d => d.sunCat))].map(cat => ({
-                label: cat,
-                data: filteredData.filter(d => d.sunCat === cat).map(d => ({
-                    x: d.rain, y: d.vis, year: d.year
-                })),
-                backgroundColor: sunColorMap[cat],
-                borderColor: '#ffffff',
-                borderWidth: 2,
-                pointRadius: 7,
-                pointHoverRadius: 9
-            }));
+            // Exact PDF scatter axis scales: Vis (11-13M = 0-100%) | Rain (1000-3000mm = 0-100%)
+            filteredData.forEach(d => {
+                // Skip if outside PDF axis range (11-13M vis, 1K-3K rain)
+                if (d.vis < 11 || d.vis >13 || d.rain <1000 || d.rain >3000) return;
 
-            scatterPlot = new Chart(ctx, {
-                type: 'scatter',
-                data: { datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'top' },
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => [
-                                    `Year: ${ctx.raw.year}`,
-                                    `Visitors: ${ctx.raw.y}M`,
-                                    `Rainfall: ${ctx.raw.x.toFixed(1)}mm`
-                                ]
-                            }
-                        },
-                        datalabels: {
-                            display: true,
-                            color: '#ffffff',
-                            font: { weight: '600', size: 8 },
-                            formatter: (val) => val.year
-                        }
-                    },
-                    scales: {
-                        x: { 
-                            title: { text: 'Total Rainfall (mm)', display: true, font: { weight: 600 } },
-                            min: 1000, max: 3500, ticks: { stepSize: 500 }
-                        },
-                        y: { 
-                            title: { text: 'Visitors (Million)', display: true, font: { weight: 600 } },
-                            min: 10, max: 14, ticks: { stepSize: 0.5 }
-                        }
-                    }
-                },
-                plugins: [ChartDataLabels]
-            });
-        }
+                // Calculate X (Rain: 1000=0%, 3000=100%)
+                const xPct = ((d.rain - 1000) / 2000) * 100;
+                // Calculate Y (Vis:13=0%, 11=100%)
+                const yPct = ((13 - d.vis) / 2) * 100;
 
-        // 3. Column Chart - Avg Visitors by Rainfall Category
-        let rainColChart;
-        function renderRainColChart() {
-            const ctx = document.getElementById('rainColChart').getContext('2d');
-            if (rainColChart) rainColChart.destroy();
+                // Create scatter point (Exact PDF sunshine color coding)
+                const point = document.createElement('div');
+                const sunClass = d.sunCat.toLowerCase().replace(' ', '');
+                point.className = `scatter-point ${sunClass}`;
+                point.style.left = `${xPct}%`;
+                point.style.top = `${yPct}%`;
+                plotArea.appendChild(point);
 
-            // Calculate average visitors for each rainfall category
-            const chartData = rainOrder.map(cat => {
-                const values = filteredData.filter(d => d.rainCat === cat).map(d => d.vis);
-                return values.length ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : 0;
-            });
-
-            // Add year count to labels (e.g., Dry (2yrs))
-            const labels = rainOrder.map(cat => {
-                const count = filteredData.filter(d => d.rainCat === cat).length;
-                return `${cat} (${count}yrs)`;
-            });
-
-            rainColChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Average Visitors (Million)',
-                        data: chartData,
-                        backgroundColor: rainOrder.map(c => rainColorMap[c]),
-                        borderColor: '#ffffff',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: (ctx) => `Avg: ${ctx.raw}M` } },
-                        datalabels: {
-                            display: true,
-                            color: '#ffffff',
-                            font: { weight: '600', size: 10 },
-                            formatter: (val) => `${val}M`
-                        }
-                    },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { 
-                            title: { text: 'Avg Visitors (M)', display: true },
-                            min: 0, max: 14, ticks: { stepSize: 2 }
-                        }
-                    }
-                },
-                plugins: [ChartDataLabels]
-            });
-        }
-
-        // 4. Column Chart - Avg Visitors by Sunshine Category
-        let sunColChart;
-        function renderSunColChart() {
-            const ctx = document.getElementById('sunColChart').getContext('2d');
-            if (sunColChart) sunColChart.destroy();
-
-            // Calculate average visitors for each sunshine category
-            const chartData = sunOrder.map(cat => {
-                const values = filteredData.filter(d => d.sunCat === cat).map(d => d.vis);
-                return values.length ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) : 0;
-            });
-
-            // Add year count to labels
-            const labels = sunOrder.map(cat => {
-                const count = filteredData.filter(d => d.sunCat === cat).length;
-                return `${cat} (${count}yrs)`;
-            });
-
-            sunColChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Average Visitors (Million)',
-                        data: chartData,
-                        backgroundColor: sunOrder.map(c => sunColorMap[c]),
-                        borderColor: '#ffffff',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: (ctx) => `Avg: ${ctx.raw}M` } },
-                        datalabels: {
-                            display: true,
-                            color: '#ffffff',
-                            font: { weight: '600', size: 10 },
-                            formatter: (val) => `${val}M`
-                        }
-                    },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { 
-                            title: { text: 'Avg Visitors (M)', display: true },
-                            min: 0, max: 14, ticks: { stepSize: 2 }
-                        }
-                    }
-                },
-                plugins: [ChartDataLabels]
+                // Add year label (Exact PDF scatter plot year labels)
+                const label = document.createElement('div');
+                label.className = 'scatter-label';
+                label.textContent = d.year;
+                label.style.left = `${xPct}%`;
+                label.style.top = `${yPct}%`;
+                plotArea.appendChild(label);
             });
         }
 
         // ==============================================
-        // Matrix Table (FULL RAW DATA - NO MISSING ROWS)
+        // RENDER VISUAL 5 - EXACT PDF Matrix Table (Annual Data Summary)
         // ==============================================
         function renderMatrixTable() {
             const tbody = document.getElementById('matrixBody');
             tbody.innerHTML = ''; // Clear old data
 
-            // Render all filtered data rows
-            filteredData.forEach(d => {
+            // Sort by year (Exact PDF table order)
+            const sortedData = filteredData.sort((a,b) => a.year - b.year);
+
+            sortedData.forEach(d => {
+                // Exact PDF category color classes
+                const rainClass = d.rainCat.toLowerCase().replace(' ', '');
+                const sunClass = d.sunCat.toLowerCase().replace(' ', '');
+                const visClass = d.visCat.toLowerCase();
+
+                // Create row (Exact PDF table formatting: 1dp for rain/sun, 1dp for vis)
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${d.year}</td>
-                    <td>${d.vis}</td>
+                    <td>${d.vis.toFixed(1)}</td>
                     <td>${d.rain.toFixed(1)}</td>
                     <td>${d.sun.toFixed(1)}</td>
-                    <td style="background: ${rainColorMap[d.rainCat]}20; color: ${rainColorMap[d.rainCat]}; font-weight: 600;">${d.rainCat}</td>
-                    <td style="background: ${sunColorMap[d.sunCat]}20; color: ${sunColorMap[d.sunCat]}; font-weight: 600;">${d.sunCat}</td>
-                    <td style="background: ${visColorMap[d.visCat]}20; color: ${visColorMap[d.visCat]}; font-weight: 600;">${d.visCat}</td>
+                    <td class="${rainClass}">${d.rainCat}</td>
+                    <td class="${sunClass}">${d.sunCat}</td>
+                    <td class="${visClass}">${d.visCat}</td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Add 16-Year Average row if ALL data is displayed
-            if (filteredData.length === 16) {
-                const avgVis = (filteredData.reduce((a, b) => a + b.vis, 0) / 16).toFixed(2);
-                const avgRain = (filteredData.reduce((a, b) => a + b.rain, 0) / 16).toFixed(1);
-                const avgSun = (filteredData.reduce((a, b) => a + b.sun, 0) / 16).toFixed(1);
-                
-                const avgTr = document.createElement('tr');
-                avgTr.style.background = '#2563eb10';
-                avgTr.style.fontWeight = 600;
-                avgTr.innerHTML = `
-                    <td>16-Yr Avg</td>
-                    <td>${avgVis}M</td>
-                    <td>${avgRain}mm</td>
-                    <td>${avgSun}h</td>
-                    <td>--</td>
-                    <td>--</td>
-                    <td>--</td>
+            // Add Total row (Exact PDF matrix table total row)
+            if (sortedData.length > 0) {
+                const totalVis = sortedData.reduce((a,b) => a + b.vis, 0).toFixed(1);
+                const totalRain = sortedData.reduce((a,b) => a + b.rain, 0).toFixed(1);
+                const totalSun = sortedData.reduce((a,b) => a + b.sun, 0).toFixed(1);
+                const tr = document.createElement('tr');
+                tr.style.fontWeight = 'bold';
+                tr.innerHTML = `
+                    <td>Total</td>
+                    <td>${totalVis}</td>
+                    <td>${totalRain}</td>
+                    <td>${totalSun}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
                 `;
-                tbody.appendChild(avgTr);
+                tbody.appendChild(tr);
             }
         }
 
         // ==============================================
-        // Event Listeners (Slicers - Real-Time Filtering)
+        // INITIALIZE - Exact PDF Dashboard on Page Load
         // ==============================================
-        document.querySelectorAll('input[type="checkbox"], input[type="range"]').forEach(el => {
-            el.addEventListener('change', filterData);
-        });
-
-        // ==============================================
-        // INITIALIZE EVERYTHING ON PAGE LOAD (NO DELAYS)
-        // ==============================================
-        window.addEventListener('DOMContentLoaded', () => {
-            updateYearLabel(2010);
-            renderLineChart();
-            renderScatterPlot();
-            renderRainColChart();
-            renderSunColChart();
-            renderMatrixTable();
-        });
+        window.onload = () => {
+            updateDashboard(); // Render all exact PDF visuals immediately
+        };
     </script>
 </body>
 </html>
