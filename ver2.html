@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hong Kong Cross-Border Travel - 5 Tabs PDF Replica</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="border_data.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #F2F2F2; padding: 20px; }
+        .dashboard { max-width: 1400px; margin: 0 auto; }
+        
+        /* Power BI Header (PDF Exact Color) */
+        .pbi-header { background: #0063B3; color: white; padding: 18px 24px; border-radius: 6px 6px 0 0; }
+        
+        /* Tab Navigation (PDF Style) */
+        .pbi-tabs { display: flex; background: white; border-bottom: 1px solid #E1E1E1; flex-wrap: wrap; }
+        .pbi-tab { 
+            padding: 12px 24px; font-size: 13px; font-weight: 600; 
+            color: #555; cursor: pointer; border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .pbi-tab.active { color: #0063B3; border-bottom-color: #0063B3; }
+        .pbi-tab:hover { background: #F8F8F8; }
+        
+        /* Filter Bar (PDF Layout) */
+        .pbi-filter-bar { background: white; padding: 16px 20px; border-bottom: 1px solid #E1E1E1; }
+        .filter-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        .filter-label { font-size: 12px; color: #555; font-weight: 600; margin-bottom: 6px; }
+        .pbi-select { width: 100%; padding: 9px 12px; border: 1px solid #CCC; border-radius: 4px; font-size: 13px; }
+        .pbi-select:focus { outline: none; border-color: #0063B3; }
+        
+        /* Tab Content (PDF Card Style) */
+        .pbi-tab-content { background: white; padding: 20px; border-radius: 0 0 6px 6px; min-height: 600px; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        
+        /* Cards (PDF Exact Style) */
+        .pbi-card { 
+            background: white; border: 1px solid #E1E1E1; border-radius: 4px; 
+            padding: 16px; margin-bottom: 16px;
+        }
+        .card-title { 
+            font-size: 14px; font-weight: 600; color: #333; 
+            margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+        }
+        
+        /* KPI Styles */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .kpi-card { text-align: center; padding: 16px; border: 1px solid #E1E1E1; border-radius: 4px; }
+        .kpi-value { font-size: 28px; font-weight: 700; color: #0063B3; margin: 8px 0; }
+        .kpi-desc { font-size: 12px; color: #666; }
+        
+        /* Chart Containers */
+        .chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .chart-container { height: 300px; }
+        canvas { width: 100% !important; height: 100% !important; }
+        
+        /* Insights Section (PDF Style) */
+        .insights-list { margin-top: 16px; }
+        .insight-item { margin-bottom: 12px; font-size: 13px; color: #333; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <!-- Header (PDF Exact) -->
+    <div class="pbi-header">
+        <h1 class="text-xl font-bold">Hong Kong Cross-Border Travel Overview</h1>
+        <p class="text-sm opacity-90">Draft v1</p>
+    </div>
+
+    <!-- 5 Tabs (PDF Exact Page Names) -->
+    <div class="pbi-tabs">
+        <div class="pbi-tab active" data-tab="tab1">1. Overview & KPIs</div>
+        <div class="pbi-tab" data-tab="tab2">2. Monthly Trend & Composition</div>
+        <div class="pbi-tab" data-tab="tab3">3. Control Point Distribution</div>
+        <div class="pbi-tab" data-tab="tab4">4. Weather & Exchange Impact</div>
+        <div class="pbi-tab" data-tab="tab5">5. Key Insights & Recommendations</div>
+    </div>
+
+    <!-- Filter Bar - MULTI-SELECT ENABLED -->
+    <div class="pbi-filter-bar">
+        <div class="filter-group">
+            <div>
+                <div class="filter-label">Select Month (Hold Ctrl/Cmd for multi-select)</div>
+                <!-- MULTI-SELECT MONTH -->
+                <select id="monthFilter" class="pbi-select" multiple size="5">
+                    <option value="All" selected>All Months</option>
+                </select>
+            </div>
+            <div>
+                <div class="filter-label">Select Direction (Hold Ctrl/Cmd for multi-select)</div>
+                <!-- MULTI-SELECT DIRECTION -->
+                <select id="dirFilter" class="pbi-select" multiple size="5">
+                    <option value="All" selected>All Directions</option>
+                    <option value="Departure">Departure</option>
+                    <option value="Arrival">Arrival</option>
+                </select>
+            </div>
+            <div>
+                <div class="filter-label">Select Control Point (Hold Ctrl/Cmd for multi-select)</div>
+                <!-- MULTI-SELECT CONTROL POINT -->
+                <select id="pointFilter" class="pbi-select" multiple size="5">
+                    <option value="All" selected>All Control Points</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 1: Overview & KPIs (PDF Page 1) -->
+    <div class="pbi-tab-content tab-pane active" id="tab1">
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-desc">Total Travellers</div>
+                <div class="kpi-value" id="kpi-total">0</div>
+                <div class="kpi-desc">Cumulative Volume</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-desc">HK Residents</div>
+                <div class="kpi-value" id="kpi-hk">0</div>
+                <div class="kpi-desc">Citizen Traffic</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-desc">Mainland Visitors</div>
+                <div class="kpi-value" id="kpi-mainland">0</div>
+                <div class="kpi-desc">Tourist Volume</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-desc">Other Visitors</div>
+                <div class="kpi-value" id="kpi-other">0</div>
+                <div class="kpi-desc">International Traffic</div>
+            </div>
+        </div>
+
+        <div class="chart-grid-2">
+            <div class="pbi-card">
+                <div class="card-title"><i class="fa fa-line-chart"></i> Total Travellers Over Time</div>
+                <div class="chart-container"><canvas id="tab1-trend"></canvas></div>
+            </div>
+            <div class="pbi-card">
+                <div class="card-title"><i class="fa fa-pie-chart"></i> Traveller Composition</div>
+                <div class="chart-container"><canvas id="tab1-composition"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 2: Monthly Trend & Composition (PDF Page 2) -->
+    <div class="pbi-tab-content tab-pane" id="tab2">
+        <div class="pbi-card">
+            <div class="card-title"><i class="fa fa-bar-chart"></i> Monthly Total Travellers Trend</div>
+            <div class="chart-container"><canvas id="tab2-monthly-trend"></canvas></div>
+        </div>
+
+        <div class="chart-grid-2">
+            <div class="pbi-card">
+                <div class="card-title"><i class="fa fa-stack-exchange"></i> Traveller Composition by Month</div>
+                <div class="chart-container"><canvas id="tab2-composition"></canvas></div>
+            </div>
+            <div class="pbi-card">
+                <div class="card-title"><i class="fa fa-calendar-check-o"></i> Peak Months Comparison</div>
+                <div class="chart-container"><canvas id="tab2-peak"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 3: Control Point Distribution (PDF Page 3) -->
+    <div class="pbi-tab-content tab-pane" id="tab3">
+        <div class="pbi-card">
+            <div class="card-title"><i class="fa fa-map-marker"></i> Total Travellers by Control Point</div>
+            <div class="chart-container"><canvas id="tab3-distribution"></canvas></div>
+        </div>
+
+        <div class="chart-grid-2">
+            <div class="pbi-card">
+                <div class="card-title"><i class="fa fa-bar-chart"></i> Top 5 Busiest Control Points</div>
+                <div class="chart-container"><canvas id="tab3-top5"></canvas></div>
+            </div>
+            <div class="pbi-card">
+                <div class="card-title"><i class="fa fa-exchange"></i> Direction Breakdown by Control Point</div>
+                <div class="chart-container"><canvas id="tab3-direction"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 4: Weather & Exchange Impact (PDF Page 4) -->
+    <div class="pbi-tab-content tab-pane" id="tab4">
+        <div class="chart-grid-2">
+            <div class="pbi-card">
+                <div class="card-title"><i class="fa fa-thermometer-half"></i> Temperature vs Travellers</div>
+                <div class="chart-container"><canvas id="tab4-temperature"></canvas></div>
+            </div>
+            <div class="pbi-card">
+                <div class="card-title"><i class="fa fa-tint"></i> Rainfall vs Travellers</div>
+                <div class="chart-container"><canvas id="tab4-rainfall"></canvas></div>
+            </div>
+        </div>
+
+        <div class="pbi-card">
+            <div class="card-title"><i class="fa fa-money"></i> Exchange Rate vs Total Travellers</div>
+            <div class="chart-container"><canvas id="tab4-exchange"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Tab 5: Key Insights & Recommendations (PDF Page 5) -->
+    <div class="pbi-tab-content tab-pane" id="tab5">
+        <div class="pbi-card">
+            <div class="card-title"><i class="fa fa-lightbulb-o"></i> Executive Summary</div>
+            <p class="text-sm text-gray-700 mb-8">
+                    text here
+            </p>
+
+            <div class="card-title"><i class="fa fa-check-circle"></i> Key Insights</div>
+            <div class="insights-list">
+                <!-- <div class="insight-item"><strong>1. Overall Trend:</strong> Total cross-border travellers reached 388.70M, with significant recovery post-2022 (from ~100K to 13M+ monthly volume).</div>
+                <div class="insight-item"><strong>2. Control Point Usage:</strong> Lo Wu and Lok Ma Chau Spur Line are the busiest ports, accounting for 48% of total traffic, followed by Shenzhen Bay.</div>
+                <div class="insight-item"><strong>3. Traveller Composition:</strong> HK Residents account for 72.6% of total traffic, Mainland Visitors 24.8%, and Other International Visitors 2.6%.</div>
+                <div class="insight-item"><strong>4. Weather Impact:</strong> Moderate temperatures (20-28°C) correlate with higher travel volume; heavy rainfall (>500mm) shows a consistent negative impact on cross-border traffic.</div>
+                <div class="insight-item"><strong>5. Exchange Rate Correlation:</strong> Stable HKD-RMB exchange rates (0.88-0.92) coincide with peak travel periods, with rate volatility linked to reduced visitor volume.</div> -->
+            </div>
+
+            <div class="card-title mt-8"><i class="fa fa-arrow-circle-right"></i> Recommendations</div>
+            <div class="insights-list">
+                <!-- <div class="insight-item"><strong>1. Capacity Planning:</strong> Increase staffing and resource allocation at Lo Wu and Lok Ma Chau ports during peak travel months (December-March, July-August).</div>
+                <div class="insight-item"><strong>2. Weather Preparedness:</strong> Enhance crowd management protocols during heavy rainfall periods; promote off-peak travel via real-time weather and wait-time alerts.</div>
+                <div class="insight-item"><strong>3. Marketing Strategies:</strong> Target Mainland visitor campaigns during favorable exchange rate windows; create seasonal travel packages to drive off-peak demand.</div>
+                <div class="insight-item"><strong>4. Infrastructure Investment:</strong> Expand processing facilities at Shenzhen Bay and Hong Kong-Zhuhai-Macao Bridge to distribute traffic and reduce congestion at core ports.</div>
+                <div class="insight-item"><strong>5. Data-Driven Forecasting:</strong> Use historical travel trends combined with weather and exchange rate data to build predictive demand models for resource planning.</div> -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --------------------------
+    // Utility Functions
+    // --------------------------
+    function groupBy(array, key) {
+        return array.reduce((result, item) => {
+            const groupKey = item[key];
+            const existingGroup = result.find(group => group.key === groupKey);
+            if (existingGroup) {
+                existingGroup.items.push(item);
+            } else {
+                result.push({ key: groupKey, items: [item] });
+            }
+            return result;
+        }, []);
+    }
+
+    // Get MULTIPLE selected values from a dropdown
+    function getMultiSelectValues(selectId) {
+        const select = document.getElementById(selectId);
+        const values = Array.from(select.selectedOptions).map(option => option.value);
+        return values.includes('All') ? ['All'] : values;
+    }
+
+    // --------------------------
+    // Tab Switching Logic
+    // --------------------------
+    document.querySelectorAll('.pbi-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.pbi-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            const tabId = tab.getAttribute('data-tab');
+            document.getElementById(tabId).classList.add('active');
+            updateAllCharts();
+        });
+    });
+
+    // --------------------------
+    // Populate Filter Dropdowns
+    // --------------------------
+    function populateFilters() {
+        const monthFilter = document.getElementById('monthFilter');
+        const pointFilter = document.getElementById('pointFilter');
+        
+        // Unique Months
+        const uniqueMonths = [...new Set(rawData.border.map(item => item.YearMonth))].sort();
+        uniqueMonths.forEach(month => {
+            const option = document.createElement('option');
+            option.value = month;
+            option.textContent = month;
+            monthFilter.appendChild(option);
+        });
+        
+        // Unique Control Points
+        const uniquePoints = [...new Set(rawData.border.map(item => item.ControlPoint))].sort();
+        uniquePoints.forEach(point => {
+            const option = document.createElement('option');
+            option.value = point;
+            option.textContent = point;
+            pointFilter.appendChild(option);
+        });
+    }
+
+    // --------------------------
+    // MULTI-SELECT DATA FILTERING LOGIC
+    // --------------------------
+    function getFilteredData() {
+        const selectedMonths = getMultiSelectValues('monthFilter');
+        const selectedDirections = getMultiSelectValues('dirFilter');
+        const selectedPoints = getMultiSelectValues('pointFilter');
+        
+        let filtered = rawData.border;
+        
+        // Filter by Months (multi-select)
+        if (!selectedMonths.includes('All')) {
+            filtered = filtered.filter(item => selectedMonths.includes(item.YearMonth));
+        }
+        
+        // Filter by Direction (multi-select)
+        if (!selectedDirections.includes('All')) {
+            filtered = filtered.filter(item => selectedDirections.includes(item.Direction));
+        }
+        
+        // Filter by Control Point (multi-select)
+        if (!selectedPoints.includes('All')) {
+            filtered = filtered.filter(item => selectedPoints.includes(item.ControlPoint));
+        }
+        
+        return filtered;
+    }
+
+    // --------------------------
+    // Update KPIs
+    // --------------------------
+    function updateKPIs() {
+        const filteredData = getFilteredData();
+        
+        const total = filteredData.reduce((sum, item) => sum + item.Total, 0);
+        const hkTotal = filteredData.reduce((sum, item) => sum + item.HK_Residents, 0);
+        const mainlandTotal = filteredData.reduce((sum, item) => sum + item.Mainland_Visitors, 0);
+        const otherTotal = filteredData.reduce((sum, item) => sum + item.Other_Visitors, 0);
+        
+        document.getElementById('kpi-total').textContent = total.toLocaleString();
+        document.getElementById('kpi-hk').textContent = hkTotal.toLocaleString();
+        document.getElementById('kpi-mainland').textContent = mainlandTotal.toLocaleString();
+        document.getElementById('kpi-other').textContent = otherTotal.toLocaleString();
+    }
+
+    // --------------------------
+    // Chart Rendering (Unchanged)
+    // --------------------------
+    function renderTab1Charts() {
+        const filteredData = getFilteredData();
+        const monthGroups = groupBy(filteredData, 'YearMonth');
+        const sortedMonths = monthGroups.sort((a, b) => new Date(a.key) - new Date(b.key));
+        const monthLabels = sortedMonths.map(g => g.key);
+        const monthTotals = sortedMonths.map(g => g.items.reduce((sum, item) => sum + item.Total, 0));
+        
+        const trendCtx = document.getElementById('tab1-trend').getContext('2d');
+        if (window.tab1TrendChart) window.tab1TrendChart.destroy();
+        window.tab1TrendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: { labels: monthLabels, datasets: [{ label: 'Total Travellers', data: monthTotals, borderColor: '#0063B3', backgroundColor: 'rgba(0, 99, 179, 0.1)', fill: true, tension: 0.2 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Number of Travellers' } }, x: { title: { display: true, text: 'Month/Year' } } } }
+        });
+        
+        const hkTotal = filteredData.reduce((sum, item) => sum + item.HK_Residents, 0);
+        const mainlandTotal = filteredData.reduce((sum, item) => sum + item.Mainland_Visitors, 0);
+        const otherTotal = filteredData.reduce((sum, item) => sum + item.Other_Visitors, 0);
+        
+        const compCtx = document.getElementById('tab1-composition').getContext('2d');
+        if (window.tab1CompChart) window.tab1CompChart.destroy();
+        window.tab1CompChart = new Chart(compCtx, {
+            type: 'pie',
+            data: { labels: ['HK Residents', 'Mainland Visitors', 'Other Visitors'], datasets: [{ data: [hkTotal, mainlandTotal, otherTotal], backgroundColor: ['#0063B3', '#00B894', '#FDCB6E'], borderWidth: 1 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function(context) { const value = context.raw; const total = context.dataset.data.reduce((a, b) => a + b, 0); const percentage = ((value / total) * 100).toFixed(1) + '%'; return `${context.label}: ${value.toLocaleString()} (${percentage})`; } } } } }
+        });
+    }
+
+    function renderTab2Charts() {
+        const filteredData = getFilteredData();
+        const monthGroups = groupBy(filteredData, 'YearMonth');
+        const sortedMonths = monthGroups.sort((a, b) => new Date(a.key) - new Date(b.key));
+        const monthLabels = sortedMonths.map(g => g.key);
+        const monthTotals = sortedMonths.map(g => g.items.reduce((sum, item) => sum + item.Total, 0));
+        
+        const monthlyCtx = document.getElementById('tab2-monthly-trend').getContext('2d');
+        if (window.tab2MonthlyChart) window.tab2MonthlyChart.destroy();
+        window.tab2MonthlyChart = new Chart(monthlyCtx, {
+            type: 'bar',
+            data: { labels: monthLabels, datasets: [{ label: 'Total Monthly Travellers', data: monthTotals, backgroundColor: '#0063B3', borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Number of Travellers' } }, x: { title: { display: true, text: 'Month/Year' } } } }
+        });
+
+        const hkData = sortedMonths.map(g => g.items.reduce((sum, item) => sum + item.HK_Residents, 0));
+        const mainlandData = sortedMonths.map(g => g.items.reduce((sum, item) => sum + item.Mainland_Visitors, 0));
+        const otherData = sortedMonths.map(g => g.items.reduce((sum, item) => sum + item.Other_Visitors, 0));
+        
+        const compCtx = document.getElementById('tab2-composition').getContext('2d');
+        if (window.tab2CompChart) window.tab2CompChart.destroy();
+        window.tab2CompChart = new Chart(compCtx, {
+            type: 'bar',
+            data: { labels: monthLabels, datasets: [ { label: 'HK Residents', data: hkData, backgroundColor: '#0063B3' }, { label: 'Mainland Visitors', data: mainlandData, backgroundColor: '#00B894' }, { label: 'Other Visitors', data: otherData, backgroundColor: '#FDCB6E' } ] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Number of Travellers' } }, x: { stacked: true, title: { display: true, text: 'Month/Year' } } } }
+        });
+
+        const peakMonths = sortedMonths.sort((a, b) => { const aTotal = a.items.reduce((sum, item) => sum + item.Total, 0); const bTotal = b.items.reduce((sum, item) => sum + item.Total, 0); return bTotal - aTotal; }).slice(0, 5);
+        const peakLabels = peakMonths.map(g => g.key);
+        const peakTotals = peakMonths.map(g => g.items.reduce((sum, item) => sum + item.Total, 0));
+        
+        const peakCtx = document.getElementById('tab2-peak').getContext('2d');
+        if (window.tab2PeakChart) window.tab2PeakChart.destroy();
+        window.tab2PeakChart = new Chart(peakCtx, {
+            type: 'bar',
+            data: { labels: peakLabels, datasets: [{ label: 'Total Travellers (Peak Months)', data: peakTotals, backgroundColor: '#E17055', borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Number of Travellers' } }, x: { title: { display: true, text: 'Month/Year' } } } }
+        });
+    }
+
+    function renderTab3Charts() {
+        const filteredData = getFilteredData();
+        const pointGroups = groupBy(filteredData, 'ControlPoint');
+        const pointLabels = pointGroups.map(g => g.key);
+        const pointTotals = pointGroups.map(g => g.items.reduce((sum, item) => sum + item.Total, 0));
+        
+        const distCtx = document.getElementById('tab3-distribution').getContext('2d');
+        if (window.tab3DistChart) window.tab3DistChart.destroy();
+        window.tab3DistChart = new Chart(distCtx, {
+            type: 'pie',
+            data: { labels: pointLabels, datasets: [{ data: pointTotals, backgroundColor: ['#0063B3', '#00B894', '#FDCB6E', '#E17055', '#74B9FF', '#A29BFE', '#FD79A8'], borderWidth: 1 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function(context) { const value = context.raw; const total = context.dataset.data.reduce((a, b) => a + b, 0); const percentage = ((value / total) * 100).toFixed(1) + '%'; return `${context.label}: ${value.toLocaleString()} (${percentage})`; } } } } }
+        });
+
+        const topPoints = pointGroups.sort((a, b) => { const aTotal = a.items.reduce((sum, item) => sum + item.Total, 0); const bTotal = b.items.reduce((sum, item) => sum + item.Total, 0); return bTotal - aTotal; }).slice(0, 5);
+        const topLabels = topPoints.map(g => g.key);
+        const topTotals = topPoints.map(g => g.items.reduce((sum, item) => sum + item.Total, 0));
+        
+        const topCtx = document.getElementById('tab3-top5').getContext('2d');
+        if (window.tab3TopChart) window.tab3TopChart.destroy();
+        window.tab3TopChart = new Chart(topCtx, {
+            type: 'bar',
+            data: { labels: topLabels, datasets: [{ label: 'Total Travellers', data: topTotals, backgroundColor: '#0063B3', borderRadius: 4 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, title: { display: true, text: 'Number of Travellers' } }, y: { title: { display: true, text: 'Control Point' } } } }
+        });
+
+        const departureData = topPoints.map(g => g.items.filter(i => i.Direction === 'Departure').reduce((sum, item) => sum + item.Total, 0));
+        const arrivalData = topPoints.map(g => g.items.filter(i => i.Direction === 'Arrival').reduce((sum, item) => sum + item.Total, 0));
+        
+        const dirCtx = document.getElementById('tab3-direction').getContext('2d');
+        if (window.tab3DirChart) window.tab3DirChart.destroy();
+        window.tab3DirChart = new Chart(dirCtx, {
+            type: 'bar',
+            data: { labels: topLabels, datasets: [ { label: 'Departure', data: departureData, backgroundColor: '#0063B3' }, { label: 'Arrival', data: arrivalData, backgroundColor: '#00B894' } ] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { stacked: true, beginAtZero: true, title: { display: true, text: 'Number of Travellers' } }, y: { stacked: true, title: { display: true, text: 'Control Point' } } } }
+        });
+    }
+
+    function renderTab4Charts() {
+        const filteredData = getFilteredData();
+        const monthGroups = groupBy(filteredData, 'YearMonth');
+        const sortedMonths = monthGroups.sort((a, b) => new Date(a.key) - new Date(b.key));
+        
+        const tempValues = sortedMonths.map(g => g.items[0].Temperature);
+        const tempTravellerTotals = sortedMonths.map(g => g.items.reduce((sum, item) => sum + item.Total, 0));
+        
+        const tempCtx = document.getElementById('tab4-temperature').getContext('2d');
+        if (window.tab4TempChart) window.tab4TempChart.destroy();
+        window.tab4TempChart = new Chart(tempCtx, {
+            type: 'scatter',
+            data: { datasets: [{ label: 'Temperature vs Travellers', data: tempValues.map((temp, i) => ({ x: temp, y: tempTravellerTotals[i] })), backgroundColor: '#0063B3', pointRadius: 6, pointHoverRadius: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { title: { display: true, text: 'Temperature (°C)' }, beginAtZero: false }, y: { title: { display: true, text: 'Total Travellers' }, beginAtZero: true } } }
+        });
+
+        const rainValues = sortedMonths.map(g => g.items[0].Rainfall);
+        const rainTravellerTotals = sortedMonths.map(g => g.items.reduce((sum, item) => sum + item.Total, 0));
+        
+        const rainCtx = document.getElementById('tab4-rainfall').getContext('2d');
+        if (window.tab4RainChart) window.tab4RainChart.destroy();
+        window.tab4RainChart = new Chart(rainCtx, {
+            type: 'scatter',
+            data: { datasets: [{ label: 'Rainfall vs Travellers', data: rainValues.map((rain, i) => ({ x: rain, y: rainTravellerTotals[i] })), backgroundColor: '#00B894', pointRadius: 6, pointHoverRadius: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { title: { display: true, text: 'Rainfall (mm)' }, beginAtZero: true }, y: { title: { display: true, text: 'Total Travellers' }, beginAtZero: true } } }
+        });
+
+        const rateValues = sortedMonths.map(g => g.items[0].Exchange_Rate);
+        const rateTravellerTotals = sortedMonths.map(g => g.items.reduce((sum, item) => sum + item.Total, 0));
+        
+        const rateCtx = document.getElementById('tab4-exchange').getContext('2d');
+        if (window.tab4RateChart) window.tab4RateChart.destroy();
+        window.tab4RateChart = new Chart(rateCtx, {
+            type: 'scatter',
+            data: { datasets: [{ label: 'Exchange Rate (HKD/RMB) vs Travellers', data: rateValues.map((rate, i) => ({ x: rate, y: rateTravellerTotals[i] })), backgroundColor: '#E17055', pointRadius: 6, pointHoverRadius: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { title: { display: true, text: 'Exchange Rate (HKD/RMB)' }, beginAtZero: false }, y: { title: { display: true, text: 'Total Travellers' }, beginAtZero: true } } }
+        });
+    }
+
+    // --------------------------
+    // Master Update
+    // --------------------------
+    function updateAllCharts() {
+        updateKPIs();
+        renderTab1Charts();
+        renderTab2Charts();
+        renderTab3Charts();
+        renderTab4Charts();
+    }
+
+    // --------------------------
+    // Initialize
+    // --------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+        populateFilters();
+        updateAllCharts();
+        
+        // Update charts when filter selection changes
+        document.getElementById('monthFilter').addEventListener('change', updateAllCharts);
+        document.getElementById('dirFilter').addEventListener('change', updateAllCharts);
+        document.getElementById('pointFilter').addEventListener('change', updateAllCharts);
+    });
+</script>
+</body>
+</html>
