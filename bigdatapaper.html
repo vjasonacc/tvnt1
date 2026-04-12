@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Big Data & Analytics: MCQ Exam Hub</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f1f5f9 0%, #e6edf4 100%);
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+    }
+
+    /* main container */
+    .exam-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(2px);
+      border-radius: 2.5rem;
+      box-shadow: 0 25px 45px -12px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.05);
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    /* header panel */
+    .hero-panel {
+      background: #0f172a;
+      padding: 1.5rem 2rem;
+      color: white;
+      border-bottom: 3px solid #3b82f6;
+    }
+
+    .hero-panel h1 {
+      font-weight: 700;
+      font-size: 1.8rem;
+      letter-spacing: -0.3px;
+      background: linear-gradient(135deg, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      display: inline-block;
+    }
+
+    .badge-sub {
+      color: #cbd5e1;
+      margin-top: 0.3rem;
+      font-size: 0.9rem;
+    }
+
+    /* stats & timer bar */
+    .stats-timer-bar {
+      background: white;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.9rem 2rem;
+      gap: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .stats {
+      display: flex;
+      gap: 1.8rem;
+      background: #f8fafc;
+      padding: 0.5rem 1.2rem;
+      border-radius: 60px;
+    }
+
+    .stat-card {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      font-weight: 600;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      color: #475569;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 1.7rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .correct-val {
+      color: #10b981;
+    }
+
+    .wrong-val {
+      color: #ef4444;
+    }
+
+    .timer-panel {
+      background: #0f172a;
+      padding: 0.5rem 1.2rem;
+      border-radius: 60px;
+      color: white;
+      display: flex;
+      gap: 1.5rem;
+      font-weight: 500;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .time-block {
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+    }
+
+    .time-label {
+      font-size: 0.75rem;
+      opacity: 0.8;
+    }
+
+    .time-digits {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* set selector */
+    .set-selector {
+      background: #ffffffcc;
+      backdrop-filter: blur(8px);
+      padding: 1rem 2rem;
+      display: flex;
+      gap: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .set-btn {
+      background: #f1f5f9;
+      border: none;
+      padding: 0.7rem 1.8rem;
+      font-weight: 700;
+      font-size: 1rem;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #1e293b;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .set-btn.active {
+      background: #3b82f6;
+      color: white;
+      box-shadow: 0 6px 14px rgba(59,130,246,0.3);
+    }
+
+    .set-btn:hover:not(.active) {
+      background: #e2e8f0;
+      transform: translateY(-1px);
+    }
+
+    .reset-set {
+      margin-left: auto;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: none;
+      padding: 0.6rem 1.5rem;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .reset-set:hover {
+      background: #fecaca;
+      transform: scale(0.97);
+    }
+
+    /* questions grid */
+    .questions-area {
+      padding: 2rem 2rem 2.5rem;
+      max-height: 65vh;
+      overflow-y: auto;
+      background: #fefefe;
+    }
+
+    .question-card {
+      background: white;
+      border-radius: 1.5rem;
+      margin-bottom: 1.5rem;
+      padding: 1.2rem 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+      border: 1px solid #edf2f7;
+    }
+
+    .question-header {
+      display: flex;
+      align-items: baseline;
+      gap: 0.8rem;
+      margin-bottom: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .q-num {
+      background: #eef2ff;
+      color: #1e40af;
+      font-weight: 800;
+      padding: 0.2rem 0.8rem;
+      border-radius: 30px;
+      font-size: 0.8rem;
+    }
+
+    .question-text {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #0f172a;
+      line-height: 1.4;
+    }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      margin: 1rem 0 0.8rem 0;
+      padding-left: 0.5rem;
+    }
+
+    .opt-radio {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #f9fafb;
+      padding: 0.3rem 0.9rem;
+      border-radius: 40px;
+      border: 1px solid #e4e7eb;
+      transition: 0.1s;
+      cursor: pointer;
+    }
+
+    .opt-radio:hover {
+      background: #f1f5f9;
+    }
+
+    input[type="radio"] {
+      accent-color: #3b82f6;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .check-btn {
+      background: #3b82f6;
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding: 0.45rem 1.3rem;
+      border-radius: 32px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: 0.15s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .check-btn:hover {
+      background: #2563eb;
+      transform: scale(0.97);
+    }
+
+    .feedback {
+      margin-top: 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.3rem 0.8rem;
+      border-radius: 50px;
+      display: inline-block;
+      background: #f1f5f9;
+    }
+
+    .feedback.correct {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .feedback.wrong {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .question-card.answered-correct {
+      border-left: 5px solid #10b981;
+    }
+
+    .question-card.answered-wrong {
+      border-left: 5px solid #ef4444;
+    }
+
+    footer {
+      background: #f8fafc;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.75rem;
+      color: #475569;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 1rem; }
+      .stats-timer-bar { flex-direction: column; align-items: stretch; }
+      .options { gap: 0.8rem; }
+      .question-card { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="exam-container">
+  <div class="hero-panel">
+    <h1>📊 Big Data & Analytics • MCQ Mastery</h1>
+    <div class="badge-sub">3 exam sets | One-by-one answer check | 30 min per set</div>
+  </div>
+
+  <div class="stats-timer-bar">
+    <div class="stats">
+      <div class="stat-card"><span class="stat-label">✅ CORRECT</span><span class="stat-value correct-val" id="totalCorrect">0</span></div>
+      <div class="stat-card"><span class="stat-label">❌ WRONG</span><span class="stat-value wrong-val" id="totalWrong">0</span></div>
+      <div class="stat-card"><span class="stat-label">📋 ANSWERED</span><span class="stat-value" id="answeredCount">0</span><span class="stat-label" style="font-size:0.9rem;">/25</span></div>
+    </div>
+    <div class="timer-panel">
+      <div class="time-block"><span class="time-label">⏱️ SPENT</span><span class="time-digits" id="spentTime">00:00</span></div>
+      <div class="time-block"><span class="time-label">⏳ LEFT</span><span class="time-digits" id="leftTime">30:00</span></div>
+    </div>
+  </div>
+
+  <div class="set-selector">
+    <button class="set-btn active" data-set="A">📘 Set A</button>
+    <button class="set-btn" data-set="B">📙 Set B</button>
+    <button class="set-btn" data-set="C">📕 Set C</button>
+    <button class="reset-set" id="resetSetBtn">⟳ Reset Current Set</button>
+  </div>
+
+  <div id="questionsContainer" class="questions-area">
+    <!-- dynamic questions injected -->
+    <div style="text-align:center; padding:2rem;">Loading questions...</div>
+  </div>
+  <footer>✔️ Check each MCQ individually — timer runs per set. Re-check changes your score dynamically.</footer>
+</div>
+
+<script>
+  // --------------------------------------------------------------
+  //  COMPLETE QUESTION BANK (Set A, B, C) based on provided content
+  // --------------------------------------------------------------
+  const QUESTION_SETS = { A: [], B: [], C: [] };
+
+  // -------- SET A (25 questions) --------
+  QUESTION_SETS.A = [
+    { text: "According to the “three Vs” definition, which V refers to the speed at which data is generated and must be processed?", options: { A: "Volume", B: "Variety", C: "Velocity", D: "Veracity" }, correct: "C" },
+    { text: "Which of the following is an example of unstructured data?", options: { A: "Point‑of‑sale transaction record", B: "Student enrollment database", C: "A YouTube video file", D: "Financial spreadsheet" }, correct: "C" },
+    { text: "The HathiTrust Digital Library primarily relies on digitized books from which source?", options: { A: "Microsoft Bing Books", B: "Amazon Kindle Direct Publishing", C: "Google’s book‑scanning project", D: "The Library of Congress in‑house scanning" }, correct: "C" },
+    { text: "In the context of education, what does Learning Analytics (LA) aim to improve?", options: { A: "Campus Wi‑Fi speed", B: "Student retention and informed decision making", C: "Classroom seating arrangements", D: "Textbook pricing models" }, correct: "B" },
+    { text: "Which type of analytics answers the question “What has happened?” by mining historical data?", options: { A: "Prescriptive analytics", B: "Predictive analytics", C: "Descriptive analytics", D: "Cognitive analytics" }, correct: "C" },
+    { text: "The cold‑start problem in recommendation systems refers to:", options: { A: "The system overheating during peak usage", B: "Lack of user preference data when a system is newly launched", C: "The inability to process real‑time data streams", D: "Excessive storage requirements for user profiles" }, correct: "B" },
+    { text: "Disney’s MagicBand uses what technology to track guests and connect to services?", options: { A: "Bluetooth Low Energy (BLE)", B: "Near Field Communication (NFC) only", C: "Radio‑Frequency Identification (RFID)", D: "QR code scanning" }, correct: "C" },
+    { text: "Which of the following is NOT a core component of an RFID system?", options: { A: "RFID tag or smart label", B: "RFID reader", C: "Antenna", D: "GPS satellite link" }, correct: "D" },
+    { text: "The Hong Kong Hospital Authority’s eHRSS (Electronic Health Record Sharing System) allows:", options: { A: "Patients to delete all their medical history", B: "Sharing of allergy, diagnosis, and radiology records between public and private providers", C: "Real‑time surgery streaming to family members", D: "Automatic insurance claim filing without patient consent" }, correct: "B" },
+    { text: "IBM’s Watson is best described as:", options: { A: "A robotic surgeon performing operations", B: "A supercomputer combining AI and analytics for question‑answering, notably in healthcare", C: "A cloud storage service for genomic data", D: "A wearable health monitor for cardiac patients" }, correct: "B" },
+    { text: "What is the primary reason organizations adopt cloud computing for big data?", options: { A: "It eliminates the need for any data security measures", B: "It provides unlimited free storage forever", C: "It enables processing of huge volumes, high velocity, and varied data without large upfront hardware costs", D: "It guarantees 100% data privacy by law" }, correct: "C" },
+    { text: "Which technology is described as foundational to cloud computing, allowing resources to be dynamically scaled?", options: { A: "Containerization (Docker)", B: "Virtualization", C: "Blockchain", D: "Edge computing" }, correct: "B" },
+    { text: "Software as a Service (SaaS) is characterized by:", options: { A: "Providing a development platform to build custom applications", B: "Offering virtualized hardware resources on demand", C: "Hosting software and data that users access via the internet without managing underlying infrastructure", D: "Managing physical data center cooling and power" }, correct: "C" },
+    { text: "Which of the following is an example of Platform as a Service (PaaS)?", options: { A: "Gmail", B: "Dropbox", C: "Microsoft Azure (as an application development environment)", D: "Amazon EC2 (when used as raw virtual machines)" }, correct: "C" },
+    { text: "In the public cloud deployment model, a key drawback is:", options: { A: "Extremely high initial capital expenditure", B: "Low scalability", C: "Vendor lock‑in and reduced privacy control", D: "Inability to pay only for what you use" }, correct: "C" },
+    { text: "Google Flu Trends failed primarily because:", options: { A: "It could not collect enough search data", B: "The model overestimated flu cases due to reliance on “noisy” big data without proper filtering", C: "Google stopped supporting health‑related searches", D: "The CDC refused to share official flu data" }, correct: "B" },
+    { text: "Atomwise uses big data and AI to:", options: { A: "Predict airline ticket prices", B: "Simulate drug development and identify potential treatments (e.g., for Ebola)", C: "Optimize retail store layouts", D: "Manage hotel room pricing" }, correct: "B" },
+    { text: "Which file format is NOT typically considered semi‑structured or unstructured?", options: { A: "Email body text", B: "Facebook post", C: "Relational database table with defined columns", D: "PowerPoint presentation" }, correct: "C" },
+    { text: "The Ngram Viewer is a tool that allows users to:", options: { A: "Visualize 3D protein structures", B: "Search for the frequency of words in Google’s digitized book corpus over time", C: "Analyze real‑time stock market trends", D: "Generate automatic video subtitles" }, correct: "B" },
+    { text: "Active RFID tags differ from passive tags because they:", options: { A: "Are smaller and cheaper", B: "Have a built‑in battery and continuously broadcast a signal", C: "Only work within 1‑2 centimeters", D: "Do not require an antenna" }, correct: "B" },
+    { text: "Which database is NOT mentioned as part of Disney’s big data platform for MagicBand?", options: { A: "Apache Hadoop", B: "Apache Cassandra", C: "MongoDB", D: "Oracle Relational Database" }, correct: "D" },
+    { text: "The “Data Capsule” used by HathiTrust Research Center enables:", options: { A: "Physical shipment of hard drives to researchers", B: "Non‑consumptive text analysis on copyrighted books without downloading them", C: "Real‑time collaboration on book editing", D: "Automatic translation of scanned pages" }, correct: "B" },
+    { text: "According to the lectures, what is a key benefit of using big data in the insurance industry?", options: { A: "Eliminating all claims processing staff", B: "Developing smarter, cheaper products and better risk models (e.g., using wearable data)", C: "Guaranteeing zero fraud", D: "Removing the need for customer interaction" }, correct: "B" },
+    { text: "In the analytics flow for big data, data wrangling (munging) refers to:", options: { A: "Deleting all duplicate records only", B: "Transforming raw data from one format to a consistent, usable format", C: "Applying machine learning algorithms", D: "Creating static visualizations" }, correct: "B" },
+    { text: "Which statement best describes the difference between SaaS and PaaS?", options: { A: "SaaS provides virtual machines; PaaS provides email services.", B: "SaaS offers ready‑to‑use software over the internet; PaaS provides a platform to build and deploy custom applications.", C: "SaaS is always more expensive than PaaS.", D: "PaaS requires users to install and manage operating systems themselves." }, correct: "B" }
+  ];
+
+  // -------- SET B (25 questions) --------
+  QUESTION_SETS.B = [
+    { text: "The “Variety” characteristic of big data refers to:", options: { A: "The trustworthiness of the data", B: "The different types and formats of data (structured, unstructured, semi‑structured)", C: "The enormous size of datasets", D: "The speed of data generation" }, correct: "B" },
+    { text: "Approximately how many emails are sent every day globally, according to the lecture statistics?", options: { A: "2.9 million", B: "294 million", C: "294 billion", D: "2.9 trillion" }, correct: "C" },
+    { text: "The Delpher online database provides access to:", options: { A: "Chinese historical manuscripts only", B: "Dutch‑language digitized newspapers, books, and journals", C: "Global climate sensor data", D: "American Civil War photographs" }, correct: "B" },
+    { text: "Google’s patented book scanner uses infrared camera technology to:", options: { A: "Sterilize book pages", B: "Detect the 3D shape and angle of pages to correct distortion for OCR", C: "Read text through closed book covers", D: "Automatically translate text into 50 languages" }, correct: "B" },
+    { text: "In collaborative filtering, user‑based recommendations rely on:", options: { A: "Similarities between item attributes (e.g., genre, director)", B: "Similarities between users’ rating patterns", C: "The physical location of the user", D: "The time of day the user is active" }, correct: "B" },
+    { text: "Which of the following is a limitation of collaborative filtering when the number of users and items becomes extremely large?", options: { A: "Cold‑start problem", B: "Scalability issues (sparse matrix with trillions of elements)", C: "Inability to handle numeric ratings", D: "Requirement for domain‑specific knowledge" }, correct: "B" },
+    { text: "HTTP Cookies are used primarily to:", options: { A: "Encrypt all internet traffic", B: "Remember user browsing activity and preferences across website visits", C: "Block advertisements", D: "Increase internet connection speed" }, correct: "B" },
+    { text: "Cathay Pacific uses big data and IoT for:", options: { A: "Designing new aircraft engines", B: "Flight planning, fuel optimization, and preventive maintenance", C: "Manufacturing in‑flight meal trays", D: "Managing airport runway construction" }, correct: "B" },
+    { text: "ZhongAn is notable as:", options: { A: "China’s first internet‑only insurer using big data for car insurance pricing", B: "A traditional life insurance company", C: "A healthcare provider using IBM Watson", D: "A hotel chain optimizing room rates" }, correct: "A" },
+    { text: "The Memorial Sloan Kettering Cancer Center initially implemented IBM Watson to:", options: { A: "Perform robotic surgeries", B: "Recommend treatment options for lung cancer patients", C: "Manage hospital billing systems", D: "Schedule patient appointments" }, correct: "B" },
+    { text: "Cloud computing delivers services over:", options: { A: "Private intranets only", B: "The Internet (“the cloud”)", C: "Satellite links exclusively", D: "Dedicated leased telephone lines" }, correct: "B" },
+    { text: "Which of the following is NOT listed as an issue to be considered when adopting cloud computing?", options: { A: "Security Infrastructure", B: "Identity Management", C: "Free electricity for data centers", D: "Resource Monitoring and Performance Reporting" }, correct: "C" },
+    { text: "Infrastructure as a Service (IaaS) is primarily targeted at:", options: { A: "End users who just want to use email", B: "Application developers building custom apps", C: "Information System Architects who manage flexible, scalable virtual infrastructures", D: "Marketing teams running campaigns" }, correct: "C" },
+    { text: "Which of the following services is an example of SaaS?", options: { A: "Windows Azure (as a development platform)", B: "Amazon EC2", C: "Microsoft Office 365", D: "Google App Engine" }, correct: "C" },
+    { text: "A private cloud is:", options: { A: "Managed by a third‑party provider and shared among multiple organizations", B: "Operated solely for a single organization, offering greater control and privacy", C: "Always free of charge", D: "A combination of public and community clouds" }, correct: "B" },
+    { text: "WeLend in Hong Kong uses big data to:", options: { A: "Approve personal loans in seconds without meeting customers face‑to‑face", B: "Provide weather forecasts for farmers", C: "Manage airline loyalty programs", D: "Track hotel guest preferences" }, correct: "A" },
+    { text: "Marriott Hotels uses big data (including weather and local events) primarily to:", options: { A: "Design new hotel logos", B: "Forecast demand and optimize room pricing", C: "Manage employee payroll", D: "Choose in‑room movie selections" }, correct: "B" },
+    { text: "In the Analytic Flow for Big Data, which step typically involves de‑duplication and normalization?", options: { A: "Data Collection", B: "Data Preparation", C: "Analysis Types", D: "Visualizations" }, correct: "B" },
+    { text: "Batch analytics mode is most appropriate when:", options: { A: "Results must be updated every few seconds", B: "Results are needed on a daily or monthly basis", C: "Users need to query data interactively on demand", D: "Real‑time fraud detection is required" }, correct: "B" },
+    { text: "The Google Cloud Vision API can analyze images for:", options: { A: "Faces and emotions only", B: "Objects, labels, text, and safe search attributes", C: "Sound and music genres", D: "Live video streaming bandwidth" }, correct: "B" },
+    { text: "The “Value” V in big data extensions emphasizes:", options: { A: "The monetary cost of storing data", B: "The usefulness and actionable insights derived from data", C: "The speed of data transmission", D: "The variety of data formats" }, correct: "B" },
+    { text: "Which of the following is an example of experimental data as defined in the data collection methods?", options: { A: "Credit report compiled from external agencies", B: "A focus group survey combined with observed transactional outcomes", C: "A Facebook post", D: "GPS location from a smartphone" }, correct: "B" },
+    { text: "Overleaf is presented in the lecture as an example of:", options: { A: "A cloud‑based collaborative LaTeX editor for scientific papers (SaaS)", B: "An IoT platform for smart homes", C: "A public cloud infrastructure provider", D: "A machine learning framework" }, correct: "A" },
+    { text: "RFID belongs to a group of technologies called:", options: { A: "Automatic Identification and Data Capture (AIDC)", B: "Global Positioning System (GPS)", C: "Near Field Communication (NFC)", D: "Wireless Fidelity (Wi‑Fi)" }, correct: "A" },
+    { text: "According to the lectures, virtualization enables cloud computing by:", options: { A: "Increasing the physical size of servers", B: "Allowing virtual resources to be reconfigured and dynamically scaled", C: "Eliminating the need for an internet connection", D: "Replacing all software with hardware solutions" }, correct: "B" }
+  ];
+
+  // -------- SET C (25 questions) --------
+  QUESTION_SETS.C = [
+    { text: "The “Volume” aspect of big data implies that datasets are:", options: { A: "Generated at extremely high speeds", B: "So large that traditional database tools cannot easily store or process them", C: "Always in video format", D: "Guaranteed to be 100% accurate" }, correct: "B" },
+    { text: "By 2025, the number of connected IoT devices worldwide is projected to exceed:", options: { A: "1 million", B: "100 million", C: "30 billion", D: "1 trillion" }, correct: "C" },
+    { text: "The Authors Guild v. Google lawsuit over book scanning resulted in a ruling that Google’s actions were:", options: { A: "Copyright infringement requiring all books to be removed", B: "A “fair use” under copyright law", C: "Subject to a $1 billion fine", D: "Limited to only books published before 1923" }, correct: "B" },
+    { text: "In content‑based filtering, recommendations are made based on:", options: { A: "What other similar users liked", B: "The attributes of items (e.g., movie genre, actor) and the user’s profile of preferences", C: "The current popularity of items", D: "Random selection from a catalog" }, correct: "B" },
+    { text: "Alibaba’s Singles’ Day sales event generates massive revenue partly by using big data to:", options: { A: "Reduce the number of sellers on Taobao", B: "Cross‑sell and up‑sell by predicting what consumers want", C: "Slow down website traffic to prevent crashes", D: "Hide product prices until checkout" }, correct: "B" },
+    { text: "Hang Seng Bank uses big data analytics to:", options: { A: "Approve personal loans without requiring traditional income proof", B: "Manufacture physical banknotes", C: "Manage airport security", D: "Operate theme park attractions" }, correct: "A" },
+    { text: "EasyJet uses artificial intelligence to:", options: { A: "Pilot aircraft without human intervention", B: "Determine seat pricing automatically based on demand forecasts", C: "Design aircraft engines", D: "Manage flight attendant schedules manually" }, correct: "B" },
+    { text: "ImagineCare, used by Dartmouth‑Hitchcock, is powered by:", options: { A: "IBM Watson", B: "Google Cloud Vision", C: "Microsoft Cognitive Services (Cortana Intelligence Suite)", D: "Amazon Alexa" }, correct: "C" },
+    { text: "The electronic health record (EHR) system implemented by Kaiser Permanente cost approximately:", options: { A: "$6 million", B: "$60 million", C: "$6 billion", D: "$60 billion" }, correct: "C" },
+    { text: "MagicBand allows Disney to collect data on:", options: { A: "Guests’ heart rates only", B: "Where guests are, what rides they use, and what they purchase", C: "The exact conversations guests have", D: "Guests’ home addresses for direct mail" }, correct: "B" },
+    { text: "Which of the following is a reason organizations move to cloud computing for big data?", options: { A: "Traditional databases cannot handle the volume, velocity, and variety of big data", B: "Cloud computing requires zero internet bandwidth", C: "All cloud services are free for educational use", D: "Cloud providers guarantee zero downtime" }, correct: "A" },
+    { text: "Amazon AWS EC2 is primarily classified as which type of cloud service?", options: { A: "Software as a Service (SaaS)", B: "Platform as a Service (PaaS) only", C: "Infrastructure as a Service (IaaS) and also offers PaaS capabilities", D: "Desktop as a Service (DaaS)" }, correct: "C" },
+    { text: "Doodle.com is mentioned in the lecture as an example of:", options: { A: "A cloud‑based event scheduling tool (SaaS)", B: "An IoT sensor manufacturer", C: "A public cloud provider like AWS", D: "A big data visualization library" }, correct: "A" },
+    { text: "In the public cloud model, a primary benefit is:", options: { A: "Complete physical control over the data center", B: "Pay‑per‑use pricing and high scalability", C: "Zero security risks", D: "No internet dependency" }, correct: "B" },
+    { text: "Apache Hadoop is described as:", options: { A: "A relational database management system", B: "A framework for distributed processing of large datasets across clusters of computers", C: "A cloud‑based email service", D: "A real‑time stream processing engine only" }, correct: "B" },
+    { text: "Apple Watch and ResearchKit are used in healthcare to:", options: { A: "Replace all doctors’ visits", B: "Measure heart rate, blood pressure, and collect data for medical research", C: "Perform surgical procedures remotely", D: "Store complete electronic health records for hospitals" }, correct: "B" },
+    { text: "The lecture notes mention that Google Flu Trends overestimated influenza cases by around:", options: { A: "5%", B: "25%", C: "50%", D: "90%" }, correct: "C" },
+    { text: "Which of the following is an example of prescriptive analytics?", options: { A: "A report showing last month’s sales figures", B: "A forecast of next year’s smartphone demand", C: "Google’s self‑driving car suggesting actions based on predicted outcomes", D: "A dashboard displaying real‑time website visitors" }, correct: "C" },
+    { text: "Wi‑Fi (802.11 standards) typically transmits at frequencies of:", options: { A: "900 MHz or 1800 MHz", B: "2.4 GHz or 5 GHz", C: "10 GHz or 20 GHz", D: "100 MHz or 200 MHz" }, correct: "B" },
+    { text: "The HathiTrust Research Center’s Data Capsule respects copyright by allowing:", options: { A: "Full PDF downloads of all books", B: "Non‑consumptive research where scholars analyze text without reading or downloading full works", C: "Editing and republishing scanned books", D: "Printing on‑demand copies" }, correct: "B" },
+    { text: "Qualtrics is highlighted in the lectures as a cloud‑based tool for:", options: { A: "Video editing and animation", B: "Online surveys and questionnaires (SaaS)", C: "Infrastructure monitoring", D: "Big data storage" }, correct: "B" },
+    { text: "Passive RFID tags are characterized by:", options: { A: "Having a built‑in battery and long read range", B: "Being battery‑less and powered by the reader’s radio waves", C: "Costing more than active tags", D: "Being used only in toll collection systems" }, correct: "B" },
+    { text: "The analytics mode that allows users to query data on demand with low latency is called:", options: { A: "Batch mode", B: "Interactive mode", C: "Real‑time mode", D: "Streaming mode" }, correct: "B" },
+    { text: "“Veracity” in the context of big data refers to:", options: { A: "The speed of data arrival", B: "The accuracy, reliability, and trustworthiness of the data", C: "The different formats of data", D: "The size of the dataset" }, correct: "B" },
+    { text: "Which statement about SaaS is true?", options: { A: "It requires users to install and maintain the software on their own servers.", B: "It provides a platform for building and deploying custom applications.", C: "End users simply sign up and start using the software from any device, with data hosted by the provider.", D: "It is the same as Infrastructure as a Service." }, correct: "C" }
+  ];
+
+  // ---------- GLOBAL STATE ----------
+  let currentSet = "A";           // 'A', 'B', 'C'
+  let setStates = {
+    A: { answers: Array(25).fill(null), correctCount: 0, wrongCount: 0 },
+    B: { answers: Array(25).fill(null), correctCount: 0, wrongCount: 0 },
+    C: { answers: Array(25).fill(null), correctCount: 0, wrongCount: 0 }
+  };
+  let timerSeconds = 0;           // elapsed seconds for current set
+  let timerInterval = null;
+  const MAX_SECONDS = 30 * 60;    // 30 mins
+
+  // DOM elements
+  const questionsDiv = document.getElementById("questionsContainer");
+  const totalCorrectSpan = document.getElementById("totalCorrect");
+  const totalWrongSpan = document.getElementById("totalWrong");
+  const answeredCountSpan = document.getElementById("answeredCount");
+  const spentTimeSpan = document.getElementById("spentTime");
+  const leftTimeSpan = document.getElementById("leftTime");
+
+  // helper: format mm:ss
+  function formatTime(sec) {
+    let mins = Math.floor(sec / 60);
+    let remainSec = sec % 60;
+    return `${mins.toString().padStart(2,'0')}:${remainSec.toString().padStart(2,'0')}`;
+  }
+
+  function updateTimerDisplay() {
+    let elapsed = timerSeconds;
+    let left = Math.max(0, MAX_SECONDS - elapsed);
+    spentTimeSpan.innerText = formatTime(elapsed);
+    leftTimeSpan.innerText = formatTime(left);
+    if (left === 0) {
+      // time's up: disable further answer checks visually
+      document.querySelectorAll(".check-btn").forEach(btn => btn.disabled = true);
+    } else {
+      document.querySelectorAll(".check-btn").forEach(btn => btn.disabled = false);
+    }
+  }
+
+  function startTimerForSet() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerSeconds = 0;
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      if (timerSeconds < MAX_SECONDS) {
+        timerSeconds++;
+        updateTimerDisplay();
+        if (timerSeconds === MAX_SECONDS) {
+          // time expired, lock check buttons
+          document.querySelectorAll(".check-btn").forEach(btn => btn.disabled = true);
+          alert(`⏰ Time's up for Set ${currentSet}! Answers can no longer be checked.`);
+        }
+      } else {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  // update stats UI for current set
+  function refreshStatsUI() {
+    const state = setStates[currentSet];
+    totalCorrectSpan.innerText = state.correctCount;
+    totalWrongSpan.innerText = state.wrongCount;
+    const answered = state.answers.filter(a => a !== null).length;
+    answeredCountSpan.innerText = answered;
+  }
+
+  // evaluate and update a single question (index)
+  function evaluateAndUpdate(questionIndex, selectedLetter) {
+    const setKey = currentSet;
+    const questions = QUESTION_SETS[setKey];
+    if (!questions[questionIndex]) return;
+    const correctLetter = questions[questionIndex].correct;
+    const isNowCorrect = (selectedLetter === correctLetter);
+    const prevAnswer = setStates[setKey].answers[questionIndex];
+    let prevWasCorrect = false;
+    if (prevAnswer !== null) {
+      const prevCorrect = (prevAnswer === correctLetter);
+      if (prevCorrect) prevWasCorrect = true;
+      // remove previous counts
+      if (prevWasCorrect) setStates[setKey].correctCount--;
+      else setStates[setKey].wrongCount--;
+    }
+    // set new answer
+    setStates[setKey].answers[questionIndex] = selectedLetter;
+    if (isNowCorrect) setStates[setKey].correctCount++;
+    else setStates[setKey].wrongCount++;
+    refreshStatsUI();
+    // re-render the specific question to show feedback and border
+    renderSingleQuestion(questionIndex);
+  }
+
+  function renderSingleQuestion(idx) {
+    const setKey = currentSet;
+    const q = QUESTION_SETS[setKey][idx];
+    if (!q) return;
+    const selected = setStates[setKey].answers[idx];
+    let isCurrCorrect = false;
+    if (selected) isCurrCorrect = (selected === q.correct);
+    const questionCard = document.querySelector(`.question-card[data-qidx='${idx}']`);
+    if (!questionCard) return;
+    // update border class
+    if (selected) {
+      if (isCurrCorrect) {
+        questionCard.classList.add("answered-correct");
+        questionCard.classList.remove("answered-wrong");
+      } else {
+        questionCard.classList.add("answered-wrong");
+        questionCard.classList.remove("answered-correct");
+      }
+    } else {
+      questionCard.classList.remove("answered-correct", "answered-wrong");
+    }
+    const feedbackSpan = questionCard.querySelector(".feedback-text");
+    if (feedbackSpan) {
+      if (selected) {
+        const correctAnsLetter = q.correct;
+        const correctText = q.options[correctAnsLetter];
+        if (isCurrCorrect) feedbackSpan.innerHTML = `✅ Correct!`;
+        else feedbackSpan.innerHTML = `❌ Wrong. Correct answer: ${correctAnsLetter}. ${correctText}`;
+        feedbackSpan.className = `feedback-text ${isCurrCorrect ? 'correct' : 'wrong'}`;
+      } else {
+        feedbackSpan.innerHTML = `⚡ Not checked yet. Select an option and click "Check".`;
+        feedbackSpan.className = `feedback-text`;
+      }
+    }
+    // also update radio checked status
+    const radios = questionCard.querySelectorAll(`input[name='q${idx}']`);
+    radios.forEach(radio => {
+      if (radio.value === selected) radio.checked = true;
+      else radio.checked = false;
+    });
+  }
+
+  function renderFullSet() {
+    const setKey = currentSet;
+    const questions = QUESTION_SETS[setKey];
+    let html = '';
+    questions.forEach((q, idx) => {
+      const selected = setStates[setKey].answers[idx];
+      let borderClass = '';
+      let feedbackHtml = '';
+      if (selected) {
+        const isCorrect = (selected === q.correct);
+        borderClass = isCorrect ? 'answered-correct' : 'answered-wrong';
+        const correctAns = q.correct;
+        const correctText = q.options[correctAns];
+        feedbackHtml = `<span class="feedback-text ${isCorrect ? 'correct' : 'wrong'}">${isCorrect ? '✅ Correct!' : `❌ Wrong. Correct answer: ${correctAns}. ${correctText}`}</span>`;
+      } else {
+        feedbackHtml = `<span class="feedback-text">⚡ Not checked yet. Select an option and click "Check".</span>`;
+      }
+      const optionsHtml = Object.entries(q.options).map(([letter, text]) => `
+        <label class="opt-radio">
+          <input type="radio" name="q${idx}" value="${letter}"> <strong>${letter}.</strong> ${text}
+        </label>
+      `).join('');
+      html += `
+        <div class="question-card ${borderClass}" data-qidx="${idx}">
+          <div class="question-header">
+            <span class="q-num">Q${idx+1}</span>
+            <span class="question-text">${q.text}</span>
+          </div>
+          <div class="options" id="options-${idx}">
+            ${optionsHtml}
+          </div>
+          <button class="check-btn" data-qidx="${idx}">🔍 Check Answer</button>
+          <div style="margin-top: 8px;">${feedbackHtml}</div>
+        </div>
+      `;
+    });
+    questionsDiv.innerHTML = html;
+    // attach check listeners
+    document.querySelectorAll('.check-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        if (timerSeconds >= MAX_SECONDS) {
+          alert("Time is up! You cannot check more answers for this set.");
+          return;
+        }
+        const qIdx = parseInt(btn.dataset.qidx);
+        const selectedRadio = document.querySelector(`input[name='q${qIdx}']:checked`);
+        if (!selectedRadio) {
+          alert(`Please select an answer for Question ${qIdx+1}`);
+          return;
+        }
+        const selectedVal = selectedRadio.value;
+        evaluateAndUpdate(qIdx, selectedVal);
+      });
+    });
+    refreshStatsUI();
+  }
+
+  // reset current set answers
+  function resetCurrentSet() {
+    const setKey = currentSet;
+    setStates[setKey] = { answers: Array(25).fill(null), correctCount: 0, wrongCount: 0 };
+    renderFullSet();
+    refreshStatsUI();
+  }
+
+  function changeSet(setId) {
+    if (setId === currentSet) return;
+    stopTimer();
+    currentSet = setId;
+    // reset timer fresh
+    startTimerForSet();
+    // re-render questions
+    renderFullSet();
+    // update active button style
+    document.querySelectorAll('.set-btn').forEach(btn => {
+      if (btn.dataset.set === setId) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+  }
+
+  // event listeners
+  document.querySelectorAll('.set-btn').forEach(btn => {
+    btn.addEventListener('click', () => changeSet(btn.dataset.set));
+  });
+  document.getElementById('resetSetBtn').addEventListener('click', () => resetCurrentSet());
+
+  // initial load
+  startTimerForSet();
+  renderFullSet();
+</script>
+</body>
+</html>
