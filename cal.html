@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Replace v2Mac </title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+
+    .container {
+      width: 80%;
+      max-width: 600px;
+      text-align: center;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+      resize: vertical; /* Allow vertical resizing */
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .output {
+      margin-top: 20px;
+      text-align: left;
+      max-height: 300px; /* Set a maximum height for the output area */
+      overflow-y: auto; /* Enable vertical scrollbar when content exceeds the max height */
+    }
+
+    .checkbox {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <textarea id="textInput" rows="5" placeholder="Enter text..."></textarea>
+  <button onclick="replaceText()">Replace Text</button>
+  <div class="output" id="output"></div>
+  <button onclick="downloadWord()">Download as Word</button>
+  <button onclick="downloadPDF()">Download as PDF</button>
+  <button onclick="downloadText()">Download as Text</button>
+  <button onclick="downloadImage()">Download as JPEG</button>
+  <button onclick="downloadInput()">Download Input</button>
+  <button onclick="resetData()">Reset Data</button>
+</div>
+
+<script>
+  function replaceText() {
+    const inputText = document.getElementById('textInput').value;
+    const outputDiv = document.getElementById('output');
+    const replacements = {
+      'A': 'Button Alpha',
+      'B': 'Button Alpha',
+      'C': 'Button Alpha',
+      'D': 'Button Alpha',
+      'E': 'exp',
+      'F': 'Shift 7 > 5 ➡️ 2',
+      'G': 'Shift 7 > 8 ➡️ 3',
+      'H': 'Shift 7 > 1 ➡️ 2',
+      'I': '數字1',
+      'J': '數字 10:',
+      'K': 'Shift 7 > 6 ➡️ 1',
+      'L': '數字1',
+      'M': 'Button Alpha',
+      'N': 'Shift 7 > 1 ➡️ 3',
+      'O': '數字 0',
+      'P': 'Shift NPr button',
+      'Q': '數字 17:',
+      'R': 'Shift 7 > 6 ➡️ 3',
+      'S': '數字 5',
+      'T': 'Shift 7 > 9 ➡️ 2',
+      'U': 'Shift 7 > 4 ➡️ 1',
+      'V': '數字 22:',
+      'W': '數字 23:',
+      'X': 'Button Alpha',
+      'Y': 'Button Alpha',
+      'Z': '數字 26:'
+    };
+
+    let outputHTML = '<p>Current system generate date and time is ' + getFormattedDateAndTime() + '</p>';
+    outputHTML += '<p>Thank you for using our program, there are a total of 20 lines output.</p>';
+    outputHTML += '<hr>';
+
+    const lines = inputText.split('\n');
+    lines.forEach(line => {
+      outputHTML += '<div class="line">';
+      outputHTML += '<input type="checkbox" class="checkbox">';
+      outputHTML += '<span>';
+      outputHTML += '<p>- - - - - - - - - - - -</p>';
+      outputHTML += '<p>' + line + '</p>';
+      for (let i = 0; i < line.length; i++) {
+        const character = line[i].toUpperCase();
+        const replacement = replacements[character];
+        if (replacement) {
+          outputHTML += '<p>' + character + ' > ' + replacement + '</p>';
+        } else {
+          outputHTML += '<p>' + character + '</p>';
+        }
+      }
+      outputHTML += '</span>';
+      outputHTML += '</div>';
+    });
+
+    outputHTML += '<p>=============</p>';
+    outputHTML += '<p>The end. Current system generate date and time is ' + getFormattedDateAndTime() + '</p>';
+    outputHTML += '<p>=============</p>';
+
+    outputDiv.innerHTML = outputHTML;
+  }
+
+  function getFormattedDateAndTime() {
+    const now = new Date();
+    const hours = now.getHours() % 12 || 12; // Convert hours to 12-hour format
+    const minutes = now.getMinutes().toString().padStart(2, '0'); // Add leading zero if minutes < 10
+    const seconds = now.getSeconds().toString().padStart(2, '0'); // Add leading zero if seconds < 10
+    const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+    const formattedDateAndTime = now.toLocaleDateString() + ' ' + hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+    return formattedDateAndTime;
+  }
+
+  function downloadWord() {
+    const outputText = document.getElementById('output').innerText;
+    download('output.doc', outputText);
+  }
+
+  function downloadPDF() {
+    const outputText = document.getElementById('output').innerText;
+    // Logic to generate PDF from the outputText
+    // This part is not implemented in this code snippet
+  }
+
+  function downloadText() {
+    const outputText = document.getElementById('output').innerText;
+    download('output.txt', outputText);
+  }
+
+  function downloadImage() {
+    // Logic to generate image from the outputText
+    // This part is not implemented in this code snippet
+  }
+
+  function downloadInput() {
+    const inputText = document.getElementById('textInput').value;
+    download('input.txt', inputText);
+  }
+
+  function resetData() {
+    if (confirm("Are you sure you want to reset the data?")) {
+      document.getElementById('textInput').value = '';
+      document.getElementById('output').innerHTML = '';
+    }
+  }
+
+  // Function to trigger download
+  function download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+  }
+
+</script>
+</body>
+</html>
